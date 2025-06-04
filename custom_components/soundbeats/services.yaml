@@ -12,3 +12,8 @@ reset_game:
   name: Reset Game
   description: Reset the Soundbeats game to initial state
   fields: {}
+
+next_song:
+  name: Next Song
+  description: Skip to the next song in the Soundbeats game
+  fields: {}

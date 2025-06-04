@@ -140,17 +140,13 @@ class SoundbeatsCard extends HTMLElement {
           </h3>
           <p>Administrative controls for managing the Soundbeats game.</p>
           <div class="admin-controls">
-            <button class="admin-button" onclick="this.getRootNode().host.startGame()">
+            <button class="admin-button" onclick="this.getRootNode().host.startNewGame()">
               <ha-icon icon="mdi:play" class="icon"></ha-icon>
-              Start Game
+              Start a new Game
             </button>
-            <button class="admin-button" onclick="this.getRootNode().host.stopGame()">
-              <ha-icon icon="mdi:stop" class="icon"></ha-icon>
-              Stop Game
-            </button>
-            <button class="admin-button" onclick="this.getRootNode().host.resetGame()">
-              <ha-icon icon="mdi:refresh" class="icon"></ha-icon>
-              Reset Game
+            <button class="admin-button" onclick="this.getRootNode().host.nextSong()">
+              <ha-icon icon="mdi:skip-next" class="icon"></ha-icon>
+              Next Song
             </button>
           </div>
         </div>
@@ -159,11 +155,8 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   checkAdminPermissions() {
-    // Check if the current user has admin permissions
-    if (this.hass && this.hass.user) {
-      return this.hass.user.is_admin || false;
-    }
-    return false;
+    // Check if admin is enabled in card configuration
+    return this.config && this.config.admin === true;
   }
 
   getGameStatus() {
@@ -197,24 +190,17 @@ class SoundbeatsCard extends HTMLElement {
     return 'Classic';
   }
 
-  startGame() {
-    // Call service to start the game
+  startNewGame() {
+    // Call service to start a new game
     if (this.hass) {
       this.hass.callService('soundbeats', 'start_game', {});
     }
   }
 
-  stopGame() {
-    // Call service to stop the game
+  nextSong() {
+    // Call service to skip to next song
     if (this.hass) {
-      this.hass.callService('soundbeats', 'stop_game', {});
-    }
-  }
-
-  resetGame() {
-    // Call service to reset the game
-    if (this.hass) {
-      this.hass.callService('soundbeats', 'reset_game', {});
+      this.hass.callService('soundbeats', 'next_song', {});
     }
   }
 

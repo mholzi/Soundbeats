@@ -91,10 +91,22 @@ async def _register_services(hass: HomeAssistant) -> None:
         if sensor_id in hass.states.async_entity_ids():
             hass.states.async_set(sensor_id, "ready")
     
+    async def next_song(call) -> None:
+        """Handle next song service call."""
+        _LOGGER.info("Skipping to next song in Soundbeats game")
+        # Update the sensor state (could update song info attributes)
+        sensor_id = "sensor.soundbeats_game_status"
+        if sensor_id in hass.states.async_entity_ids():
+            # Keep current state but could update attributes like current_song
+            current_state = hass.states.get(sensor_id)
+            if current_state:
+                hass.states.async_set(sensor_id, current_state.state)
+    
     # Register the services
     hass.services.async_register(DOMAIN, "start_game", start_game)
     hass.services.async_register(DOMAIN, "stop_game", stop_game)
     hass.services.async_register(DOMAIN, "reset_game", reset_game)
+    hass.services.async_register(DOMAIN, "next_song", next_song)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -110,5 +122,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.services.async_remove(DOMAIN, "start_game")
             hass.services.async_remove(DOMAIN, "stop_game")
             hass.services.async_remove(DOMAIN, "reset_game")
+            hass.services.async_remove(DOMAIN, "next_song")
     
     return unload_ok
