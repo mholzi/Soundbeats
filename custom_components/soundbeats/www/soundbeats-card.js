@@ -188,6 +188,78 @@ class SoundbeatsCard extends HTMLElement {
         .participating-checkbox {
           margin-right: 4px;
         }
+        
+        .game-settings {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        
+        .setting-item {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        
+        .setting-label {
+          font-weight: 500;
+          color: var(--primary-text-color);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .setting-control {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
+        .timer-slider {
+          flex: 1;
+          height: 6px;
+          background: var(--divider-color, #e0e0e0);
+          border-radius: 3px;
+          outline: none;
+          -webkit-appearance: none;
+          appearance: none;
+        }
+        
+        .timer-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          background: var(--primary-color, #03a9f4);
+          border-radius: 50%;
+          cursor: pointer;
+        }
+        
+        .timer-slider::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          background: var(--primary-color, #03a9f4);
+          border-radius: 50%;
+          cursor: pointer;
+          border: none;
+        }
+        
+        .timer-value {
+          min-width: 60px;
+          text-align: center;
+          font-weight: 500;
+          color: var(--primary-color, #03a9f4);
+        }
+        
+        .audio-player-select {
+          flex: 1;
+          padding: 8px 12px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 4px;
+          background: var(--card-background-color, white);
+          color: var(--primary-text-color);
+          font-size: 14px;
+        }
       </style>
       
       <div class="soundbeats-card">
@@ -231,6 +303,54 @@ class SoundbeatsCard extends HTMLElement {
               <ha-icon icon="mdi:skip-next" class="icon"></ha-icon>
               Next Song
             </button>
+          </div>
+        </div>
+
+        <!-- Game Settings Section - Only visible to admins -->
+        <div class="section admin-section ${isAdmin ? '' : 'hidden'}">
+          <h3>
+            <ha-icon icon="mdi:cog" class="icon"></ha-icon>
+            Game Settings
+          </h3>
+          <p>Configure game settings that persist across resets.</p>
+          <div class="game-settings">
+            <div class="setting-item">
+              <div class="setting-label">
+                <ha-icon icon="mdi:timer-outline" class="icon"></ha-icon>
+                Countdown Timer Length
+              </div>
+              <div class="setting-control">
+                <input 
+                  type="range" 
+                  class="timer-slider" 
+                  min="5" 
+                  max="300" 
+                  step="5" 
+                  value="${this.getCountdownTimerLength()}"
+                  oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + 's';"
+                />
+                <span class="timer-value">${this.getCountdownTimerLength()}s</span>
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-label">
+                <ha-icon icon="mdi:speaker" class="icon"></ha-icon>
+                Audio Player
+              </div>
+              <div class="setting-control">
+                <select 
+                  class="audio-player-select" 
+                  onchange="this.getRootNode().host.updateAudioPlayer(this.value)"
+                >
+                  <option value="">Select an audio player...</option>
+                  ${this.getMediaPlayers().map(player => 
+                    `<option value="${player.entity_id}" ${this.getSelectedAudioPlayer() === player.entity_id ? 'selected' : ''}>
+                      ${player.name}
+                    </option>`
+                  ).join('')}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -370,6 +490,63 @@ class SoundbeatsCard extends HTMLElement {
     // Call service to skip to next song
     if (this.hass) {
       this.hass.callService('soundbeats', 'next_song', {});
+    }
+  }
+
+  getCountdownTimerLength() {
+    // Get countdown timer length from sensor attributes
+    if (this.hass && this.hass.states) {
+      const entity = this.hass.states['sensor.soundbeats_game_status'];
+      if (entity && entity.attributes && entity.attributes.countdown_timer_length !== undefined) {
+        return entity.attributes.countdown_timer_length;
+      }
+    }
+    return 30; // Default value
+  }
+
+  getSelectedAudioPlayer() {
+    // Get selected audio player from sensor attributes
+    if (this.hass && this.hass.states) {
+      const entity = this.hass.states['sensor.soundbeats_game_status'];
+      if (entity && entity.attributes && entity.attributes.audio_player) {
+        return entity.attributes.audio_player;
+      }
+    }
+    return null;
+  }
+
+  getMediaPlayers() {
+    // Get all media player entities from Home Assistant
+    const mediaPlayers = [];
+    if (this.hass && this.hass.states) {
+      Object.keys(this.hass.states).forEach(entityId => {
+        if (entityId.startsWith('media_player.')) {
+          const entity = this.hass.states[entityId];
+          mediaPlayers.push({
+            entity_id: entityId,
+            name: entity.attributes.friendly_name || entityId.split('.')[1].replace(/_/g, ' ')
+          });
+        }
+      });
+    }
+    return mediaPlayers;
+  }
+
+  updateCountdownTimerLength(timerLength) {
+    // Call service to update countdown timer length
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'update_countdown_timer_length', {
+        timer_length: parseInt(timerLength)
+      });
+    }
+  }
+
+  updateAudioPlayer(audioPlayer) {
+    // Call service to update audio player
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'update_audio_player', {
+        audio_player: audioPlayer
+      });
     }
   }
 
