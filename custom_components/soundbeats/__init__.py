@@ -76,16 +76,20 @@ async def _register_services(hass: HomeAssistant) -> None:
 
     async def reset_game(call):
         _LOGGER.info("Resetting Soundbeats game")
-        state_obj = hass.states.get("sensor.soundbeats_game_status")
-        new_attrs = dict(state_obj.attributes) if state_obj else {}
-        # Reset only team names/points...
+        # Reset game status
+        hass.states.async_set("sensor.soundbeats_game_status", "ready")
+        # Reset all teams
         for i in range(1, 6):
-            key = f"team_{i}"
-            new_attrs[key] = {"name": f"Team {i}", "points": 0, "participating": True}
-        hass.states.async_set("sensor.soundbeats_game_status", "ready", new_attrs)
+            team_entity_id = f"sensor.soundbeats_team_{i}"
+            hass.states.async_set(team_entity_id, f"Team {i}", {
+                "points": 0,
+                "participating": True,
+                "team_number": i
+            })
 
     async def next_song(call):
         _LOGGER.info("Skipping to next song")
+        # Keep the game status unchanged but trigger an update
         state_obj = hass.states.get("sensor.soundbeats_game_status")
         if state_obj:
             hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, state_obj.attributes)
@@ -96,12 +100,16 @@ async def _register_services(hass: HomeAssistant) -> None:
         if not team_id or not name:
             _LOGGER.error("Missing team_id or name")
             return
-        state_obj = hass.states.get("sensor.soundbeats_game_status")
+        
+        # Extract team number from team_id (e.g., "team_1" -> "1")
+        team_number = team_id.split('_')[-1]
+        entity_id = f"sensor.soundbeats_team_{team_number}"
+        
+        # Get current state and update with new name
+        state_obj = hass.states.get(entity_id)
         if state_obj:
-            attrs = dict(state_obj.attributes)
-            if team_id in attrs:
-                attrs[team_id]["name"] = name
-                hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, attrs)
+            attrs = dict(state_obj.attributes) if state_obj.attributes else {}
+            hass.states.async_set(entity_id, name, attrs)
 
     async def update_team_points(call):
         team_id = call.data.get("team_id")
@@ -109,12 +117,17 @@ async def _register_services(hass: HomeAssistant) -> None:
         if not team_id or points is None:
             _LOGGER.error("Missing team_id or points")
             return
-        state_obj = hass.states.get("sensor.soundbeats_game_status")
+        
+        # Extract team number from team_id (e.g., "team_1" -> "1")
+        team_number = team_id.split('_')[-1]
+        entity_id = f"sensor.soundbeats_team_{team_number}"
+        
+        # Get current state and update with new points
+        state_obj = hass.states.get(entity_id)
         if state_obj:
-            attrs = dict(state_obj.attributes)
-            if team_id in attrs:
-                attrs[team_id]["points"] = int(points)
-                hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, attrs)
+            attrs = dict(state_obj.attributes) if state_obj.attributes else {}
+            attrs["points"] = int(points)
+            hass.states.async_set(entity_id, state_obj.state, attrs)
 
     async def update_team_participating(call):
         team_id = call.data.get("team_id")
@@ -122,34 +135,31 @@ async def _register_services(hass: HomeAssistant) -> None:
         if not team_id or participating is None:
             _LOGGER.error("Missing team_id or participating")
             return
-        state_obj = hass.states.get("sensor.soundbeats_game_status")
+        
+        # Extract team number from team_id (e.g., "team_1" -> "1")
+        team_number = team_id.split('_')[-1]
+        entity_id = f"sensor.soundbeats_team_{team_number}"
+        
+        # Get current state and update with new participating status
+        state_obj = hass.states.get(entity_id)
         if state_obj:
-            attrs = dict(state_obj.attributes)
-            if team_id in attrs:
-                attrs[team_id]["participating"] = bool(participating)
-                hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, attrs)
+            attrs = dict(state_obj.attributes) if state_obj.attributes else {}
+            attrs["participating"] = bool(participating)
+            hass.states.async_set(entity_id, state_obj.state, attrs)
 
     async def update_countdown_timer_length(call):
         length = call.data.get("timer_length")
         if length is None:
             _LOGGER.error("Missing timer_length")
             return
-        state_obj = hass.states.get("sensor.soundbeats_game_status")
-        if state_obj:
-            attrs = dict(state_obj.attributes)
-            attrs["countdown_timer_length"] = int(length)
-            hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, attrs)
+        hass.states.async_set("sensor.soundbeats_countdown_timer", int(length))
 
     async def update_audio_player(call):
         player = call.data.get("audio_player")
         if not player:
             _LOGGER.error("Missing audio_player")
             return
-        state_obj = hass.states.get("sensor.soundbeats_game_status")
-        if state_obj:
-            attrs = dict(state_obj.attributes)
-            attrs["audio_player"] = player
-            hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, attrs)
+        hass.states.async_set("sensor.soundbeats_audio_player", player)
 
     # Register all services under the "soundbeats" domain
     hass.services.async_register(DOMAIN, "start_game", start_game)
