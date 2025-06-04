@@ -426,7 +426,7 @@ class SoundbeatsCard extends HTMLElement {
     const isAdmin = this.checkAdminPermissions();
     
     return Object.entries(teams).map(([teamId, team]) => `
-      <div class="team-item">
+      <div class="team-item" data-team="${teamId}">
         <div class="team-info">
           <span class="team-name">${team.name}</span>
           <span class="team-points">${team.points} pts</span>
@@ -550,10 +550,163 @@ class SoundbeatsCard extends HTMLElement {
     }
   }
 
+  updateDisplayValues() {
+    // Update only display elements, not input fields to preserve user editing state
+    
+    // Update game status display
+    const gameStatusEl = this.shadowRoot.querySelector('.game-status');
+    if (gameStatusEl) {
+      gameStatusEl.textContent = this.getGameStatus();
+    }
+    
+    // Update player count
+    const playerCountText = this.shadowRoot.querySelector('.team-section p:nth-of-type(2)');
+    if (playerCountText) {
+      playerCountText.textContent = `Players connected: ${this.getPlayerCount()}`;
+    }
+    
+    // Update game mode
+    const gameModeText = this.shadowRoot.querySelector('.team-section p:nth-of-type(3)');
+    if (gameModeText) {
+      gameModeText.textContent = `Game mode: ${this.getGameMode()}`;
+    }
+    
+    // Update team display values (but not input fields)
+    this.updateTeamDisplayValues();
+    
+    // Update timer display value only if slider is not being actively used
+    this.updateTimerDisplayValue();
+    
+    // Update dropdown options without changing selected value if not focused
+    this.updateAudioPlayerOptions();
+  }
+
+  updateTeamDisplayValues() {
+    const teams = this.getTeams();
+    const teamsContainer = this.shadowRoot.querySelector('.teams-container');
+    if (!teamsContainer) return;
+    
+    Object.entries(teams).forEach(([teamId, team]) => {
+      const teamItem = teamsContainer.querySelector(`[data-team="${teamId}"]`);
+      if (!teamItem) {
+        // Team item doesn't exist, need to add it
+        this.recreateTeamsSection();
+        return;
+      }
+      
+      // Update display values only
+      const nameDisplay = teamItem.querySelector('.team-name');
+      const pointsDisplay = teamItem.querySelector('.team-points');
+      const participatingDisplay = teamItem.querySelector('.team-participating');
+      
+      if (nameDisplay) nameDisplay.textContent = team.name;
+      if (pointsDisplay) pointsDisplay.textContent = `${team.points} pts`;
+      if (participatingDisplay) {
+        participatingDisplay.innerHTML = `
+          <ha-icon icon="${team.participating ? 'mdi:check-circle' : 'mdi:circle-outline'}"></ha-icon>
+          ${team.participating ? 'Active' : 'Inactive'}
+        `;
+      }
+      
+      // Update input values only if they're not focused (being edited)
+      const nameInput = teamItem.querySelector('input[type="text"]');
+      const pointsInput = teamItem.querySelector('input[type="number"]');  
+      const participatingInput = teamItem.querySelector('input[type="checkbox"]');
+      
+      if (nameInput && document.activeElement !== nameInput) {
+        nameInput.value = team.name;
+      }
+      if (pointsInput && document.activeElement !== pointsInput) {
+        pointsInput.value = team.points;
+      }
+      if (participatingInput && document.activeElement !== participatingInput) {
+        participatingInput.checked = team.participating;
+      }
+    });
+  }
+
+  updateTimerDisplayValue() {
+    const timerSlider = this.shadowRoot.querySelector('.timer-slider');
+    const timerValue = this.shadowRoot.querySelector('.timer-value');
+    const currentValue = this.getCountdownTimerLength();
+    
+    // Only update if slider is not being actively used
+    if (timerSlider && document.activeElement !== timerSlider) {
+      timerSlider.value = currentValue;
+    }
+    if (timerValue) {
+      timerValue.textContent = `${currentValue}s`;
+    }
+  }
+
+  updateAudioPlayerOptions() {
+    const select = this.shadowRoot.querySelector('.audio-player-select');
+    if (!select || document.activeElement === select) return;
+    
+    const currentSelection = this.getSelectedAudioPlayer();
+    const mediaPlayers = this.getMediaPlayers();
+    
+    // Clear and rebuild options
+    select.innerHTML = '<option value="">Select an audio player...</option>';
+    mediaPlayers.forEach(player => {
+      const option = document.createElement('option');
+      option.value = player.entity_id;
+      option.textContent = player.name;
+      option.selected = currentSelection === player.entity_id;
+      select.appendChild(option);
+    });
+  }
+
+  recreateTeamsSection() {
+    // Only recreate if teams structure has changed significantly
+    const teamsContainer = this.shadowRoot.querySelector('.teams-container');
+    if (teamsContainer) {
+      // Save focus state before recreation
+      let focusedElement = null;
+      let focusedTeam = null;
+      let focusedType = null;
+      
+      if (document.activeElement && teamsContainer.contains(document.activeElement)) {
+        focusedElement = document.activeElement;
+        const teamItem = focusedElement.closest('[data-team]');
+        if (teamItem) {
+          focusedTeam = teamItem.getAttribute('data-team');
+          if (focusedElement.type === 'text') focusedType = 'text';
+          else if (focusedElement.type === 'number') focusedType = 'number';
+          else if (focusedElement.type === 'checkbox') focusedType = 'checkbox';
+        }
+      }
+      
+      // Recreate the teams
+      teamsContainer.innerHTML = this.renderTeams();
+      
+      // Restore focus if possible
+      if (focusedTeam && focusedType) {
+        const newTeamItem = teamsContainer.querySelector(`[data-team="${focusedTeam}"]`);
+        if (newTeamItem) {
+          const newFocusElement = newTeamItem.querySelector(`input[type="${focusedType}"]`);
+          if (newFocusElement) {
+            // Use setTimeout to ensure the element is ready
+            setTimeout(() => {
+              newFocusElement.focus();
+              // Restore cursor position for text inputs
+              if (focusedType === 'text' && focusedElement) {
+                newFocusElement.setSelectionRange(focusedElement.selectionStart, focusedElement.selectionEnd);
+              }
+            }, 0);
+          }
+        }
+      }
+    }
+  }
+
   set hass(hass) {
     this._hass = hass;
-    // Re-render when hass changes to update dynamic content
+    // Only update dynamic content without full re-render to preserve input states
     if (this.shadowRoot.innerHTML) {
+      this.updateDisplayValues();
+    } else {
+      // Initial render only
       this.render();
     }
   }
