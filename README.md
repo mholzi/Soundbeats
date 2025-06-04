@@ -38,10 +38,22 @@ After adding the configuration, restart Home Assistant.
 
 Once installed and configured, the integration will create a sensor entity called `sensor.soundbeats_game_status` that shows the current status of your party game.
 
+### Lovelace Card
+
+The integration automatically provides a custom Lovelace card with no additional setup required. The card features:
+
+- **Title section**: Always visible to all users
+- **Team section**: Game status and player information visible to all users  
+- **Admin section**: Game controls visible only to admin users
+
+To use the card, simply add it to your Lovelace dashboard by selecting "Custom: Soundbeats Card" when adding a new card.
+
 ### Features
 
 - Game status monitoring
 - Simple integration with Home Assistant automations
+- Custom Lovelace card with role-based visibility
+- Admin controls for game management
 - Lightweight and fun party game integration
 
 ## Support

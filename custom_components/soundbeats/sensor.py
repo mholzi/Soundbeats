@@ -47,6 +47,8 @@ class SoundbeatsSensor(SensorEntity):
         return {
             "friendly_name": "Soundbeats Game Status",
             "description": "Current status of the Soundbeats party game",
+            "player_count": 0,
+            "game_mode": "Classic",
         }
 
     async def async_update(self) -> None:
