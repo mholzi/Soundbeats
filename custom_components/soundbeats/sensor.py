@@ -20,14 +20,29 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Soundbeats sensor based on a config entry."""
-    _LOGGER.info("Setting up Soundbeats sensor")
+    _LOGGER.info("Setting up Soundbeats sensors")
     
-    # Create a simple game status sensor
-    async_add_entities([SoundbeatsSensor()], True)
+    # Create all sensor entities
+    entities = []
+    
+    # Main game status sensor
+    entities.append(SoundbeatsSensor())
+    
+    # Individual team sensors
+    for i in range(1, 6):
+        entities.append(SoundbeatsTeamSensor(i))
+    
+    # Individual game settings sensors
+    entities.append(SoundbeatsCountdownTimerSensor())
+    entities.append(SoundbeatsAudioPlayerSensor())
+    entities.append(SoundbeatsPlayerCountSensor())
+    entities.append(SoundbeatsGameModeSensor())
+    
+    async_add_entities(entities, True)
 
 
 class SoundbeatsSensor(SensorEntity):
-    """Representation of a Soundbeats sensor."""
+    """Representation of a Soundbeats main game status sensor."""
 
     def __init__(self) -> None:
         """Initialize the sensor."""
@@ -35,26 +50,6 @@ class SoundbeatsSensor(SensorEntity):
         self._attr_unique_id = "soundbeats_game_status"
         self._attr_icon = "mdi:music-note"
         self._state = "ready"
-        self._teams = self._initialize_teams()
-        self._game_settings = self._initialize_game_settings()
-
-    def _initialize_teams(self) -> dict[str, dict[str, Any]]:
-        """Initialize the 5 teams with default values."""
-        teams = {}
-        for i in range(1, 6):
-            teams[f"team_{i}"] = {
-                "name": f"Team {i}",
-                "points": 0,
-                "participating": True,
-            }
-        return teams
-
-    def _initialize_game_settings(self) -> dict[str, Any]:
-        """Initialize game settings with default values."""
-        return {
-            "countdown_timer_length": 30,  # Default 30 seconds
-            "audio_player": None,  # No default audio player selected
-        }
 
     @property
     def state(self) -> str:
@@ -64,48 +59,166 @@ class SoundbeatsSensor(SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
-        attributes = {
+        return {
             "friendly_name": "Soundbeats Game Status",
             "description": "Current status of the Soundbeats party game",
-            "player_count": 0,
-            "game_mode": "Classic",
         }
-        # Add team data to attributes
-        attributes.update(self._teams)
-        # Add game settings to attributes
-        attributes.update(self._game_settings)
-        return attributes
 
-    def update_team_name(self, team_id: str, name: str) -> None:
-        """Update a team's name."""
-        if team_id in self._teams:
-            self._teams[team_id]["name"] = name
-            self.async_write_ha_state()
-
-    def update_team_points(self, team_id: str, points: int) -> None:
-        """Update a team's points."""
-        if team_id in self._teams:
-            self._teams[team_id]["points"] = points
-            self.async_write_ha_state()
-
-    def update_team_participating(self, team_id: str, participating: bool) -> None:
-        """Update a team's participating status."""
-        if team_id in self._teams:
-            self._teams[team_id]["participating"] = participating
-            self.async_write_ha_state()
-
-    def update_countdown_timer_length(self, timer_length: int) -> None:
-        """Update the countdown timer length."""
-        self._game_settings["countdown_timer_length"] = timer_length
-        self.async_write_ha_state()
-
-    def update_audio_player(self, audio_player: str) -> None:
-        """Update the selected audio player."""
-        self._game_settings["audio_player"] = audio_player
+    def set_state(self, new_state: str) -> None:
+        """Set the game state."""
+        self._state = new_state
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
         """Update the sensor."""
         # This is where you would add logic to check game status
         # For now, we'll keep it simple
-        _LOGGER.debug("Updating Soundbeats sensor")
+        _LOGGER.debug("Updating Soundbeats main sensor")
+
+
+class SoundbeatsTeamSensor(SensorEntity):
+    """Representation of a Soundbeats team sensor."""
+
+    def __init__(self, team_number: int) -> None:
+        """Initialize the team sensor."""
+        self._team_number = team_number
+        self._attr_name = f"Soundbeats Team {team_number}"
+        self._attr_unique_id = f"soundbeats_team_{team_number}"
+        self._attr_icon = "mdi:account-group"
+        self._team_name = f"Team {team_number}"
+        self._points = 0
+        self._participating = True
+
+    @property
+    def state(self) -> str:
+        """Return the state of the sensor (team name)."""
+        return self._team_name
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes."""
+        return {
+            "points": self._points,
+            "participating": self._participating,
+            "team_number": self._team_number,
+        }
+
+    def update_team_name(self, name: str) -> None:
+        """Update the team's name."""
+        self._team_name = name
+        self.async_write_ha_state()
+
+    def update_team_points(self, points: int) -> None:
+        """Update the team's points."""
+        self._points = points
+        self.async_write_ha_state()
+
+    def update_team_participating(self, participating: bool) -> None:
+        """Update the team's participating status."""
+        self._participating = participating
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats team %d sensor", self._team_number)
+
+
+class SoundbeatsCountdownTimerSensor(SensorEntity):
+    """Representation of a Soundbeats countdown timer sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the countdown timer sensor."""
+        self._attr_name = "Soundbeats Countdown Timer"
+        self._attr_unique_id = "soundbeats_countdown_timer"
+        self._attr_icon = "mdi:timer"
+        self._attr_unit_of_measurement = "s"
+        self._timer_length = 30
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor (timer length in seconds)."""
+        return self._timer_length
+
+    def update_timer_length(self, timer_length: int) -> None:
+        """Update the countdown timer length."""
+        self._timer_length = timer_length
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats countdown timer sensor")
+
+
+class SoundbeatsAudioPlayerSensor(SensorEntity):
+    """Representation of a Soundbeats audio player sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the audio player sensor."""
+        self._attr_name = "Soundbeats Audio Player"
+        self._attr_unique_id = "soundbeats_audio_player"
+        self._attr_icon = "mdi:speaker"
+        self._audio_player = None
+
+    @property
+    def state(self) -> str:
+        """Return the state of the sensor (selected audio player)."""
+        return self._audio_player or "None"
+
+    def update_audio_player(self, audio_player: str) -> None:
+        """Update the selected audio player."""
+        self._audio_player = audio_player
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats audio player sensor")
+
+
+class SoundbeatsPlayerCountSensor(SensorEntity):
+    """Representation of a Soundbeats player count sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the player count sensor."""
+        self._attr_name = "Soundbeats Player Count"
+        self._attr_unique_id = "soundbeats_player_count"
+        self._attr_icon = "mdi:account-multiple"
+        self._player_count = 0
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor (player count)."""
+        return self._player_count
+
+    def update_player_count(self, count: int) -> None:
+        """Update the player count."""
+        self._player_count = count
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats player count sensor")
+
+
+class SoundbeatsGameModeSensor(SensorEntity):
+    """Representation of a Soundbeats game mode sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the game mode sensor."""
+        self._attr_name = "Soundbeats Game Mode"
+        self._attr_unique_id = "soundbeats_game_mode"
+        self._attr_icon = "mdi:gamepad-variant"
+        self._game_mode = "Classic"
+
+    @property
+    def state(self) -> str:
+        """Return the state of the sensor (game mode)."""
+        return self._game_mode
+
+    def update_game_mode(self, mode: str) -> None:
+        """Update the game mode."""
+        self._game_mode = mode
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats game mode sensor")

@@ -437,41 +437,47 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getPlayerCount() {
-    // Get player count (mock data for now)
+    // Get player count from the dedicated sensor entity
     if (this.hass && this.hass.states) {
-      const entity = this.hass.states['sensor.soundbeats_game_status'];
-      if (entity && entity.attributes && entity.attributes.player_count) {
-        return entity.attributes.player_count;
-      }
+      const entity = this.hass.states['sensor.soundbeats_player_count'];
+      return entity ? entity.state : '0';
     }
     return '0';
   }
 
   getGameMode() {
-    // Get game mode (mock data for now)
+    // Get game mode from the dedicated sensor entity
     if (this.hass && this.hass.states) {
-      const entity = this.hass.states['sensor.soundbeats_game_status'];
-      if (entity && entity.attributes && entity.attributes.game_mode) {
-        return entity.attributes.game_mode;
-      }
+      const entity = this.hass.states['sensor.soundbeats_game_mode'];
+      return entity ? entity.state : 'Classic';
     }
     return 'Classic';
   }
 
   getTeams() {
-    // Get teams data from sensor attributes
+    // Get teams data from individual team sensor entities
     if (this.hass && this.hass.states) {
-      const entity = this.hass.states['sensor.soundbeats_game_status'];
-      if (entity && entity.attributes) {
-        const teams = {};
-        for (let i = 1; i <= 5; i++) {
-          const teamKey = `team_${i}`;
-          if (entity.attributes[teamKey]) {
-            teams[teamKey] = entity.attributes[teamKey];
-          }
+      const teams = {};
+      for (let i = 1; i <= 5; i++) {
+        const teamKey = `team_${i}`;
+        const entityId = `sensor.soundbeats_team_${i}`;
+        const entity = this.hass.states[entityId];
+        if (entity) {
+          teams[teamKey] = {
+            name: entity.state,
+            points: entity.attributes && entity.attributes.points !== undefined ? entity.attributes.points : 0,
+            participating: entity.attributes && entity.attributes.participating !== undefined ? entity.attributes.participating : true
+          };
+        } else {
+          // Fallback to default if entity doesn't exist yet
+          teams[teamKey] = {
+            name: `Team ${i}`,
+            points: 0,
+            participating: true
+          };
         }
-        return teams;
       }
+      return teams;
     }
     // Return default teams if no data available
     const defaultTeams = {};
@@ -569,22 +575,22 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getCountdownTimerLength() {
-    // Get countdown timer length from sensor attributes
+    // Get countdown timer length from the dedicated sensor entity
     if (this.hass && this.hass.states) {
-      const entity = this.hass.states['sensor.soundbeats_game_status'];
-      if (entity && entity.attributes && entity.attributes.countdown_timer_length !== undefined) {
-        return entity.attributes.countdown_timer_length;
+      const entity = this.hass.states['sensor.soundbeats_countdown_timer'];
+      if (entity && entity.state !== undefined) {
+        return parseInt(entity.state, 10);
       }
     }
     return 30; // Default value
   }
 
   getSelectedAudioPlayer() {
-    // Get selected audio player from sensor attributes
+    // Get selected audio player from the dedicated sensor entity
     if (this.hass && this.hass.states) {
-      const entity = this.hass.states['sensor.soundbeats_game_status'];
-      if (entity && entity.attributes && entity.attributes.audio_player) {
-        return entity.attributes.audio_player;
+      const entity = this.hass.states['sensor.soundbeats_audio_player'];
+      if (entity && entity.state && entity.state !== 'None') {
+        return entity.state;
       }
     }
     return null;
