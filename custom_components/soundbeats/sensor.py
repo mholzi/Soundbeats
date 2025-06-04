@@ -26,17 +26,34 @@ async def async_setup_entry(
     entities = []
     
     # Main game status sensor
-    entities.append(SoundbeatsSensor())
+    main_sensor = SoundbeatsSensor()
+    entities.append(main_sensor)
     
     # Individual team sensors
+    team_sensors = {}
     for i in range(1, 6):
-        entities.append(SoundbeatsTeamSensor(i))
+        team_sensor = SoundbeatsTeamSensor(i)
+        team_sensors[f"soundbeats_team_{i}"] = team_sensor
+        entities.append(team_sensor)
     
     # Individual game settings sensors
-    entities.append(SoundbeatsCountdownTimerSensor())
-    entities.append(SoundbeatsAudioPlayerSensor())
-    entities.append(SoundbeatsPlayerCountSensor())
-    entities.append(SoundbeatsGameModeSensor())
+    countdown_sensor = SoundbeatsCountdownTimerSensor()
+    audio_sensor = SoundbeatsAudioPlayerSensor()
+    player_count_sensor = SoundbeatsPlayerCountSensor()
+    game_mode_sensor = SoundbeatsGameModeSensor()
+    
+    entities.extend([countdown_sensor, audio_sensor, player_count_sensor, game_mode_sensor])
+    
+    # Store entity references in hass data for service access
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN]["entities"] = {
+        "main_sensor": main_sensor,
+        "team_sensors": team_sensors,
+        "countdown_sensor": countdown_sensor,
+        "audio_sensor": audio_sensor,
+        "player_count_sensor": player_count_sensor,
+        "game_mode_sensor": game_mode_sensor,
+    }
     
     async_add_entities(entities, True)
 
