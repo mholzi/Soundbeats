@@ -98,10 +98,25 @@ async def _register_services(hass: HomeAssistant) -> None:
     async def reset_game(call) -> None:
         """Handle reset game service call."""
         _LOGGER.info("Resetting Soundbeats game")
-        # Update the sensor state
+        # Update the sensor state but preserve game settings
         sensor_id = "sensor.soundbeats_game_status"
         if sensor_id in hass.states.async_entity_ids():
-            hass.states.async_set(sensor_id, "ready")
+            current_state = hass.states.get(sensor_id)
+            if current_state and current_state.attributes:
+                new_attributes = dict(current_state.attributes)
+                # Reset teams to defaults but preserve settings
+                for i in range(1, 6):
+                    team_key = f"team_{i}"
+                    if team_key in new_attributes:
+                        new_attributes[team_key] = {
+                            "name": f"Team {i}",
+                            "points": 0,
+                            "participating": True,
+                        }
+                # Keep game settings (countdown_timer_length and audio_player)
+                hass.states.async_set(sensor_id, "ready", new_attributes)
+            else:
+                hass.states.async_set(sensor_id, "ready")
     
     async def next_song(call) -> None:
         """Handle next song service call."""
@@ -173,6 +188,42 @@ async def _register_services(hass: HomeAssistant) -> None:
             if team_id in new_attributes:
                 new_attributes[team_id]["participating"] = bool(participating)
                 hass.states.async_set(sensor_id, current_state.state, new_attributes)
+
+    async def update_countdown_timer_length(call) -> None:
+        """Handle update countdown timer length service call."""
+        timer_length = call.data.get("timer_length")
+        
+        if timer_length is None:
+            _LOGGER.error("Missing timer_length in update_countdown_timer_length call")
+            return
+            
+        _LOGGER.info("Updating countdown timer length to %s seconds", timer_length)
+        
+        # Update the sensor state directly
+        sensor_id = "sensor.soundbeats_game_status"
+        current_state = hass.states.get(sensor_id)
+        if current_state and current_state.attributes:
+            new_attributes = dict(current_state.attributes)
+            new_attributes["countdown_timer_length"] = int(timer_length)
+            hass.states.async_set(sensor_id, current_state.state, new_attributes)
+
+    async def update_audio_player(call) -> None:
+        """Handle update audio player service call."""
+        audio_player = call.data.get("audio_player")
+        
+        if not audio_player:
+            _LOGGER.error("Missing audio_player in update_audio_player call")
+            return
+            
+        _LOGGER.info("Updating audio player to %s", audio_player)
+        
+        # Update the sensor state directly
+        sensor_id = "sensor.soundbeats_game_status"
+        current_state = hass.states.get(sensor_id)
+        if current_state and current_state.attributes:
+            new_attributes = dict(current_state.attributes)
+            new_attributes["audio_player"] = audio_player
+            hass.states.async_set(sensor_id, current_state.state, new_attributes)
     
     # Register the services
     hass.services.async_register(DOMAIN, "start_game", start_game)
@@ -182,6 +233,8 @@ async def _register_services(hass: HomeAssistant) -> None:
     hass.services.async_register(DOMAIN, "update_team_name", update_team_name)
     hass.services.async_register(DOMAIN, "update_team_points", update_team_points)
     hass.services.async_register(DOMAIN, "update_team_participating", update_team_participating)
+    hass.services.async_register(DOMAIN, "update_countdown_timer_length", update_countdown_timer_length)
+    hass.services.async_register(DOMAIN, "update_audio_player", update_audio_player)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -201,5 +254,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.services.async_remove(DOMAIN, "update_team_name")
             hass.services.async_remove(DOMAIN, "update_team_points")
             hass.services.async_remove(DOMAIN, "update_team_participating")
+            hass.services.async_remove(DOMAIN, "update_countdown_timer_length")
+            hass.services.async_remove(DOMAIN, "update_audio_player")
     
     return unload_ok
