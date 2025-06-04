@@ -327,7 +327,7 @@ class SoundbeatsCard extends HTMLElement {
                   max="300" 
                   step="5" 
                   value="${this.getCountdownTimerLength()}"
-                  oninput="this.getRootNode().host.updateCountdownTimerLength(this.value)"
+                  oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + 's';"
                 />
                 <span class="timer-value">${this.getCountdownTimerLength()}s</span>
               </div>
