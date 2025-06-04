@@ -20,13 +20,15 @@ A custom Home Assistant integration for managing and playing the Soundbeats part
 
 ## Configuration
 
-Add the following to your `configuration.yaml` file:
+No manual configuration is required! The integration will be automatically available in your Home Assistant interface after installation.
 
-```yaml
-soundbeats:
-```
+1. Go to Settings → Devices & Services
+2. Click "Add Integration"
+3. Search for "Soundbeats"
+4. Click to add the integration
+5. Follow the setup wizard
 
-After adding the configuration, restart Home Assistant.
+The integration is now ready to use!
 
 ## Usage
 

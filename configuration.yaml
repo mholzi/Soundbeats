@@ -1,4 +1,11 @@
-# Example configuration.yaml entry for Soundbeats integration
-# Add this to your Home Assistant configuration.yaml file
-
-soundbeats:
+# Configuration.yaml is no longer required for Soundbeats integration!
+# 
+# The integration now supports full UI-based configuration.
+# Simply install via HACS and configure through:
+# Settings → Devices & Services → Add Integration → Soundbeats
+#
+# This file is kept for reference only - you can safely delete it.
+#
+# If you previously had this configuration, it will automatically
+# be migrated to a config entry when you restart Home Assistant:
+# soundbeats:

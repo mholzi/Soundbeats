@@ -1,0 +1,14 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Soundbeats Party Game",
+        "description": "Set up the Soundbeats integration for your party game.",
+        "data": {}
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Only a single configuration of Soundbeats is allowed."
+    }
+  }
+}

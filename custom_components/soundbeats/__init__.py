@@ -10,19 +10,30 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
+from .const import DOMAIN
+
 _LOGGER = logging.getLogger(__name__)
 
-DOMAIN = "soundbeats"
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the Soundbeats component."""
-    _LOGGER.info("Setting up Soundbeats integration")
+    """Set up the Soundbeats component from YAML configuration (optional)."""
+    _LOGGER.info("Setting up Soundbeats integration from YAML")
     hass.data.setdefault(DOMAIN, {})
     
-    # Register frontend resources
+    # Register frontend resources (needed for both YAML and config entry setup)
     await _register_frontend_resources(hass)
+    
+    # Check if domain is in config (YAML configuration)
+    if DOMAIN in config:
+        # Create a config entry if one doesn't exist
+        if not hass.config_entries.async_entries(DOMAIN):
+            hass.async_create_task(
+                hass.config_entries.flow.async_init(
+                    DOMAIN, context={"source": "import"}
+                )
+            )
     
     return True
 
