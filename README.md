@@ -85,6 +85,19 @@ The integration provides the following Home Assistant services for automation an
 - Check Home Assistant logs for any error messages
 - Restart Home Assistant after installation
 
+## Development
+
+### Music Addition Strategy
+
+For detailed information about implementing music functionality, including song sourcing, smart speaker integration, and game enhancement strategies, see the [Music Addition Strategy Document](MUSIC_STRATEGY.md).
+
+This comprehensive guide covers:
+- Music sourcing options and APIs for top party songs since 1950
+- Integration approaches for Sonos, Echo/Apple Home, Google Home
+- Technical implementation roadmap
+- Legal considerations and licensing requirements
+- Step-by-step development phases
+
 ## Support
 
 If you encounter any issues, please [open an issue](https://github.com/mholzi/Soundbeats/issues) on GitHub.
