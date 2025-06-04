@@ -426,7 +426,7 @@ class SoundbeatsCard extends HTMLElement {
     const isAdmin = this.checkAdminPermissions();
     
     return Object.entries(teams).map(([teamId, team]) => `
-      <div class="team-item">
+      <div class="team-item" data-team="${teamId}">
         <div class="team-info">
           <span class="team-name">${team.name}</span>
           <span class="team-points">${team.points} pts</span>
@@ -550,10 +550,128 @@ class SoundbeatsCard extends HTMLElement {
     }
   }
 
+  updateDisplayValues() {
+    // Update only display elements, not input fields to preserve user editing state
+    
+    // Update game status display
+    const gameStatusEl = this.shadowRoot.querySelector('.game-status');
+    if (gameStatusEl) {
+      gameStatusEl.textContent = this.getGameStatus();
+    }
+    
+    // Update player count
+    const playerCountText = this.shadowRoot.querySelector('.team-section p:nth-of-type(2)');
+    if (playerCountText) {
+      playerCountText.textContent = `Players connected: ${this.getPlayerCount()}`;
+    }
+    
+    // Update game mode
+    const gameModeText = this.shadowRoot.querySelector('.team-section p:nth-of-type(3)');
+    if (gameModeText) {
+      gameModeText.textContent = `Game mode: ${this.getGameMode()}`;
+    }
+    
+    // Update team display values (but not input fields)
+    this.updateTeamDisplayValues();
+    
+    // Update timer display value only if slider is not being actively used
+    this.updateTimerDisplayValue();
+    
+    // Update dropdown options without changing selected value if not focused
+    this.updateAudioPlayerOptions();
+  }
+
+  updateTeamDisplayValues() {
+    const teams = this.getTeams();
+    const teamsContainer = this.shadowRoot.querySelector('.teams-container');
+    if (!teamsContainer) return;
+    
+    Object.entries(teams).forEach(([teamId, team]) => {
+      const teamItem = teamsContainer.querySelector(`[data-team="${teamId}"]`);
+      if (!teamItem) {
+        // Team item doesn't exist, need to add it
+        this.recreateTeamsSection();
+        return;
+      }
+      
+      // Update display values only
+      const nameDisplay = teamItem.querySelector('.team-name');
+      const pointsDisplay = teamItem.querySelector('.team-points');
+      const participatingDisplay = teamItem.querySelector('.team-participating');
+      
+      if (nameDisplay) nameDisplay.textContent = team.name;
+      if (pointsDisplay) pointsDisplay.textContent = `${team.points} pts`;
+      if (participatingDisplay) {
+        const icon = participatingDisplay.querySelector('ha-icon');
+        const text = participatingDisplay.childNodes[participatingDisplay.childNodes.length - 1];
+        if (icon) icon.setAttribute('icon', team.participating ? 'mdi:check-circle' : 'mdi:circle-outline');
+        if (text) text.textContent = team.participating ? 'Active' : 'Inactive';
+      }
+      
+      // Update input values only if they're not focused (being edited)
+      const nameInput = teamItem.querySelector('input[type="text"]');
+      const pointsInput = teamItem.querySelector('input[type="number"]');  
+      const participatingInput = teamItem.querySelector('input[type="checkbox"]');
+      
+      if (nameInput && document.activeElement !== nameInput) {
+        nameInput.value = team.name;
+      }
+      if (pointsInput && document.activeElement !== pointsInput) {
+        pointsInput.value = team.points;
+      }
+      if (participatingInput && document.activeElement !== participatingInput) {
+        participatingInput.checked = team.participating;
+      }
+    });
+  }
+
+  updateTimerDisplayValue() {
+    const timerSlider = this.shadowRoot.querySelector('.timer-slider');
+    const timerValue = this.shadowRoot.querySelector('.timer-value');
+    const currentValue = this.getCountdownTimerLength();
+    
+    // Only update if slider is not being actively used
+    if (timerSlider && document.activeElement !== timerSlider) {
+      timerSlider.value = currentValue;
+    }
+    if (timerValue) {
+      timerValue.textContent = `${currentValue}s`;
+    }
+  }
+
+  updateAudioPlayerOptions() {
+    const select = this.shadowRoot.querySelector('.audio-player-select');
+    if (!select || document.activeElement === select) return;
+    
+    const currentSelection = this.getSelectedAudioPlayer();
+    const mediaPlayers = this.getMediaPlayers();
+    
+    // Clear and rebuild options
+    select.innerHTML = '<option value="">Select an audio player...</option>';
+    mediaPlayers.forEach(player => {
+      const option = document.createElement('option');
+      option.value = player.entity_id;
+      option.textContent = player.name;
+      option.selected = currentSelection === player.entity_id;
+      select.appendChild(option);
+    });
+  }
+
+  recreateTeamsSection() {
+    // Only recreate if teams structure has changed significantly
+    const teamsContainer = this.shadowRoot.querySelector('.teams-container');
+    if (teamsContainer) {
+      teamsContainer.innerHTML = this.renderTeams();
+    }
+  }
+
   set hass(hass) {
     this._hass = hass;
-    // Re-render when hass changes to update dynamic content
+    // Only update dynamic content without full re-render to preserve input states
     if (this.shadowRoot.innerHTML) {
+      this.updateDisplayValues();
+    } else {
+      // Initial render only
       this.render();
     }
   }
