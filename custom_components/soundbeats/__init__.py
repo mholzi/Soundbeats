@@ -67,6 +67,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def _register_services(hass: HomeAssistant) -> None:
     """Register Soundbeats services."""
     
+    def get_sensor():
+        """Get the Soundbeats sensor entity."""
+        entity_id = "sensor.soundbeats_game_status"
+        entity_registry = hass.helpers.entity_registry.async_get(hass)
+        entity = entity_registry.async_get(entity_id)
+        if entity:
+            # Get the entity from the platform
+            platform = hass.data.get("sensor")
+            if platform:
+                return platform.get_entity(entity_id)
+        return None
+    
     async def start_game(call) -> None:
         """Handle start game service call."""
         _LOGGER.info("Starting Soundbeats game")
@@ -101,12 +113,75 @@ async def _register_services(hass: HomeAssistant) -> None:
             current_state = hass.states.get(sensor_id)
             if current_state:
                 hass.states.async_set(sensor_id, current_state.state)
+
+    async def update_team_name(call) -> None:
+        """Handle update team name service call."""
+        team_id = call.data.get("team_id")
+        name = call.data.get("name")
+        
+        if not team_id or not name:
+            _LOGGER.error("Missing team_id or name in update_team_name call")
+            return
+            
+        _LOGGER.info("Updating team %s name to %s", team_id, name)
+        
+        # Update the sensor state directly
+        sensor_id = "sensor.soundbeats_game_status"
+        current_state = hass.states.get(sensor_id)
+        if current_state and current_state.attributes:
+            new_attributes = dict(current_state.attributes)
+            if team_id in new_attributes:
+                new_attributes[team_id]["name"] = name
+                hass.states.async_set(sensor_id, current_state.state, new_attributes)
+
+    async def update_team_points(call) -> None:
+        """Handle update team points service call."""
+        team_id = call.data.get("team_id")
+        points = call.data.get("points")
+        
+        if not team_id or points is None:
+            _LOGGER.error("Missing team_id or points in update_team_points call")
+            return
+            
+        _LOGGER.info("Updating team %s points to %s", team_id, points)
+        
+        # Update the sensor state directly
+        sensor_id = "sensor.soundbeats_game_status"
+        current_state = hass.states.get(sensor_id)
+        if current_state and current_state.attributes:
+            new_attributes = dict(current_state.attributes)
+            if team_id in new_attributes:
+                new_attributes[team_id]["points"] = int(points)
+                hass.states.async_set(sensor_id, current_state.state, new_attributes)
+
+    async def update_team_participating(call) -> None:
+        """Handle update team participating service call."""
+        team_id = call.data.get("team_id")
+        participating = call.data.get("participating")
+        
+        if not team_id or participating is None:
+            _LOGGER.error("Missing team_id or participating in update_team_participating call")
+            return
+            
+        _LOGGER.info("Updating team %s participating to %s", team_id, participating)
+        
+        # Update the sensor state directly
+        sensor_id = "sensor.soundbeats_game_status"
+        current_state = hass.states.get(sensor_id)
+        if current_state and current_state.attributes:
+            new_attributes = dict(current_state.attributes)
+            if team_id in new_attributes:
+                new_attributes[team_id]["participating"] = bool(participating)
+                hass.states.async_set(sensor_id, current_state.state, new_attributes)
     
     # Register the services
     hass.services.async_register(DOMAIN, "start_game", start_game)
     hass.services.async_register(DOMAIN, "stop_game", stop_game)
     hass.services.async_register(DOMAIN, "reset_game", reset_game)
     hass.services.async_register(DOMAIN, "next_song", next_song)
+    hass.services.async_register(DOMAIN, "update_team_name", update_team_name)
+    hass.services.async_register(DOMAIN, "update_team_points", update_team_points)
+    hass.services.async_register(DOMAIN, "update_team_participating", update_team_participating)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -123,5 +198,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.services.async_remove(DOMAIN, "stop_game")
             hass.services.async_remove(DOMAIN, "reset_game")
             hass.services.async_remove(DOMAIN, "next_song")
+            hass.services.async_remove(DOMAIN, "update_team_name")
+            hass.services.async_remove(DOMAIN, "update_team_points")
+            hass.services.async_remove(DOMAIN, "update_team_participating")
     
     return unload_ok

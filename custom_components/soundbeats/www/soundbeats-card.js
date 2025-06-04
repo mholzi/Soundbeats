@@ -109,6 +109,85 @@ class SoundbeatsCard extends HTMLElement {
         .hidden {
           display: none !important;
         }
+        
+        .teams-container {
+          margin-top: 16px;
+        }
+        
+        .team-item {
+          background: var(--card-background-color, white);
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 4px;
+          padding: 12px;
+          margin-bottom: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        
+        .team-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex: 1;
+          min-width: 200px;
+        }
+        
+        .team-name {
+          font-weight: 500;
+          color: var(--primary-text-color);
+        }
+        
+        .team-points {
+          background: var(--primary-color, #03a9f4);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 0.9em;
+          font-weight: 500;
+        }
+        
+        .team-participating {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 0.9em;
+          color: var(--secondary-text-color);
+        }
+        
+        .team-controls {
+          display: flex;
+          gap: 4px;
+          align-items: center;
+        }
+        
+        .team-input {
+          padding: 4px 8px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 4px;
+          font-size: 0.9em;
+          width: 80px;
+        }
+        
+        .team-button {
+          padding: 4px 8px;
+          background: var(--primary-color, #03a9f4);
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.8em;
+        }
+        
+        .team-button:hover {
+          background: var(--primary-color-dark, #0288d1);
+        }
+        
+        .participating-checkbox {
+          margin-right: 4px;
+        }
       </style>
       
       <div class="soundbeats-card">
@@ -130,6 +209,10 @@ class SoundbeatsCard extends HTMLElement {
           <p>Current game status: <span class="game-status">${this.getGameStatus()}</span></p>
           <p>Players connected: ${this.getPlayerCount()}</p>
           <p>Game mode: ${this.getGameMode()}</p>
+          
+          <div class="teams-container">
+            ${this.renderTeams()}
+          </div>
         </div>
         
         <!-- Admin Section - Only visible to admins -->
@@ -188,6 +271,92 @@ class SoundbeatsCard extends HTMLElement {
       }
     }
     return 'Classic';
+  }
+
+  getTeams() {
+    // Get teams data from sensor attributes
+    if (this.hass && this.hass.states) {
+      const entity = this.hass.states['sensor.soundbeats_game_status'];
+      if (entity && entity.attributes) {
+        const teams = {};
+        for (let i = 1; i <= 5; i++) {
+          const teamKey = `team_${i}`;
+          if (entity.attributes[teamKey]) {
+            teams[teamKey] = entity.attributes[teamKey];
+          }
+        }
+        return teams;
+      }
+    }
+    // Return default teams if no data available
+    const defaultTeams = {};
+    for (let i = 1; i <= 5; i++) {
+      const teamKey = `team_${i}`;
+      defaultTeams[teamKey] = {
+        name: `Team ${i}`,
+        points: 0,
+        participating: true
+      };
+    }
+    return defaultTeams;
+  }
+
+  renderTeams() {
+    const teams = this.getTeams();
+    const isAdmin = this.checkAdminPermissions();
+    
+    return Object.entries(teams).map(([teamId, team]) => `
+      <div class="team-item">
+        <div class="team-info">
+          <span class="team-name">${team.name}</span>
+          <span class="team-points">${team.points} pts</span>
+          <span class="team-participating">
+            <ha-icon icon="${team.participating ? 'mdi:check-circle' : 'mdi:circle-outline'}"></ha-icon>
+            ${team.participating ? 'Active' : 'Inactive'}
+          </span>
+        </div>
+        ${isAdmin ? `
+          <div class="team-controls">
+            <input type="text" class="team-input" placeholder="Name" value="${team.name}" 
+                   onchange="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+            <input type="number" class="team-input" placeholder="Points" value="${team.points}" 
+                   onchange="this.getRootNode().host.updateTeamPoints('${teamId}', this.value)">
+            <input type="checkbox" class="participating-checkbox" ${team.participating ? 'checked' : ''} 
+                   onchange="this.getRootNode().host.updateTeamParticipating('${teamId}', this.checked)">
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
+  }
+
+  updateTeamName(teamId, name) {
+    // Call service to update team name
+    if (this.hass && name.trim()) {
+      this.hass.callService('soundbeats', 'update_team_name', {
+        team_id: teamId,
+        name: name.trim()
+      });
+    }
+  }
+
+  updateTeamPoints(teamId, points) {
+    // Call service to update team points
+    if (this.hass && !isNaN(points)) {
+      this.hass.callService('soundbeats', 'update_team_points', {
+        team_id: teamId,
+        points: parseInt(points, 10)
+      });
+    }
+  }
+
+  updateTeamParticipating(teamId, participating) {
+    // Call service to update team participating status
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'update_team_participating', {
+        team_id: teamId,
+        participating: participating
+      });
+    }
   }
 
   startNewGame() {

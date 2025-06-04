@@ -17,3 +17,62 @@ next_song:
   name: Next Song
   description: Skip to the next song in the Soundbeats game
   fields: {}
+
+update_team_name:
+  name: Update Team Name
+  description: Update the name of a team
+  fields:
+    team_id:
+      name: Team ID
+      description: The team identifier (team_1, team_2, team_3, team_4, or team_5)
+      required: true
+      example: "team_1"
+      selector:
+        text:
+    name:
+      name: Team Name
+      description: The new name for the team
+      required: true
+      example: "Awesome Team"
+      selector:
+        text:
+
+update_team_points:
+  name: Update Team Points
+  description: Update the points of a team
+  fields:
+    team_id:
+      name: Team ID
+      description: The team identifier (team_1, team_2, team_3, team_4, or team_5)
+      required: true
+      example: "team_1"
+      selector:
+        text:
+    points:
+      name: Points
+      description: The new points value for the team
+      required: true
+      example: 100
+      selector:
+        number:
+          min: 0
+          max: 99999
+
+update_team_participating:
+  name: Update Team Participating
+  description: Update whether a team is participating in the game
+  fields:
+    team_id:
+      name: Team ID
+      description: The team identifier (team_1, team_2, team_3, team_4, or team_5)
+      required: true
+      example: "team_1"
+      selector:
+        text:
+    participating:
+      name: Participating
+      description: Whether the team is participating in the game
+      required: true
+      example: true
+      selector:
+        boolean:
