@@ -5,6 +5,9 @@ Fun Home Assistant Party Game
 
 A custom Home Assistant integration for managing and playing the Soundbeats party game.
 
+**Version:** 1.0.0  
+**Minimum Home Assistant Version:** 2023.1.0
+
 ## Installation
 
 ### HACS (Home Assistant Community Store)
@@ -55,6 +58,30 @@ To use the card, simply add it to your Lovelace dashboard by selecting "Custom: 
 - Custom Lovelace card with role-based visibility
 - Admin controls for game management
 - Lightweight and fun party game integration
+
+### Services
+
+The integration provides the following Home Assistant services for automation and control:
+
+- `soundbeats.start_game` - Start a new game session
+- `soundbeats.stop_game` - Stop the current game session  
+- `soundbeats.reset_game` - Reset the game to initial state
+- `soundbeats.next_song` - Skip to the next song
+- `soundbeats.update_team_name` - Update a team's name
+- `soundbeats.update_team_points` - Update a team's points
+- `soundbeats.update_team_participating` - Set team participation status
+
+## Troubleshooting
+
+### Card Not Appearing
+- Ensure the integration is properly installed and Home Assistant has been restarted
+- Clear your browser cache and refresh the page
+- Check that you're selecting "Custom: Soundbeats Card" when adding a new card
+
+### Sensor Not Created
+- Verify the `soundbeats:` entry is in your `configuration.yaml`
+- Check Home Assistant logs for any error messages
+- Restart Home Assistant after adding the configuration
 
 ## Support
 
