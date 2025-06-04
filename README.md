@@ -29,13 +29,15 @@ This is the recommended installation method.
 
 ## Configuration
 
-Add the following to your `configuration.yaml` file:
+No manual configuration is required! The integration will be automatically available in your Home Assistant interface after installation.
 
-```yaml
-soundbeats:
-```
+1. Go to Settings → Devices & Services
+2. Click "Add Integration"
+3. Search for "Soundbeats"
+4. Click to add the integration
+5. Follow the setup wizard
 
-After adding the configuration, restart Home Assistant.
+The integration is now ready to use!
 
 ## Usage
 
@@ -79,9 +81,9 @@ The integration provides the following Home Assistant services for automation an
 - Check that you're selecting "Custom: Soundbeats Card" when adding a new card
 
 ### Sensor Not Created
-- Verify the `soundbeats:` entry is in your `configuration.yaml`
+- Ensure the integration is properly installed and configured through Settings → Devices & Services
 - Check Home Assistant logs for any error messages
-- Restart Home Assistant after adding the configuration
+- Restart Home Assistant after installation
 
 ## Support
 
