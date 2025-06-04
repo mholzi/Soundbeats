@@ -56,36 +56,67 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {}
 
-    # Register all game services
-    await _register_services(hass)
-
     # Forward to sensor platform (so sensor.py is loaded)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # Register all game services (after entities are created)
+    await _register_services(hass)
+    
     return True
 
 async def _register_services(hass: HomeAssistant) -> None:
     """Register all `soundbeats.*` services (start_game, stop_game, etc.)."""
 
+    def _get_entities():
+        """Get entity references from hass data."""
+        return hass.data.get(DOMAIN, {}).get("entities", {})
+
     async def start_game(call):
         _LOGGER.info("Starting Soundbeats game")
-        hass.states.async_set("sensor.soundbeats_game_status", "playing")
+        entities = _get_entities()
+        main_sensor = entities.get("main_sensor")
+        if main_sensor and hasattr(main_sensor, 'set_state'):
+            main_sensor.set_state("playing")
+        else:
+            hass.states.async_set("sensor.soundbeats_game_status", "playing")
 
     async def stop_game(call):
         _LOGGER.info("Stopping Soundbeats game")
-        hass.states.async_set("sensor.soundbeats_game_status", "stopped")
+        entities = _get_entities()
+        main_sensor = entities.get("main_sensor")
+        if main_sensor and hasattr(main_sensor, 'set_state'):
+            main_sensor.set_state("stopped")
+        else:
+            hass.states.async_set("sensor.soundbeats_game_status", "stopped")
 
     async def reset_game(call):
         _LOGGER.info("Resetting Soundbeats game")
+        entities = _get_entities()
+        
         # Reset game status
-        hass.states.async_set("sensor.soundbeats_game_status", "ready")
+        main_sensor = entities.get("main_sensor")
+        if main_sensor and hasattr(main_sensor, 'set_state'):
+            main_sensor.set_state("ready")
+        else:
+            hass.states.async_set("sensor.soundbeats_game_status", "ready")
+        
         # Reset all teams
+        team_sensors = entities.get("team_sensors", {})
         for i in range(1, 6):
-            team_entity_id = f"sensor.soundbeats_team_{i}"
-            hass.states.async_set(team_entity_id, f"Team {i}", {
-                "points": 0,
-                "participating": True,
-                "team_number": i
-            })
+            team_key = f"soundbeats_team_{i}"
+            team_sensor = team_sensors.get(team_key)
+            if team_sensor:
+                team_sensor.update_team_name(f"Team {i}")
+                team_sensor.update_team_points(0)
+                team_sensor.update_team_participating(True)
+            else:
+                # Fallback to direct state setting
+                team_entity_id = f"sensor.soundbeats_team_{i}"
+                hass.states.async_set(team_entity_id, f"Team {i}", {
+                    "points": 0,
+                    "participating": True,
+                    "team_number": i
+                })
 
     async def next_song(call):
         _LOGGER.info("Skipping to next song")
@@ -103,13 +134,24 @@ async def _register_services(hass: HomeAssistant) -> None:
         
         # Extract team number from team_id (e.g., "team_1" -> "1")
         team_number = team_id.split('_')[-1]
-        entity_id = f"sensor.soundbeats_team_{team_number}"
+        unique_id = f"soundbeats_team_{team_number}"
         
-        # Get current state and update with new name
-        state_obj = hass.states.get(entity_id)
-        if state_obj:
-            attrs = dict(state_obj.attributes) if state_obj.attributes else {}
-            hass.states.async_set(entity_id, name, attrs)
+        # Find the team sensor entity and call its update method
+        entities = _get_entities()
+        team_sensors = entities.get("team_sensors", {})
+        team_sensor = team_sensors.get(unique_id)
+        
+        if team_sensor and hasattr(team_sensor, 'update_team_name'):
+            _LOGGER.debug("Updating team %s name to '%s' via entity method", team_number, name)
+            team_sensor.update_team_name(name)
+        else:
+            # Fallback to direct state setting
+            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
+            entity_id = f"sensor.soundbeats_team_{team_number}"
+            state_obj = hass.states.get(entity_id)
+            if state_obj:
+                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
+                hass.states.async_set(entity_id, name, attrs)
 
     async def update_team_points(call):
         team_id = call.data.get("team_id")
@@ -120,14 +162,25 @@ async def _register_services(hass: HomeAssistant) -> None:
         
         # Extract team number from team_id (e.g., "team_1" -> "1")
         team_number = team_id.split('_')[-1]
-        entity_id = f"sensor.soundbeats_team_{team_number}"
+        unique_id = f"soundbeats_team_{team_number}"
         
-        # Get current state and update with new points
-        state_obj = hass.states.get(entity_id)
-        if state_obj:
-            attrs = dict(state_obj.attributes) if state_obj.attributes else {}
-            attrs["points"] = int(points)
-            hass.states.async_set(entity_id, state_obj.state, attrs)
+        # Find the team sensor entity and call its update method
+        entities = _get_entities()
+        team_sensors = entities.get("team_sensors", {})
+        team_sensor = team_sensors.get(unique_id)
+        
+        if team_sensor and hasattr(team_sensor, 'update_team_points'):
+            _LOGGER.debug("Updating team %s points to %d via entity method", team_number, points)
+            team_sensor.update_team_points(int(points))
+        else:
+            # Fallback to direct state setting
+            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
+            entity_id = f"sensor.soundbeats_team_{team_number}"
+            state_obj = hass.states.get(entity_id)
+            if state_obj:
+                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
+                attrs["points"] = int(points)
+                hass.states.async_set(entity_id, state_obj.state, attrs)
 
     async def update_team_participating(call):
         team_id = call.data.get("team_id")
@@ -138,28 +191,51 @@ async def _register_services(hass: HomeAssistant) -> None:
         
         # Extract team number from team_id (e.g., "team_1" -> "1")
         team_number = team_id.split('_')[-1]
-        entity_id = f"sensor.soundbeats_team_{team_number}"
+        unique_id = f"soundbeats_team_{team_number}"
         
-        # Get current state and update with new participating status
-        state_obj = hass.states.get(entity_id)
-        if state_obj:
-            attrs = dict(state_obj.attributes) if state_obj.attributes else {}
-            attrs["participating"] = bool(participating)
-            hass.states.async_set(entity_id, state_obj.state, attrs)
+        # Find the team sensor entity and call its update method
+        entities = _get_entities()
+        team_sensors = entities.get("team_sensors", {})
+        team_sensor = team_sensors.get(unique_id)
+        
+        if team_sensor and hasattr(team_sensor, 'update_team_participating'):
+            _LOGGER.debug("Updating team %s participating to %s via entity method", team_number, participating)
+            team_sensor.update_team_participating(bool(participating))
+        else:
+            # Fallback to direct state setting
+            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
+            entity_id = f"sensor.soundbeats_team_{team_number}"
+            state_obj = hass.states.get(entity_id)
+            if state_obj:
+                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
+                attrs["participating"] = bool(participating)
+                hass.states.async_set(entity_id, state_obj.state, attrs)
 
     async def update_countdown_timer_length(call):
         length = call.data.get("timer_length")
         if length is None:
             _LOGGER.error("Missing timer_length")
             return
-        hass.states.async_set("sensor.soundbeats_countdown_timer", int(length))
+        
+        entities = _get_entities()
+        timer_sensor = entities.get("countdown_sensor")
+        if timer_sensor and hasattr(timer_sensor, 'update_timer_length'):
+            timer_sensor.update_timer_length(int(length))
+        else:
+            hass.states.async_set("sensor.soundbeats_countdown_timer", int(length))
 
     async def update_audio_player(call):
         player = call.data.get("audio_player")
         if not player:
             _LOGGER.error("Missing audio_player")
             return
-        hass.states.async_set("sensor.soundbeats_audio_player", player)
+        
+        entities = _get_entities()
+        audio_sensor = entities.get("audio_sensor")
+        if audio_sensor and hasattr(audio_sensor, 'update_audio_player'):
+            audio_sensor.update_audio_player(player)
+        else:
+            hass.states.async_set("sensor.soundbeats_audio_player", player)
 
     # Register all services under the "soundbeats" domain
     hass.services.async_register(DOMAIN, "start_game", start_game)
