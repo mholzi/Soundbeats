@@ -1,0 +1,4 @@
+# Example configuration.yaml entry for Soundbeats integration
+# Add this to your Home Assistant configuration.yaml file
+
+soundbeats:
