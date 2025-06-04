@@ -1,0 +1,296 @@
+# Soundbeats Lovelace Card Installation Guide
+
+name: "Soundbeats Card Installation Instructions"
+description: "Detailed instructions for installing and configuring the Soundbeats Lovelace card"
+version: "1.0.0"
+
+## Prerequisites
+prerequisites:
+  - name: "Home Assistant"
+    version: "2023.1.0+"
+    description: "Home Assistant Core or Supervised installation"
+  - name: "HACS (Recommended)"
+    version: "1.0.0+"
+    description: "Home Assistant Community Store for easy installation"
+    optional: true
+  - name: "Lovelace Dashboard"
+    description: "Access to edit Lovelace dashboards"
+
+## Installation Methods
+
+installation_methods:
+  
+  ### Method 1: HACS Installation (Recommended)
+  hacs:
+    title: "Install via HACS (Home Assistant Community Store)"
+    description: "This is the recommended installation method for easy updates and management"
+    steps:
+      - step: 1
+        title: "Install HACS"
+        description: "If you haven't already, install HACS by following the instructions at https://hacs.xyz/"
+        
+      - step: 2
+        title: "Add Custom Repository"
+        description: "Add the Soundbeats repository to HACS"
+        actions:
+          - "Open Home Assistant web interface"
+          - "Navigate to HACS → Integrations"
+          - "Click the three dots (⋮) in the top right corner"
+          - "Select 'Custom repositories'"
+          - "Add repository URL: https://github.com/mholzi/Soundbeats"
+          - "Select category: Integration"
+          - "Click 'Add'"
+          
+      - step: 3
+        title: "Install Integration"
+        description: "Install the Soundbeats integration"
+        actions:
+          - "In HACS → Integrations, search for 'Soundbeats'"
+          - "Click on the Soundbeats integration"
+          - "Click 'Download'"
+          - "Wait for installation to complete"
+          
+      - step: 4
+        title: "Restart Home Assistant"
+        description: "Restart Home Assistant to load the new integration"
+        actions:
+          - "Go to Settings → System → Restart"
+          - "Click 'Restart Home Assistant'"
+          - "Wait for restart to complete"
+
+  ### Method 2: Manual Installation
+  manual:
+    title: "Manual Installation"
+    description: "For users who prefer manual installation or don't use HACS"
+    steps:
+      - step: 1
+        title: "Download Files"
+        description: "Download the integration files from GitHub"
+        actions:
+          - "Go to https://github.com/mholzi/Soundbeats"
+          - "Click 'Code' → 'Download ZIP'"
+          - "Extract the ZIP file"
+          
+      - step: 2
+        title: "Copy Files"
+        description: "Copy the integration to your Home Assistant installation"
+        actions:
+          - "Navigate to your Home Assistant configuration directory"
+          - "Create 'custom_components' folder if it doesn't exist"
+          - "Copy the 'custom_components/soundbeats' folder from the downloaded files"
+          - "Ensure the structure is: config/custom_components/soundbeats/"
+          
+      - step: 3
+        title: "Restart Home Assistant"
+        description: "Restart Home Assistant to load the new integration"
+        actions:
+          - "Go to Settings → System → Restart"
+          - "Click 'Restart Home Assistant'"
+          - "Wait for restart to complete"
+
+## Integration Configuration
+
+configuration:
+  title: "Configure the Soundbeats Integration"
+  description: "Set up the integration after installation"
+  steps:
+    - step: 1
+      title: "Add Integration"
+      description: "Add the Soundbeats integration to Home Assistant"
+      actions:
+        - "Go to Settings → Devices & Services"
+        - "Click '+ Add Integration'"
+        - "Search for 'Soundbeats'"
+        - "Click on 'Soundbeats' to add it"
+        
+    - step: 2
+      title: "Complete Setup"
+      description: "Follow the setup wizard"
+      actions:
+        - "Follow any on-screen prompts"
+        - "The integration will create a sensor entity: sensor.soundbeats_game_status"
+        - "Configuration is now complete"
+
+## Card Installation and Usage
+
+card_usage:
+  title: "Adding the Soundbeats Card to Your Dashboard"
+  description: "The card is automatically available after integration installation"
+  
+  automatic_registration:
+    title: "Automatic Card Registration"
+    description: "The Soundbeats card is automatically registered when the integration loads"
+    details:
+      - "No additional downloads required"
+      - "No manual resource registration needed"
+      - "Card is bundled with the integration"
+  
+  steps:
+    - step: 1
+      title: "Open Dashboard Editor"
+      description: "Access the Lovelace dashboard editor"
+      actions:
+        - "Navigate to your desired Lovelace dashboard"
+        - "Click the pencil icon (Edit Dashboard) in the top right"
+        - "Or use the three dots menu → Edit Dashboard"
+        
+    - step: 2
+      title: "Add New Card"
+      description: "Add the Soundbeats card to your dashboard"
+      actions:
+        - "Click '+ Add Card' button"
+        - "Scroll down to find 'Custom: Soundbeats Card'"
+        - "Click on 'Custom: Soundbeats Card'"
+        
+    - step: 3
+      title: "Configure Card (Optional)"
+      description: "Configure card settings if needed"
+      options:
+        - name: "admin"
+          type: "boolean"
+          default: false
+          description: "Enable admin controls (true/false)"
+          example: "admin: true"
+        - name: "title"
+          type: "string"
+          optional: true
+          description: "Custom card title"
+          example: "title: 'My Soundbeats Game'"
+          
+    - step: 4
+      title: "Save Configuration"
+      description: "Save the card configuration"
+      actions:
+        - "Click 'Save' to add the card"
+        - "Click 'Done' to exit dashboard editor"
+        - "The card will now display on your dashboard"
+
+## Card Features
+
+features:
+  title: "Soundbeats Card Features"
+  sections:
+    - name: "Title Section"
+      visibility: "Always visible to all users"
+      description: "Displays Soundbeats branding and description"
+      
+    - name: "Team Section"
+      visibility: "Always visible to all users"
+      description: "Shows current game status, player count, and game mode"
+      
+    - name: "Admin Section"
+      visibility: "Admin users only (when admin: true)"
+      description: "Game control buttons for starting, stopping, and resetting games"
+      controls:
+        - "Start Game button"
+        - "Stop Game button"
+        - "Reset Game button"
+
+## Verification
+
+verification:
+  title: "Verify Installation"
+  steps:
+    - step: 1
+      title: "Check Integration"
+      actions:
+        - "Go to Settings → Devices & Services"
+        - "Verify 'Soundbeats' appears in the list"
+        - "Check that sensor.soundbeats_game_status entity exists"
+        
+    - step: 2
+      title: "Check Card Availability"
+      actions:
+        - "Edit any Lovelace dashboard"
+        - "Click '+ Add Card'"
+        - "Verify 'Custom: Soundbeats Card' appears in the list"
+        
+    - step: 3
+      title: "Test Card Functionality"
+      actions:
+        - "Add the Soundbeats card to a dashboard"
+        - "Verify the card displays correctly"
+        - "Check that game status information appears"
+
+## Troubleshooting
+
+troubleshooting:
+  title: "Common Issues and Solutions"
+  
+  issues:
+    - problem: "Card not appearing in card list"
+      solutions:
+        - "Ensure the integration is properly installed"
+        - "Restart Home Assistant completely"
+        - "Clear browser cache and refresh the page"
+        - "Check browser console for JavaScript errors"
+        
+    - problem: "Integration not found"
+      solutions:
+        - "Verify files are in custom_components/soundbeats/ directory"
+        - "Check file permissions"
+        - "Restart Home Assistant"
+        - "Check Home Assistant logs for errors"
+        
+    - problem: "Sensor not created"
+      solutions:
+        - "Go to Settings → Devices & Services"
+        - "Add the Soundbeats integration manually"
+        - "Check Home Assistant logs for error messages"
+        - "Verify minimum Home Assistant version (2023.1.0+)"
+        
+    - problem: "Card shows errors"
+      solutions:
+        - "Verify sensor.soundbeats_game_status entity exists"
+        - "Check entity state in Developer Tools"
+        - "Restart Home Assistant"
+        - "Check browser console for errors"
+
+## Advanced Configuration
+
+advanced:
+  title: "Advanced Configuration Options"
+  
+  yaml_configuration:
+    title: "YAML Card Configuration"
+    description: "Manual YAML configuration for advanced users"
+    example: |
+      type: custom:soundbeats-card
+      admin: true
+      title: "Party Game Control"
+  
+  automation_integration:
+    title: "Integration with Automations"
+    description: "Use Soundbeats services in Home Assistant automations"
+    services:
+      - "soundbeats.start_game"
+      - "soundbeats.stop_game" 
+      - "soundbeats.reset_game"
+      - "soundbeats.next_song"
+      - "soundbeats.update_team_name"
+      - "soundbeats.update_team_points"
+      - "soundbeats.update_team_participating"
+
+## Support
+
+support:
+  title: "Getting Help"
+  resources:
+    - name: "GitHub Issues"
+      url: "https://github.com/mholzi/Soundbeats/issues"
+      description: "Report bugs or request features"
+      
+    - name: "Documentation"
+      description: "Check README.md and CARD.md for additional information"
+      
+    - name: "Home Assistant Community"
+      url: "https://community.home-assistant.io/"
+      description: "General Home Assistant support and discussion"
+
+## Version Information
+
+version_info:
+  integration_version: "1.0.0"
+  minimum_ha_version: "2023.1.0"
+  card_version: "1.0.0"
+  last_updated: "2025-01-27"
