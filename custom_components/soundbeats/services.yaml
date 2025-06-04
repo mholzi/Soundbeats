@@ -1,0 +1,14 @@
+start_game:
+  name: Start Game
+  description: Start a new Soundbeats game session
+  fields: {}
+
+stop_game:
+  name: Stop Game
+  description: Stop the current Soundbeats game session
+  fields: {}
+
+reset_game:
+  name: Reset Game
+  description: Reset the Soundbeats game to initial state
+  fields: {}
