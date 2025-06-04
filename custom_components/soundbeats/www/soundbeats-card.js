@@ -602,10 +602,10 @@ class SoundbeatsCard extends HTMLElement {
       if (nameDisplay) nameDisplay.textContent = team.name;
       if (pointsDisplay) pointsDisplay.textContent = `${team.points} pts`;
       if (participatingDisplay) {
-        const icon = participatingDisplay.querySelector('ha-icon');
-        const text = participatingDisplay.childNodes[participatingDisplay.childNodes.length - 1];
-        if (icon) icon.setAttribute('icon', team.participating ? 'mdi:check-circle' : 'mdi:circle-outline');
-        if (text) text.textContent = team.participating ? 'Active' : 'Inactive';
+        participatingDisplay.innerHTML = `
+          <ha-icon icon="${team.participating ? 'mdi:check-circle' : 'mdi:circle-outline'}"></ha-icon>
+          ${team.participating ? 'Active' : 'Inactive'}
+        `;
       }
       
       // Update input values only if they're not focused (being edited)
@@ -661,7 +661,42 @@ class SoundbeatsCard extends HTMLElement {
     // Only recreate if teams structure has changed significantly
     const teamsContainer = this.shadowRoot.querySelector('.teams-container');
     if (teamsContainer) {
+      // Save focus state before recreation
+      let focusedElement = null;
+      let focusedTeam = null;
+      let focusedType = null;
+      
+      if (document.activeElement && teamsContainer.contains(document.activeElement)) {
+        focusedElement = document.activeElement;
+        const teamItem = focusedElement.closest('[data-team]');
+        if (teamItem) {
+          focusedTeam = teamItem.getAttribute('data-team');
+          if (focusedElement.type === 'text') focusedType = 'text';
+          else if (focusedElement.type === 'number') focusedType = 'number';
+          else if (focusedElement.type === 'checkbox') focusedType = 'checkbox';
+        }
+      }
+      
+      // Recreate the teams
       teamsContainer.innerHTML = this.renderTeams();
+      
+      // Restore focus if possible
+      if (focusedTeam && focusedType) {
+        const newTeamItem = teamsContainer.querySelector(`[data-team="${focusedTeam}"]`);
+        if (newTeamItem) {
+          const newFocusElement = newTeamItem.querySelector(`input[type="${focusedType}"]`);
+          if (newFocusElement) {
+            // Use setTimeout to ensure the element is ready
+            setTimeout(() => {
+              newFocusElement.focus();
+              // Restore cursor position for text inputs
+              if (focusedType === 'text' && focusedElement) {
+                newFocusElement.setSelectionRange(focusedElement.selectionStart, focusedElement.selectionEnd);
+              }
+            }, 0);
+          }
+        }
+      }
     }
   }
 
