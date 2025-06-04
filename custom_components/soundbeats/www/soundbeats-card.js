@@ -41,9 +41,23 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .title-section {
-          background: var(--primary-color, #03a9f4);
+          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, rgba(3, 169, 244, 0.8) 50%, var(--accent-color, #ff5722) 100%);
           color: var(--text-primary-color, white);
           text-align: center;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .title-section::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+          pointer-events: none;
         }
         
         .team-section {
@@ -187,6 +201,45 @@ class SoundbeatsCard extends HTMLElement {
         
         .participating-checkbox {
           margin-right: 4px;
+        }
+        
+        .team-management-item {
+          background: var(--card-background-color, white);
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 4px;
+          padding: 12px;
+          margin-bottom: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        
+        .team-management-info {
+          display: flex;
+          align-items: center;
+          min-width: 80px;
+        }
+        
+        .team-management-label {
+          font-weight: 500;
+          color: var(--primary-text-color);
+        }
+        
+        .team-management-controls {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          flex: 1;
+        }
+        
+        .participation-control {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          color: var(--primary-text-color);
+          cursor: pointer;
         }
         
         .game-settings {
@@ -353,6 +406,18 @@ class SoundbeatsCard extends HTMLElement {
             </div>
           </div>
         </div>
+
+        <!-- Team Management Section - Only visible to admins -->
+        <div class="section admin-section ${isAdmin ? '' : 'hidden'}">
+          <h3>
+            <ha-icon icon="mdi:account-group-outline" class="icon"></ha-icon>
+            Team Management
+          </h3>
+          <p>Configure team names and participation status.</p>
+          <div class="team-management-container">
+            ${this.renderTeamManagement()}
+          </div>
+        </div>
       </div>
     `;
   }
@@ -421,9 +486,29 @@ class SoundbeatsCard extends HTMLElement {
     return defaultTeams;
   }
 
+  renderTeamManagement() {
+    const teams = this.getTeams();
+    
+    return Object.entries(teams).map(([teamId, team]) => `
+      <div class="team-management-item" data-team="${teamId}">
+        <div class="team-management-info">
+          <span class="team-management-label">Team ${teamId.split('_')[1]}:</span>
+        </div>
+        <div class="team-management-controls">
+          <input type="text" class="team-input" placeholder="Team Name" value="${team.name}" 
+                 onchange="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+          <label class="participation-control">
+            <input type="checkbox" class="participating-checkbox" ${team.participating ? 'checked' : ''} 
+                   onchange="this.getRootNode().host.updateTeamParticipating('${teamId}', this.checked)">
+            <span>Active</span>
+          </label>
+        </div>
+      </div>
+    `).join('');
+  }
+
   renderTeams() {
     const teams = this.getTeams();
-    const isAdmin = this.checkAdminPermissions();
     
     return Object.entries(teams).map(([teamId, team]) => `
       <div class="team-item" data-team="${teamId}">
@@ -435,16 +520,6 @@ class SoundbeatsCard extends HTMLElement {
             ${team.participating ? 'Active' : 'Inactive'}
           </span>
         </div>
-        ${isAdmin ? `
-          <div class="team-controls">
-            <input type="text" class="team-input" placeholder="Name" value="${team.name}" 
-                   onchange="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
-            <input type="number" class="team-input" placeholder="Points" value="${team.points}" 
-                   onchange="this.getRootNode().host.updateTeamPoints('${teamId}', this.value)">
-            <input type="checkbox" class="participating-checkbox" ${team.participating ? 'checked' : ''} 
-                   onchange="this.getRootNode().host.updateTeamParticipating('${teamId}', this.checked)">
-          </div>
-        ` : ''}
       </div>
     `).join('');
   }
@@ -584,6 +659,8 @@ class SoundbeatsCard extends HTMLElement {
   updateTeamDisplayValues() {
     const teams = this.getTeams();
     const teamsContainer = this.shadowRoot.querySelector('.teams-container');
+    const teamManagementContainer = this.shadowRoot.querySelector('.team-management-container');
+    
     if (!teamsContainer) return;
     
     Object.entries(teams).forEach(([teamId, team]) => {
@@ -608,19 +685,20 @@ class SoundbeatsCard extends HTMLElement {
         `;
       }
       
-      // Update input values only if they're not focused (being edited)
-      const nameInput = teamItem.querySelector('input[type="text"]');
-      const pointsInput = teamItem.querySelector('input[type="number"]');  
-      const participatingInput = teamItem.querySelector('input[type="checkbox"]');
-      
-      if (nameInput && document.activeElement !== nameInput) {
-        nameInput.value = team.name;
-      }
-      if (pointsInput && document.activeElement !== pointsInput) {
-        pointsInput.value = team.points;
-      }
-      if (participatingInput && document.activeElement !== participatingInput) {
-        participatingInput.checked = team.participating;
+      // Update input values in team management section only if they're not focused (being edited)
+      if (teamManagementContainer) {
+        const managementItem = teamManagementContainer.querySelector(`[data-team="${teamId}"]`);
+        if (managementItem) {
+          const nameInput = managementItem.querySelector('input[type="text"]');
+          const participatingInput = managementItem.querySelector('input[type="checkbox"]');
+          
+          if (nameInput && document.activeElement !== nameInput) {
+            nameInput.value = team.name;
+          }
+          if (participatingInput && document.activeElement !== participatingInput) {
+            participatingInput.checked = team.participating;
+          }
+        }
       }
     });
   }
@@ -660,19 +738,23 @@ class SoundbeatsCard extends HTMLElement {
   recreateTeamsSection() {
     // Only recreate if teams structure has changed significantly
     const teamsContainer = this.shadowRoot.querySelector('.teams-container');
+    const teamManagementContainer = this.shadowRoot.querySelector('.team-management-container');
+    
     if (teamsContainer) {
       // Save focus state before recreation
       let focusedElement = null;
       let focusedTeam = null;
       let focusedType = null;
+      let isManagementSection = false;
       
-      if (document.activeElement && teamsContainer.contains(document.activeElement)) {
+      if (document.activeElement && (teamsContainer.contains(document.activeElement) || 
+          (teamManagementContainer && teamManagementContainer.contains(document.activeElement)))) {
         focusedElement = document.activeElement;
+        isManagementSection = teamManagementContainer && teamManagementContainer.contains(document.activeElement);
         const teamItem = focusedElement.closest('[data-team]');
         if (teamItem) {
           focusedTeam = teamItem.getAttribute('data-team');
           if (focusedElement.type === 'text') focusedType = 'text';
-          else if (focusedElement.type === 'number') focusedType = 'number';
           else if (focusedElement.type === 'checkbox') focusedType = 'checkbox';
         }
       }
@@ -680,20 +762,27 @@ class SoundbeatsCard extends HTMLElement {
       // Recreate the teams
       teamsContainer.innerHTML = this.renderTeams();
       
+      if (teamManagementContainer) {
+        teamManagementContainer.innerHTML = this.renderTeamManagement();
+      }
+      
       // Restore focus if possible
       if (focusedTeam && focusedType) {
-        const newTeamItem = teamsContainer.querySelector(`[data-team="${focusedTeam}"]`);
-        if (newTeamItem) {
-          const newFocusElement = newTeamItem.querySelector(`input[type="${focusedType}"]`);
-          if (newFocusElement) {
-            // Use setTimeout to ensure the element is ready
-            setTimeout(() => {
-              newFocusElement.focus();
-              // Restore cursor position for text inputs
-              if (focusedType === 'text' && focusedElement) {
-                newFocusElement.setSelectionRange(focusedElement.selectionStart, focusedElement.selectionEnd);
-              }
-            }, 0);
+        const targetContainer = isManagementSection ? teamManagementContainer : teamsContainer;
+        if (targetContainer) {
+          const newTeamItem = targetContainer.querySelector(`[data-team="${focusedTeam}"]`);
+          if (newTeamItem) {
+            const newFocusElement = newTeamItem.querySelector(`input[type="${focusedType}"]`);
+            if (newFocusElement) {
+              // Use setTimeout to ensure the element is ready
+              setTimeout(() => {
+                newFocusElement.focus();
+                // Restore cursor position for text inputs
+                if (focusedType === 'text' && focusedElement) {
+                  newFocusElement.setSelectionRange(focusedElement.selectionStart, focusedElement.selectionEnd);
+                }
+              }, 0);
+            }
           }
         }
       }
