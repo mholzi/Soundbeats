@@ -98,6 +98,19 @@ The integration automatically provides a comprehensive custom Lovelace card with
 - **Audio Player Selection**: Choose from available Home Assistant media players (unavailable players are automatically filtered out)
 - **Team Management**: Edit team names and set participation status (expandable section, collapsed by default)
 
+#### Teams Overview Section
+- **Dedicated Leaderboard**: A comprehensive overview showing all active teams in a single, easy-to-read leaderboard format
+- **Context-Aware Display**: 
+  - **During countdown (timer running)**: Shows team name, current points, ranking badge (1st, 2nd, 3rd, etc.), and active betting indicators
+  - **When timer is 0 (round over)**: Displays team name, their last round guess, and current points
+- **Visual Hierarchy**: Clear gold/silver/bronze styling for top 3 teams with distinct ranking badges
+- **Smart Sorting**: Teams automatically sorted by points in descending order
+- **No Manual Setup**: All functionality is built into the integration with zero configuration required
+
+#### Individual Team Cards
+- **Interactive Controls**: Year guess sliders, betting buttons, and detailed results when timer expires
+- **Personal Team Views**: Separate detailed interface for each team's gameplay experience
+
 **Note**: The Game Settings and Team Management sections feature expandable/collapsible interfaces with chevron icons. Click on the section headers to expand or collapse these sections. The expanded state persists throughout your session but resets when the page is reloaded.
 
 To use the card, add it to your Lovelace dashboard by selecting **"Custom: Soundbeats Card"** when adding a new card.
@@ -105,7 +118,11 @@ To use the card, add it to your Lovelace dashboard by selecting **"Custom: Sound
 ### Game Features
 
 - **Smart Team Management**: Up to 5 teams with persistent names and scores
-- **Dynamic Team Rankings**: Teams are automatically ranked based on points with intelligent medal assignment
+- **Comprehensive Teams Overview**: Dedicated leaderboard section showing all teams at a glance
+  - **Real-time Leaderboard**: During countdown, shows current standings with betting indicators
+  - **Round Results View**: After timer expires, displays final guesses and updated points
+  - **Medal-Style Rankings**: Gold/silver/bronze visual hierarchy for top 3 teams
+- **Dynamic Team Rankings**: Teams are automatically ranked based on points with visual indicators
   - **Ranking Display**: Circular badges showing team position (1st, 2nd, 3rd, etc.) using MDI numeric icons
   - **Round-Aware Color Coding**: 
     - **Round 0**: All teams show neutral gray gradient (no competition yet)
