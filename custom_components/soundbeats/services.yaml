@@ -144,3 +144,22 @@ update_team_betting:
       example: true
       selector:
         boolean:
+
+update_team_user_id:
+  name: Update Team User ID
+  description: Update the assigned user ID for a team
+  fields:
+    team_id:
+      name: Team ID
+      description: The team identifier (team_1, team_2, team_3, team_4, or team_5)
+      required: true
+      example: "team_1"
+      selector:
+        text:
+    user_id:
+      name: User ID
+      description: The Home Assistant user ID to assign to this team
+      required: false
+      example: "12345678901234567890abcdef123456"
+      selector:
+        text:
