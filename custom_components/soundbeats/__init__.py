@@ -374,6 +374,26 @@ async def _register_services(hass: HomeAssistant) -> None:
         else:
             hass.states.async_set("sensor.soundbeats_audio_player", player)
 
+    async def submit_team_guess(call):
+        team_id = call.data.get("team_id")
+        guessed_year = call.data.get("guessed_year")
+        if not team_id or guessed_year is None:
+            _LOGGER.error("Missing team_id or guessed_year")
+            return
+        
+        # Extract team number from team_id (e.g., "team_1" -> "1")
+        team_number = team_id.split('_')[-1]
+        
+        # Find the countdown current sensor and submit the guess
+        entities = _get_entities()
+        countdown_current_sensor = entities.get("countdown_current_sensor")
+        
+        if countdown_current_sensor and hasattr(countdown_current_sensor, 'submit_team_guess'):
+            countdown_current_sensor.submit_team_guess(team_number, int(guessed_year))
+            _LOGGER.debug("Submitted guess for team %s: %s", team_number, guessed_year)
+        else:
+            _LOGGER.warning("Could not find countdown current sensor to submit guess")
+
     # Register all services under the "soundbeats" domain
     hass.services.async_register(DOMAIN, "start_game", start_game)
     hass.services.async_register(DOMAIN, "stop_game", stop_game)
@@ -384,6 +404,7 @@ async def _register_services(hass: HomeAssistant) -> None:
     hass.services.async_register(DOMAIN, "update_team_participating", update_team_participating)
     hass.services.async_register(DOMAIN, "update_countdown_timer_length", update_countdown_timer_length)
     hass.services.async_register(DOMAIN, "update_audio_player", update_audio_player)
+    hass.services.async_register(DOMAIN, "submit_team_guess", submit_team_guess)
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry and remove services if no entries remain."""
@@ -403,6 +424,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 "update_team_participating",
                 "update_countdown_timer_length",
                 "update_audio_player",
+                "submit_team_guess",
             ]:
                 hass.services.async_remove(DOMAIN, svc)
     return unload_ok

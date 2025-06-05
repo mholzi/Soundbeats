@@ -221,6 +221,8 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
         self._attr_unit_of_measurement = "s"
         self._current_countdown = 0
         self._countdown_task = None
+        self._team_guesses = {}  # Store team year guesses {team_id: year}
+        self._evaluation_done = False  # Track if evaluation was done for current round
 
     async def async_added_to_hass(self) -> None:
         """Called when entity is added to hass."""
@@ -236,6 +238,8 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
         """Start a countdown from the given duration."""
         self.stop_countdown()  # Stop any existing countdown
         self._current_countdown = duration
+        self._team_guesses = {}  # Reset guesses for new round
+        self._evaluation_done = False  # Reset evaluation flag for new round
         self.async_write_ha_state()
         
         # Schedule countdown decrement
@@ -250,6 +254,8 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
             self._countdown_task()  # Cancel the scheduled task
             self._countdown_task = None
         self._current_countdown = 0
+        self._team_guesses = {}  # Clear guesses when stopping
+        self._evaluation_done = False  # Reset evaluation flag
         self.async_write_ha_state()
 
     async def _decrement_countdown(self, _) -> None:
@@ -264,7 +270,93 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
                     1, self._decrement_countdown
                 )
             else:
+                # Countdown reached zero - trigger evaluation
                 self._countdown_task = None
+                await self._evaluate_round()
+
+    async def _evaluate_round(self) -> None:
+        """Evaluate the round and award points when countdown reaches zero."""
+        if self._evaluation_done:
+            return  # Already evaluated this round
+        
+        self._evaluation_done = True
+        _LOGGER.info("Evaluating round - countdown reached zero")
+        
+        # Get the current song year from the current song sensor
+        current_song_sensor = None
+        entities = self.hass.data.get(DOMAIN, {}).get("entities", {})
+        current_song_sensor = entities.get("current_song_sensor")
+        
+        if not current_song_sensor:
+            _LOGGER.warning("Could not find current song sensor for evaluation")
+            return
+            
+        # Get the actual song year
+        actual_year = None
+        if hasattr(current_song_sensor, '_current_song_data') and current_song_sensor._current_song_data:
+            actual_year = current_song_sensor._current_song_data.get("year")
+            
+        if actual_year is None:
+            _LOGGER.warning("No song year available for evaluation")
+            return
+            
+        _LOGGER.info("Evaluating guesses against actual year: %s", actual_year)
+        
+        # Get team sensors for point updates
+        team_sensors = entities.get("team_sensors", {})
+        
+        # Evaluate each team's guess
+        for team_id, guessed_year in self._team_guesses.items():
+            try:
+                # Calculate point difference
+                year_diff = abs(int(actual_year) - int(guessed_year))
+                points_awarded = 0
+                
+                # Award points based on accuracy
+                if year_diff == 0:
+                    points_awarded = 20  # Exact match
+                elif year_diff <= 2:
+                    points_awarded = 10  # Within 2 years
+                elif year_diff <= 5:
+                    points_awarded = 5   # Within 5 years
+                
+                if points_awarded > 0:
+                    _LOGGER.info("Team %s guessed %s (actual: %s, diff: %d years) - awarded %d points",
+                                team_id, guessed_year, actual_year, year_diff, points_awarded)
+                    
+                    # Find team sensor and update points
+                    team_sensor = team_sensors.get(f"soundbeats_team_{team_id}")
+                    if team_sensor and hasattr(team_sensor, 'update_team_points'):
+                        # Get current points and add new points
+                        current_points = getattr(team_sensor, '_points', 0)
+                        new_total = current_points + points_awarded
+                        team_sensor.update_team_points(new_total)
+                    else:
+                        # Fallback to direct state update
+                        entity_id = f"sensor.soundbeats_team_{team_id}"
+                        state_obj = self.hass.states.get(entity_id)
+                        if state_obj:
+                            current_points = state_obj.attributes.get("points", 0)
+                            new_total = current_points + points_awarded
+                            attrs = dict(state_obj.attributes)
+                            attrs["points"] = new_total
+                            self.hass.states.async_set(entity_id, state_obj.state, attrs)
+                else:
+                    _LOGGER.info("Team %s guessed %s (actual: %s, diff: %d years) - no points awarded",
+                                team_id, guessed_year, actual_year, year_diff)
+                                
+            except (ValueError, TypeError) as e:
+                _LOGGER.error("Error evaluating team %s guess: %s", team_id, e)
+
+    def submit_team_guess(self, team_id: str, guessed_year: int) -> None:
+        """Submit a team's year guess."""
+        if self._current_countdown == 0:
+            # Don't accept guesses when countdown is at zero (evaluation may have happened)
+            _LOGGER.warning("Cannot submit guess for team %s - countdown has ended", team_id)
+            return
+            
+        self._team_guesses[team_id] = guessed_year
+        _LOGGER.debug("Team %s submitted guess: %s", team_id, guessed_year)
 
     async def async_update(self) -> None:
         """Update the sensor."""

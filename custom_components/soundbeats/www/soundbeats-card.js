@@ -709,8 +709,8 @@ class SoundbeatsCard extends HTMLElement {
             <div class="year-guess-section">
               <label class="year-guess-label">Guess the year this song was published:</label>
               <div class="year-guess-control">
-                <input type="range" class="year-slider" min="1950" max="${currentYear}" value="1990" 
-                       oninput="this.nextElementSibling.textContent = this.value">
+                <input type="range" class="year-slider" min="1950" max="${currentYear}" value="1990" data-team="${teamId}"
+                       oninput="this.nextElementSibling.textContent = this.value; this.getRootNode().host.submitTeamGuess('${teamId}', this.value)">
                 <span class="year-value">1990</span>
               </div>
             </div>
@@ -860,6 +860,16 @@ class SoundbeatsCard extends HTMLElement {
     if (this.hass) {
       this.hass.callService('soundbeats', 'update_audio_player', {
         audio_player: audioPlayer
+      });
+    }
+  }
+
+  submitTeamGuess(teamId, guessedYear) {
+    // Call service to submit team year guess
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'submit_team_guess', {
+        team_id: teamId,
+        guessed_year: parseInt(guessedYear, 10)
       });
     }
   }
