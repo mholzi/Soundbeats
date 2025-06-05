@@ -81,7 +81,7 @@ The integration automatically provides a comprehensive custom Lovelace card with
 #### User Sections (Visible to All)
 - **Title Section**: Game branding and status
 - **Team Status**: Real-time team standings, points, and participation status
-- **Current Song**: Song information with artwork when playing (shown only during reveal phase)
+- **Current Song**: Song information with artwork when playing (shown only during reveal phase). Displays "Unknown Title" and "Unknown Artist" as fallback values if media player information is unavailable
 - **Debug Information**: Troubleshooting data for audio setup
 
 #### Admin Sections (Admin Users Only)
@@ -102,6 +102,7 @@ To use the card, add it to your Lovelace dashboard by selecting **"Custom: Sound
 - **Real-time Updates**: Live score updates and countdown display
 - **Spotify Integration**: Supports Spotify URLs and other media formats
 - **Debug Tools**: Built-in troubleshooting information for media playback
+- **Robust Display**: Always shows meaningful song information with fallback values for improved user experience
 
 ### Services
 

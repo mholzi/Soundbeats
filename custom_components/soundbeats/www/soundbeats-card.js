@@ -1074,7 +1074,16 @@ class SoundbeatsCard extends HTMLElement {
         };
       }
     }
-    return null;
+    
+    // Return dummy values if sensor entity or attributes are missing/unavailable
+    // This ensures the card always displays sensible defaults even if backend is misconfigured
+    return {
+      song_name: 'Unknown Title',
+      artist: 'Unknown Artist',
+      year: '',
+      entity_picture: '',
+      url: ''
+    };
   }
 
   getCurrentSongUrl() {
