@@ -1100,9 +1100,9 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .overview-team-item.rank-other {
-          background: linear-gradient(135deg, #F8F8F8 0%, #EEEEEE 50%, #E0E0E0 100%);
-          color: #000;
-          border-color: #E0E0E0;
+          background: linear-gradient(135deg, #6c757d 0%, #5a6268 50%, #495057 100%);
+          color: #fff;
+          border-color: #495057;
         }
         
         .overview-rank-badge {
@@ -1327,15 +1327,12 @@ class SoundbeatsCard extends HTMLElement {
           ` : ''}
         </div>
         
-        <!-- Teams Overview Section - Always visible -->
-        <div class="section teams-overview-section">
+        <!-- Teams Overview Section - Conditionally hidden when round counter is 0 -->
+        <div class="section teams-overview-section" ${this.getRoundCounter() === 0 ? 'style="display: none;"' : ''}>
           <h3>
             <ha-icon icon="mdi:trophy-outline" class="icon"></ha-icon>
             Teams Overview
           </h3>
-          <p class="overview-description">
-            ${this.getCountdownCurrent() > 0 ? 'Leaderboard during guessing round' : this.getRoundCounter() > 0 ? 'Final results from last round' : 'Teams ready for next game'}
-          </p>
           
           <div class="teams-overview-container">
             ${this.renderOtherTeamsOverview()}
@@ -2194,27 +2191,22 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateTeamsOverviewDisplay() {
-    // Update the overview description and content
-    const overviewDescription = this.shadowRoot.querySelector('.overview-description');
+    // Update the overview content and visibility based on round counter
+    const teamsOverviewSection = this.shadowRoot.querySelector('.teams-overview-section');
     const teamsOverviewContainer = this.shadowRoot.querySelector('.teams-overview-container');
+    const roundCounter = this.getRoundCounter();
     
-    if (overviewDescription) {
-      const countdownCurrent = this.getCountdownCurrent();
-      const roundCounter = this.getRoundCounter();
-      
-      let descriptionText;
-      if (countdownCurrent > 0) {
-        descriptionText = 'Leaderboard during guessing round';
-      } else if (roundCounter > 0) {
-        descriptionText = 'Final results from last round';
+    // Hide/show the entire teams overview section based on round counter
+    if (teamsOverviewSection) {
+      if (roundCounter > 0) {
+        teamsOverviewSection.style.display = 'block';
       } else {
-        descriptionText = 'Teams ready for next game';
+        teamsOverviewSection.style.display = 'none';
       }
-      
-      overviewDescription.textContent = descriptionText;
     }
     
-    if (teamsOverviewContainer) {
+    // Update teams overview content if section is visible
+    if (teamsOverviewContainer && roundCounter > 0) {
       teamsOverviewContainer.innerHTML = this.renderOtherTeamsOverview();
     }
   }
