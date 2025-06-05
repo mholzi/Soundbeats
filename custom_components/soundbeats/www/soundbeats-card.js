@@ -10,6 +10,7 @@ class SoundbeatsCard extends HTMLElement {
     // Initialize expander state - both sections collapsed by default
     this.gameSettingsExpanded = false;
     this.teamManagementExpanded = false;
+    this.highscoreDiagnosticExpanded = false;
 
     // Initialize user data cache
     this.homeAssistantUsers = [];
@@ -1638,6 +1639,74 @@ class SoundbeatsCard extends HTMLElement {
           font-style: italic;
           padding: 16px;
         }
+        
+        /* Highscore Diagnostic Styles */
+        .highscore-diagnostic {
+          margin-top: 12px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 4px;
+          background: var(--card-background-color, #fafafa);
+        }
+        
+        .highscore-diagnostic .expandable-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          cursor: pointer;
+          user-select: none;
+          padding: 8px 12px;
+          background: rgba(255, 152, 0, 0.1);
+          border-radius: 4px 4px 0 0;
+        }
+        
+        .highscore-diagnostic .expandable-header:hover {
+          background: rgba(255, 152, 0, 0.2);
+        }
+        
+        .diagnostic-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.9em;
+          color: var(--secondary-text-color, #666);
+        }
+        
+        .diagnostic-title .icon {
+          --mdc-icon-size: 18px;
+          color: var(--warning-color, #ff9800);
+        }
+        
+        .diagnostic-item {
+          margin-bottom: 8px;
+          font-size: 0.85em;
+          line-height: 1.4;
+        }
+        
+        .diagnostic-item:last-child {
+          margin-bottom: 0;
+        }
+        
+        .diagnostic-item strong {
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .diagnostic-item ul {
+          margin: 4px 0 0 16px;
+          padding: 0;
+        }
+        
+        .diagnostic-item li {
+          margin: 2px 0;
+        }
+        
+        .diagnostic-item pre {
+          background: var(--divider-color, #f0f0f0);
+          padding: 8px;
+          border-radius: 4px;
+          font-size: 0.8em;
+          overflow-x: auto;
+          margin: 4px 0;
+        }
       </style>
       
       <!-- Alert Banner for No Audio Player Selected -->
@@ -2290,7 +2359,21 @@ class SoundbeatsCard extends HTMLElement {
     const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
     
     if (!highscoreEntity) {
-      return '<div class="highscore-empty">Highscore data not available</div>';
+      return `
+        <div class="highscore-empty">Highscore data not available</div>
+        <div class="highscore-diagnostic">
+          <div class="expandable-header" onclick="this.getRootNode().host.toggleHighscoreDiagnostic()">
+            <span class="diagnostic-title">
+              <ha-icon icon="mdi:bug" class="icon"></ha-icon>
+              Diagnostic Information
+            </span>
+            <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.highscoreDiagnosticExpanded ? 'expanded' : ''}"></ha-icon>
+          </div>
+          <div class="expandable-content ${this.highscoreDiagnosticExpanded ? 'expanded' : 'collapsed'}">
+            ${this.renderHighscoreDiagnosticContent()}
+          </div>
+        </div>
+      `;
     }
     
     const absoluteHighscore = highscoreEntity.state;
@@ -2333,6 +2416,89 @@ class SoundbeatsCard extends HTMLElement {
         ` : ''}
       </div>
     `;
+  }
+
+  renderHighscoreDiagnosticContent() {
+    const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
+    
+    if (!this.hass) {
+      return `
+        <div class="diagnostic-item">
+          <strong>Status:</strong> Home Assistant instance not available
+        </div>
+      `;
+    }
+    
+    if (!this.hass.states) {
+      return `
+        <div class="diagnostic-item">
+          <strong>Status:</strong> Home Assistant states not available
+        </div>
+      `;
+    }
+    
+    if (!highscoreEntity) {
+      // Check if the entity exists at all in the states
+      const allEntityIds = Object.keys(this.hass.states);
+      const soundbeatsEntities = allEntityIds.filter(id => id.includes('soundbeats'));
+      
+      return `
+        <div class="diagnostic-item">
+          <strong>Entity Status:</strong> 'sensor.soundbeats_highscore' not found
+        </div>
+        <div class="diagnostic-item">
+          <strong>Available Soundbeats Entities:</strong> 
+          ${soundbeatsEntities.length > 0 ? 
+            `<ul>${soundbeatsEntities.map(id => `<li>${id}</li>`).join('')}</ul>` : 
+            'None found'
+          }
+        </div>
+        <div class="diagnostic-item">
+          <strong>Troubleshooting:</strong>
+          <ul>
+            <li>Verify the Soundbeats integration is properly installed</li>
+            <li>Check that the integration has created the highscore sensor</li>
+            <li>Restart Home Assistant if the sensor was recently added</li>
+          </ul>
+        </div>
+      `;
+    }
+    
+    // This shouldn't normally execute since we only show diagnostic when entity is missing
+    // But including it for completeness
+    return `
+      <div class="diagnostic-item">
+        <strong>Entity State:</strong> ${highscoreEntity.state}
+      </div>
+      <div class="diagnostic-item">
+        <strong>Entity Attributes:</strong>
+        <pre>${JSON.stringify(highscoreEntity.attributes, null, 2)}</pre>
+      </div>
+    `;
+  }
+
+  toggleHighscoreDiagnostic() {
+    this.highscoreDiagnosticExpanded = !this.highscoreDiagnosticExpanded;
+    this.updateHighscoreDiagnosticState();
+  }
+
+  updateHighscoreDiagnosticState() {
+    if (!this.shadowRoot || !this.shadowRoot.querySelector) {
+      return;
+    }
+    
+    const diagnosticHeader = this.shadowRoot.querySelector('.highscore-diagnostic .expandable-header');
+    if (diagnosticHeader) {
+      const diagnosticIcon = diagnosticHeader.querySelector('.expander-icon');
+      const diagnosticContent = diagnosticHeader.nextElementSibling;
+      
+      if (diagnosticIcon) {
+        diagnosticIcon.className = `expander-icon ${this.highscoreDiagnosticExpanded ? 'expanded' : ''}`;
+      }
+      if (diagnosticContent) {
+        diagnosticContent.className = `expandable-content ${this.highscoreDiagnosticExpanded ? 'expanded' : 'collapsed'}`;
+      }
+    }
   }
 
   startNewGame() {
@@ -2716,6 +2882,9 @@ class SoundbeatsCard extends HTMLElement {
         teamManagementContent.className = `expandable-content ${this.teamManagementExpanded ? 'expanded' : 'collapsed'}`;
       }
     }
+    
+    // Update the Highscore Diagnostic section
+    this.updateHighscoreDiagnosticState();
   }
 
   updateDisplayValues() {
