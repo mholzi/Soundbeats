@@ -159,10 +159,15 @@ The integration automatically provides a comprehensive custom Lovelace card with
 - **Audio Player Selection**: Choose from available Home Assistant media players (unavailable players are automatically filtered out)
 - **Team Management**: Edit team names and set participation status (expandable section, collapsed by default)
 
-- **Song Controls**: "Next Song" button appears in the bottom left corner of the song display during active rounds
-  - **Smart Audio Player Validation**: If no audio player is selected when clicking "Next Song", an alert notification banner slides in from the right side
+- **Song Controls**: Admin-only controls appear on the song display during active rounds
+  - **Next Song Button**: Located in the bottom-right corner for skipping to the next song
+  - **Volume Control Buttons**: Located in the bottom-left corner for adjusting media player volume
+    - **Volume Up**: Increase volume by 10% with a single click
+    - **Volume Down**: Decrease volume by 10% with a single click
+    - **Consistent Styling**: Matches the design of other admin controls with hover effects
+  - **Smart Audio Player Validation**: If no audio player is selected when using song controls, an alert notification banner slides in from the right side
   - **User-Friendly Alerts**: The alert banner provides clear guidance and can be dismissed by clicking the close button
-  - **Zero-Setup Integration**: Alert system works automatically without any configuration required
+  - **Zero-Setup Integration**: All controls work automatically without any configuration required
 
 #### Teams Overview Section
 - **Round-Aware Visibility**: Team ranking section automatically appears only when the game has started (round counter > 0), keeping the interface clean before gameplay begins
@@ -462,6 +467,7 @@ The integration includes a JSON-based song database (`songs.json`) with:
 - Real-time countdown timer with visual feedback
 - Persistent team data across Home Assistant restarts
 - Role-based UI visibility (admin vs. regular users)
+- Admin volume control for media players (up/down buttons)
 - Debug information for troubleshooting media playback
 
 ### Music Addition Strategy

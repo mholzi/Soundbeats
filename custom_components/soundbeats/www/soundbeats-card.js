@@ -991,6 +991,39 @@ class SoundbeatsCard extends HTMLElement {
           background: rgba(255, 255, 255, 0.3);
         }
 
+        .song-volume-buttons {
+          position: absolute;
+          bottom: 8px;
+          left: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .song-volume-button {
+          background: rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          color: var(--primary-text-color);
+          padding: 4px 6px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.8em;
+          transition: background 0.3s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 24px;
+          min-height: 24px;
+        }
+
+        .song-volume-button:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+
+        .song-volume-button ha-icon {
+          --mdc-icon-size: 16px;
+        }
+
         .expandable-header {
           display: flex;
           align-items: center;
@@ -1528,6 +1561,14 @@ class SoundbeatsCard extends HTMLElement {
               <div class="song-artist">${this.getCurrentSong().artist}</div>
               <div class="song-year">${this.getCurrentSong().year}</div>
               ${isAdmin ? `
+                <div class="song-volume-buttons">
+                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeUp()" title="Volume Up">
+                    <ha-icon icon="mdi:volume-plus"></ha-icon>
+                  </button>
+                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeDown()" title="Volume Down">
+                    <ha-icon icon="mdi:volume-minus"></ha-icon>
+                  </button>
+                </div>
                 <button class="song-next-button" onclick="this.getRootNode().host.nextSong()">
                   <ha-icon icon="mdi:skip-next" class="icon"></ha-icon>
                   Next Song
@@ -2089,6 +2130,42 @@ class SoundbeatsCard extends HTMLElement {
     // Call service to skip to next song
     if (this.hass) {
       this.hass.callService('soundbeats', 'next_song', {});
+    }
+  }
+
+  volumeUp() {
+    // Check if audio player is selected first
+    const selectedPlayer = this.getSelectedAudioPlayer();
+    
+    if (!selectedPlayer) {
+      // Show alert banner if no audio player is selected
+      this.showAlertBanner();
+      return;
+    }
+    
+    // Call Home Assistant service to increase volume by 10%
+    if (this.hass) {
+      this.hass.callService('media_player', 'volume_up', {
+        entity_id: selectedPlayer
+      });
+    }
+  }
+
+  volumeDown() {
+    // Check if audio player is selected first
+    const selectedPlayer = this.getSelectedAudioPlayer();
+    
+    if (!selectedPlayer) {
+      // Show alert banner if no audio player is selected
+      this.showAlertBanner();
+      return;
+    }
+    
+    // Call Home Assistant service to decrease volume by 10%
+    if (this.hass) {
+      this.hass.callService('media_player', 'volume_down', {
+        entity_id: selectedPlayer
+      });
     }
   }
 
