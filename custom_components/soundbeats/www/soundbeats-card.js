@@ -1513,7 +1513,19 @@ class SoundbeatsCard extends HTMLElement {
           <div class="alert-title">No Audio Player Selected</div>
           <div class="alert-message">Please select an audio player in the admin settings before starting the next song.</div>
         </div>
-        <button class="alert-dismiss" onclick="this.getRootNode().host.hideAlertBanner()">
+        <button class="alert-dismiss" onclick="this.getRootNode().host.hideAlertBanner('no-audio-player-alert')">
+          <ha-icon icon="mdi:close"></ha-icon>
+        </button>
+      </div>
+      
+      <!-- Alert Banner for All Songs Played -->
+      <div class="alert-banner" id="all-songs-played-alert" style="background: var(--warning-color, #ff9800);">
+        <ha-icon icon="mdi:playlist-remove" class="alert-icon"></ha-icon>
+        <div class="alert-content">
+          <div class="alert-title">All Songs Played!</div>
+          <div class="alert-message">All available songs have been played. Start a new game to reset the playlist.</div>
+        </div>
+        <button class="alert-dismiss" onclick="this.getRootNode().host.hideAlertBanner('all-songs-played-alert')">
           <ha-icon icon="mdi:close"></ha-icon>
         </button>
       </div>
@@ -2233,8 +2245,17 @@ class SoundbeatsCard extends HTMLElement {
     }
   }
 
-  hideAlertBanner() {
-    const alertBanner = this.shadowRoot.querySelector('#no-audio-player-alert');
+  showAllSongsPlayedAlert() {
+    const alertBanner = this.shadowRoot.querySelector('#all-songs-played-alert');
+    if (alertBanner) {
+      alertBanner.classList.add('show');
+    }
+  }
+
+  hideAlertBanner(alertId) {
+    // If no alertId provided, hide the no-audio-player-alert for backward compatibility
+    const bannerId = alertId || 'no-audio-player-alert';
+    const alertBanner = this.shadowRoot.querySelector(`#${bannerId}`);
     if (alertBanner) {
       alertBanner.classList.remove('show');
     }
@@ -2562,6 +2583,43 @@ class SoundbeatsCard extends HTMLElement {
     // Update dropdown options without changing selected value if not focused
     this.updateAudioPlayerOptions();
     
+    // Check if all songs have been played
+    this.checkAllSongsPlayed();
+  }
+
+  checkAllSongsPlayed() {
+    if (!this.hass || !this.hass.states) return;
+    
+    const playedSongsEntity = this.hass.states['sensor.soundbeats_played_songs'];
+    const currentSongEntity = this.hass.states['sensor.soundbeats_current_song'];
+    const gameStatusEntity = this.hass.states['sensor.soundbeats_game_status'];
+    
+    if (!playedSongsEntity || !currentSongEntity || !gameStatusEntity) return;
+    
+    // Only check during an active game
+    if (gameStatusEntity.state !== 'playing') {
+      // Hide the alert if game is not playing
+      this.hideAlertBanner('all-songs-played-alert');
+      return;
+    }
+    
+    // Check if current song sensor has no song data (which indicates no more songs available)
+    const currentSongAttributes = currentSongEntity.attributes || {};
+    const hasSongData = currentSongAttributes.song_id !== undefined;
+    
+    // If we don't have song data and we're in a playing state, check if all songs were played
+    if (!hasSongData) {
+      const playedSongsAttributes = playedSongsEntity.attributes || {};
+      const playedSongIds = playedSongsAttributes.played_song_ids || [];
+      
+      // Only show alert if songs have actually been played (not just at startup)
+      if (playedSongIds.length > 0) {
+        this.showAllSongsPlayedAlert();
+      }
+    } else {
+      // Hide the alert if we have a current song
+      this.hideAlertBanner('all-songs-played-alert');
+    }
     // Check for new highscore records and show banner if needed
     this.checkForNewHighscoreRecords();
   }
