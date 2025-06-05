@@ -123,36 +123,7 @@ class SoundbeatsCard extends HTMLElement {
         .hidden {
           display: none !important;
         }
-        
-        .debug-section {
-          background: var(--info-color, #2196f3);
-          color: white;
-          border-left: 4px solid var(--accent-color, #ff5722);
-        }
-        
-        .debug-info {
-          margin-top: 12px;
-        }
-        
-        .debug-item {
-          margin-bottom: 8px;
-          font-size: 14px;
-        }
-        
-        .debug-value {
-          font-family: monospace;
-          background: rgba(255, 255, 255, 0.2);
-          padding: 2px 6px;
-          border-radius: 4px;
-          word-break: break-all;
-        }
-        
-        .debug-warning {
-          background: rgba(255, 193, 7, 0.3);
-          padding: 8px;
-          border-radius: 4px;
-          border-left: 4px solid #ffc107;
-        }
+
         
         .teams-container {
           margin-top: 16px;
@@ -723,47 +694,7 @@ class SoundbeatsCard extends HTMLElement {
             ${this.renderTeamManagement()}
           </div>
         </div>
-        
-        <!-- Debug Section - Always visible for troubleshooting -->
-        <div class="section debug-section">
-          <h3>
-            <ha-icon icon="mdi:bug" class="icon"></ha-icon>
-            Debug Information
-          </h3>
-          <p>Debugging information for the next song function:</p>
-          <div class="debug-info">
-            <div class="debug-item">
-              <strong>Selected Audio Player (from Current Song Sensor):</strong> 
-              <span class="debug-value">${this.getSelectedAudioPlayer() || 'None selected'}</span>
-            </div>
-            <div class="debug-item">
-              <strong>Current Song URL:</strong> 
-              <span class="debug-value">${this.getCurrentSongUrl() || 'No song URL available'}</span>
-            </div>
-            <div class="debug-item">
-              <strong>Current Song Media Content Type:</strong> 
-              <span class="debug-value">${this.getCurrentSongMediaContentType() || 'Unknown'}</span>
-            </div>
-            <div class="debug-item">
-              <strong>Current Song Sensor State:</strong> 
-              <span class="debug-value">${this.getCurrentSongSensorState()}</span>
-            </div>
-            <div class="debug-item">
-              <strong>Game Status:</strong> 
-              <span class="debug-value">${this.getGameStatus()}</span>
-            </div>
-            <div class="debug-item">
-              <strong>Countdown Current:</strong> 
-              <span class="debug-value">${this.getCountdownCurrent()}s</span>
-            </div>
-            ${this.getCurrentSongUrl() && this.getCurrentSongUrl().includes('spotify.com') ? `
-              <div class="debug-item debug-warning">
-                <strong>⚠️ Spotify URL Detected:</strong> 
-                <span class="debug-value">Make sure your selected media player supports Spotify playback</span>
-              </div>
-            ` : ''}
-          </div>
-        </div>
+
       </div>
     `;
   }
