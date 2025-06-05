@@ -649,6 +649,7 @@ class SoundbeatsCard extends HTMLElement {
 
   getCurrentCountdownValue() {
     // Get the current countdown value, accounting for client-side timer
+    // This method interpolates between server updates to provide smooth countdown
     const serverCountdown = this.getCountdownCurrent();
     
     if (serverCountdown <= 0) {
@@ -667,6 +668,7 @@ class SoundbeatsCard extends HTMLElement {
       return; // Already running
     }
     
+    // Start client-side timer for smooth countdown updates (100ms intervals)
     this._clientCountdownTimer = setInterval(() => {
       const currentCountdown = this.getCurrentCountdownValue();
       
