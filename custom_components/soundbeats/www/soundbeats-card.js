@@ -3052,6 +3052,46 @@ class SoundbeatsCard extends HTMLElement {
       if (nameDisplay) nameDisplay.textContent = team.name;
       if (pointsDisplay) pointsDisplay.textContent = `${team.points} pts`;
       
+      // Update betting button state and display when team.betting changes
+      const betButton = teamItem.querySelector('.bet-button');
+      const bettingInfo = teamItem.querySelector('.betting-info');
+      const bettingSection = teamItem.querySelector('.betting-section');
+      
+      if (betButton) {
+        // Update button class based on betting state
+        if (team.betting) {
+          betButton.classList.add('betting-active');
+          betButton.textContent = 'BETTING!';
+          betButton.setAttribute('aria-label', `Cancel bet for ${team.name}`);
+        } else {
+          betButton.classList.remove('betting-active');
+          betButton.textContent = 'Place Bet';
+          betButton.setAttribute('aria-label', `Place bet for ${team.name}`);
+        }
+        
+        // Update onclick handler to reflect current state
+        betButton.setAttribute('onclick', `this.getRootNode().host.toggleTeamBetting('${teamId}', ${!team.betting})`);
+      }
+      
+      // Update betting info display based on betting state
+      if (bettingSection) {
+        const existingBettingInfo = bettingSection.querySelector('.betting-info');
+        if (team.betting) {
+          // Add betting info if it doesn't exist
+          if (!existingBettingInfo) {
+            const bettingInfoElement = document.createElement('div');
+            bettingInfoElement.className = 'betting-info';
+            bettingInfoElement.textContent = 'Win: 20pts | Lose: 0pts';
+            bettingSection.appendChild(bettingInfoElement);
+          }
+        } else {
+          // Remove betting info if it exists
+          if (existingBettingInfo) {
+            existingBettingInfo.remove();
+          }
+        }
+      }
+      
       // Update input values in team management section only if they're not focused (being edited)
       if (teamManagementContainer) {
         const managementItem = teamManagementContainer.querySelector(`[data-team="${teamId}"]`);
