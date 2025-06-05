@@ -84,7 +84,7 @@ The integration automatically provides a comprehensive custom Lovelace card with
 #### Admin Sections (Admin Users Only)
 - **Admin Controls**: Start/stop game, next song controls
 - **Game Settings**: Configure countdown timer duration
-- **Audio Player Selection**: Choose from available Home Assistant media players  
+- **Audio Player Selection**: Choose from available Home Assistant media players (unavailable players are automatically filtered out)
 - **Team Management**: Edit team names and set participation status
 
 To use the card, add it to your Lovelace dashboard by selecting **"Custom: Soundbeats Card"** when adding a new card.

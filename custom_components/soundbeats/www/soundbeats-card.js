@@ -1125,16 +1125,19 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getMediaPlayers() {
-    // Get all media player entities from Home Assistant
+    // Get all available media player entities from Home Assistant
     const mediaPlayers = [];
     if (this.hass && this.hass.states) {
       Object.keys(this.hass.states).forEach(entityId => {
         if (entityId.startsWith('media_player.')) {
           const entity = this.hass.states[entityId];
-          mediaPlayers.push({
-            entity_id: entityId,
-            name: entity.attributes.friendly_name || entityId.split('.')[1].replace(/_/g, ' ')
-          });
+          // Only include media players that are not unavailable
+          if (entity.state !== 'unavailable') {
+            mediaPlayers.push({
+              entity_id: entityId,
+              name: entity.attributes.friendly_name || entityId.split('.')[1].replace(/_/g, ' ')
+            });
+          }
         }
       });
     }
