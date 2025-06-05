@@ -233,6 +233,7 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
         self._attr_unit_of_measurement = "s"
         self._current_countdown = 0
         self._countdown_task = None
+        self._evaluation_done = False
 
     async def async_added_to_hass(self) -> None:
         """Called when entity is added to hass."""
@@ -248,6 +249,7 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
         """Start a countdown from the given duration."""
         self.stop_countdown()  # Stop any existing countdown
         self._current_countdown = duration
+        self._evaluation_done = False  # Reset evaluation flag for new round
         self.async_write_ha_state()
         
         # Schedule countdown decrement
@@ -262,6 +264,7 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
             self._countdown_task.cancel()  # Cancel the scheduled task
             self._countdown_task = None
         self._current_countdown = 0
+        self._evaluation_done = False  # Reset evaluation flag
         self.async_write_ha_state()
 
     def _async_decrement_countdown(self) -> None:
@@ -277,6 +280,91 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
                 )
             else:
                 self._countdown_task = None
+                # Trigger evaluation when countdown reaches 0
+                if not self._evaluation_done:
+                    self._evaluation_done = True
+                    self.hass.loop.call_soon(self._evaluate_round)
+
+    def _evaluate_round(self) -> None:
+        """Evaluate team guesses and award points after countdown reaches zero."""
+        try:
+            _LOGGER.info("Starting round evaluation")
+            
+            # Get current song year from the current song sensor
+            current_song_sensor = None
+            if hasattr(self.hass, 'data') and DOMAIN in self.hass.data:
+                entities = self.hass.data[DOMAIN].get("entities", {})
+                current_song_sensor = entities.get("current_song_sensor")
+            
+            if not current_song_sensor or not hasattr(current_song_sensor, 'extra_state_attributes'):
+                _LOGGER.warning("Current song sensor not found or has no attributes")
+                return
+            
+            song_attributes = current_song_sensor.extra_state_attributes
+            if not song_attributes or "year" not in song_attributes:
+                _LOGGER.warning("No current song or year information available")
+                return
+            
+            song_year = song_attributes["year"]
+            if not isinstance(song_year, int):
+                try:
+                    song_year = int(song_year)
+                except (ValueError, TypeError):
+                    _LOGGER.warning("Invalid song year: %s", song_year)
+                    return
+            
+            _LOGGER.info("Song year: %d", song_year)
+            
+            # Get team sensors and evaluate each participating team
+            entities = self.hass.data[DOMAIN].get("entities", {})
+            team_sensors = entities.get("team_sensors", {})
+            
+            for team_key, team_sensor in team_sensors.items():
+                if not team_sensor or not hasattr(team_sensor, 'extra_state_attributes'):
+                    continue
+                    
+                team_attrs = team_sensor.extra_state_attributes
+                if not team_attrs.get("participating", False):
+                    continue  # Skip non-participating teams
+                
+                year_guess = team_attrs.get("year_guess")
+                if year_guess is None:
+                    continue
+                    
+                try:
+                    year_guess = int(year_guess)
+                except (ValueError, TypeError):
+                    _LOGGER.warning("Invalid year guess for team %s: %s", team_key, year_guess)
+                    continue
+                
+                # Calculate points based on accuracy
+                year_difference = abs(song_year - year_guess)
+                points_to_add = 0
+                
+                if year_difference == 0:
+                    points_to_add = 20  # Exact match
+                elif year_difference <= 2:
+                    points_to_add = 10  # Within 2 years
+                elif year_difference <= 5:
+                    points_to_add = 5   # Within 5 years
+                
+                if points_to_add > 0:
+                    current_points = team_attrs.get("points", 0)
+                    new_points = current_points + points_to_add
+                    
+                    # Update team points
+                    if hasattr(team_sensor, 'update_team_points'):
+                        team_sensor.update_team_points(new_points)
+                        _LOGGER.info("Team %s: guess %d, actual %d, awarded %d points (total: %d)", 
+                                   team_key, year_guess, song_year, points_to_add, new_points)
+                    else:
+                        _LOGGER.warning("Team sensor %s has no update_team_points method", team_key)
+                else:
+                    _LOGGER.info("Team %s: guess %d, actual %d, no points awarded (difference: %d years)", 
+                               team_key, year_guess, song_year, year_difference)
+                               
+        except Exception as e:
+            _LOGGER.error("Error during round evaluation: %s", e)
 
     async def async_update(self) -> None:
         """Update the sensor."""
