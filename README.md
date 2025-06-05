@@ -120,6 +120,11 @@ The integration automatically provides a comprehensive custom Lovelace card with
 #### Individual Team Cards
 - **Interactive Controls**: Year guess sliders, betting buttons, and detailed results when timer expires
 - **Personal Team Views**: Separate detailed interface for each team's gameplay experience
+- **Enhanced Scoring Display**: Clear, detailed explanations of points earned after each round
+  - **Automatic Scoring Explanations**: Shows points earned and reasoning for all guesses (e.g., "Points earned: 10. You were within 2 years of the correct answer.")
+  - **Smart Visual Feedback**: Green background for point-earning guesses, neutral background for zero points
+  - **Betting Results**: Special highlighting for betting outcomes with clear win/loss indicators
+  - **Always Visible**: Scoring explanations appear immediately when timer expires with no additional setup required
 
 **Note**: The admin sections feature expandable/collapsible interfaces with chevron icons. Click on the section headers to expand or collapse these sections. The expanded state persists throughout your session but resets when the page is reloaded. The card requires zero manual setup for users.
 

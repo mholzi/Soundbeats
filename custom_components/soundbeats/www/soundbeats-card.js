@@ -482,6 +482,26 @@ class SoundbeatsCard extends HTMLElement {
           text-align: center;
         }
         
+        .result-info-positive {
+          background: var(--success-color, #4caf50);
+          color: white;
+        }
+        
+        .result-info-neutral {
+          background: var(--divider-color, #e0e0e0);
+          color: var(--primary-text-color, #333);
+        }
+        
+        .result-summary {
+          margin-bottom: 4px;
+        }
+        
+        .result-scoring {
+          font-size: 0.85em;
+          opacity: 0.9;
+          font-style: italic;
+        }
+        
         .team-controls {
           display: flex;
           gap: 4px;
@@ -1408,24 +1428,65 @@ class SoundbeatsCard extends HTMLElement {
     const teamGuess = team.year_guess;
     const wasBetting = team.last_round_betting;
     
-    if (!wasBetting) {
-      return `<div class="result-info">Guess: ${teamGuess} | Actual: ${songYear}</div>`;
+    // Calculate year difference and points for all scenarios
+    const yearDifference = Math.abs(songYear - teamGuess);
+    let pointsEarned = 0;
+    let explanation = '';
+    
+    if (wasBetting) {
+      // Betting logic: 20 points if exact match, 0 points otherwise
+      if (yearDifference === 0) {
+        pointsEarned = 20;
+        explanation = 'Perfect guess with bet!';
+      } else {
+        pointsEarned = 0;
+        explanation = `${yearDifference} year${yearDifference === 1 ? '' : 's'} off. Bet failed.`;
+      }
+    } else {
+      // Normal scoring logic
+      if (yearDifference === 0) {
+        pointsEarned = 20;
+        explanation = 'Perfect guess!';
+      } else if (yearDifference <= 2) {
+        pointsEarned = 10;
+        explanation = `You were within ${yearDifference} year${yearDifference === 1 ? '' : 's'} of the correct answer.`;
+      } else if (yearDifference <= 5) {
+        pointsEarned = 5;
+        explanation = `You were within ${yearDifference} years of the correct answer.`;
+      } else {
+        pointsEarned = 0;
+        explanation = `More than 5 years off (${yearDifference} years).`;
+      }
     }
     
-    const wasCorrect = Math.abs(songYear - teamGuess) === 0;
-    
-    return `
-      <div class="bet-result ${wasCorrect ? 'bet-win' : 'bet-loss'}">
-        <ha-icon icon="mdi:${wasCorrect ? 'trophy' : 'close-circle'}" class="result-icon"></ha-icon>
-        <div class="result-text">
-          <strong>${wasCorrect ? 'BET WON!' : 'BET LOST!'}</strong>
-          <div class="result-details">
-            Your guess: ${teamGuess} | Actual year: ${songYear}
-            <br>Points earned: ${wasCorrect ? '20' : '0'}
+    if (wasBetting) {
+      const wasCorrect = yearDifference === 0;
+      return `
+        <div class="bet-result ${wasCorrect ? 'bet-win' : 'bet-loss'}">
+          <ha-icon icon="mdi:${wasCorrect ? 'trophy' : 'close-circle'}" class="result-icon"></ha-icon>
+          <div class="result-text">
+            <strong>${wasCorrect ? 'BET WON!' : 'BET LOST!'}</strong>
+            <div class="result-details">
+              Your guess: ${teamGuess} | Actual year: ${songYear}
+              <br>Points earned: ${pointsEarned}. ${explanation}
+            </div>
           </div>
         </div>
-      </div>
-    `;
+      `;
+    } else {
+      // Enhanced result display for non-betting scenarios
+      const resultClass = pointsEarned > 0 ? 'result-info-positive' : 'result-info-neutral';
+      return `
+        <div class="result-info ${resultClass}">
+          <div class="result-summary">
+            <strong>Your guess: ${teamGuess} | Actual year: ${songYear}</strong>
+          </div>
+          <div class="result-scoring">
+            Points earned: ${pointsEarned}. ${explanation}
+          </div>
+        </div>
+      `;
+    }
   }
 
   renderOtherTeamsOverview() {
