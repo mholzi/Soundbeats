@@ -10,6 +10,9 @@ class SoundbeatsCard extends HTMLElement {
     // Initialize expander state - both sections collapsed by default
     this.gameSettingsExpanded = false;
     this.teamManagementExpanded = false;
+    // Initialize user data cache
+    this.homeAssistantUsers = [];
+    this.usersLoaded = false;
   }
 
   setConfig(config) {
@@ -815,6 +818,8 @@ class SoundbeatsCard extends HTMLElement {
           gap: 12px;
           align-items: center;
           flex: 1;
+          flex-wrap: wrap;
+          min-width: 0;
         }
         
         .participation-control {
@@ -895,6 +900,18 @@ class SoundbeatsCard extends HTMLElement {
           background: var(--card-background-color, white);
           color: var(--primary-text-color);
           font-size: 14px;
+        }
+
+        .team-user-select {
+          flex: 1;
+          padding: 8px 12px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 4px;
+          background: var(--card-background-color, white);
+          color: var(--primary-text-color);
+          font-size: 14px;
+          min-width: 150px;
+          max-width: 200px;
         }
         
         .countdown-section {
@@ -1478,7 +1495,8 @@ class SoundbeatsCard extends HTMLElement {
             participating: entity.attributes && entity.attributes.participating !== undefined ? entity.attributes.participating : true,
             year_guess: entity.attributes && entity.attributes.year_guess !== undefined ? entity.attributes.year_guess : 1990,
             betting: entity.attributes && entity.attributes.betting !== undefined ? entity.attributes.betting : false,
-            last_round_betting: entity.attributes && entity.attributes.last_round_betting !== undefined ? entity.attributes.last_round_betting : false
+            last_round_betting: entity.attributes && entity.attributes.last_round_betting !== undefined ? entity.attributes.last_round_betting : false,
+            user_id: entity.attributes && entity.attributes.user_id !== undefined ? entity.attributes.user_id : null
           };
         } else {
           // Fallback to default if entity doesn't exist yet
@@ -1488,7 +1506,8 @@ class SoundbeatsCard extends HTMLElement {
             participating: true,
             year_guess: 1990,
             betting: false,
-            last_round_betting: false
+            last_round_betting: false,
+            user_id: null
           };
         }
       }
@@ -1504,7 +1523,8 @@ class SoundbeatsCard extends HTMLElement {
         participating: true,
         year_guess: 1990,
         betting: false,
-        last_round_betting: false
+        last_round_betting: false,
+        user_id: null
       };
     }
     return defaultTeams;
@@ -1536,6 +1556,20 @@ class SoundbeatsCard extends HTMLElement {
     return rankings;
   }
 
+  async loadHomeAssistantUsers() {
+    // Load Home Assistant users if not already loaded
+    if (!this.usersLoaded && this.hass) {
+      try {
+        this.homeAssistantUsers = await this.getHomeAssistantUsers();
+        this.usersLoaded = true;
+      } catch (error) {
+        console.warn('Failed to load Home Assistant users:', error);
+        this.homeAssistantUsers = [];
+        this.usersLoaded = true;
+      }
+    }
+  }
+
   renderTeamManagement() {
     const teams = this.getTeams();
     
@@ -1547,6 +1581,18 @@ class SoundbeatsCard extends HTMLElement {
         <div class="team-management-controls">
           <input type="text" class="team-input" placeholder="Team Name" value="${team.name}" 
                  oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+          <select 
+            class="team-user-select" 
+            onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
+            title="Assign user to team"
+          >
+            <option value="">Select user...</option>
+            ${this.homeAssistantUsers.map(user => 
+              `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
+                ${user.name}
+              </option>`
+            ).join('')}
+          </select>
           <label class="participation-control">
             <input type="checkbox" class="participating-checkbox" ${team.participating ? 'checked' : ''} 
                    onchange="this.getRootNode().host.updateTeamParticipating('${teamId}', this.checked)">
@@ -1654,6 +1700,16 @@ class SoundbeatsCard extends HTMLElement {
       setTimeout(() => {
         this.recreateTeamsSection();
       }, 100);
+    }
+  }
+
+  updateTeamUserId(teamId, userId) {
+    // Call service to update team user ID
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'update_team_user_id', {
+        team_id: teamId,
+        user_id: userId || null
+      });
     }
   }
 
@@ -1994,6 +2050,26 @@ class SoundbeatsCard extends HTMLElement {
     return mediaPlayers;
   }
 
+  getHomeAssistantUsers() {
+    // Get all Home Assistant users
+    // This uses the Home Assistant websocket connection to fetch user data
+    if (this.hass && this.hass.user) {
+      return this.hass.callWS({
+        type: 'config/auth/list'
+      }).then(users => {
+        return users.map(user => ({
+          id: user.id,
+          name: user.name || 'Unknown User',
+          is_active: user.is_active !== false
+        })).filter(user => user.is_active);  // Only return active users
+      }).catch(error => {
+        console.warn('Could not fetch Home Assistant users:', error);
+        return [];
+      });
+    }
+    return Promise.resolve([]);
+  }
+
   updateCountdownTimerLength(timerLength) {
     // Call service to update countdown timer length
     if (this.hass) {
@@ -2314,6 +2390,18 @@ class SoundbeatsCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    
+    // Load users when hass becomes available for the first time
+    if (hass && !this.usersLoaded) {
+      this.loadHomeAssistantUsers().then(() => {
+        // Re-render team management if it exists to show the user dropdowns
+        const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
+        if (teamManagementContainer) {
+          teamManagementContainer.innerHTML = this.renderTeamManagement();
+        }
+      });
+    }
+    
     // Only update dynamic content without full re-render to preserve input states
     if (this.shadowRoot.innerHTML) {
       this.updateDisplayValues();

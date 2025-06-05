@@ -112,6 +112,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
         self._year_guess = 1990
         self._betting = False
         self._last_round_betting = False
+        self._user_id = None
 
     async def async_added_to_hass(self) -> None:
         """Called when entity is added to hass."""
@@ -145,6 +146,10 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
                     if "last_round_betting" in last_state.attributes:
                         self._last_round_betting = bool(last_state.attributes["last_round_betting"])
                         _LOGGER.debug("Restored team %d last round betting: %s", self._team_number, self._last_round_betting)
+                    
+                    if "user_id" in last_state.attributes:
+                        self._user_id = last_state.attributes["user_id"]
+                        _LOGGER.debug("Restored team %d user_id: %s", self._team_number, self._user_id)
                         
             except (ValueError, TypeError, KeyError) as e:
                 _LOGGER.warning("Could not restore team %d state: %s, using defaults", self._team_number, e)
@@ -154,6 +159,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
                 self._year_guess = 1990
                 self._betting = False
                 self._last_round_betting = False
+                self._user_id = None
 
     @property
     def state(self) -> str:
@@ -170,6 +176,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
             "year_guess": self._year_guess,
             "betting": self._betting,
             "last_round_betting": self._last_round_betting,
+            "user_id": self._user_id,
         }
 
     def update_team_name(self, name: str) -> None:
@@ -195,6 +202,11 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
     def update_team_betting(self, betting: bool) -> None:
         """Update the team's betting status."""
         self._betting = betting
+        self.async_write_ha_state()
+
+    def update_team_user_id(self, user_id: str) -> None:
+        """Update the team's assigned user ID."""
+        self._user_id = user_id
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
