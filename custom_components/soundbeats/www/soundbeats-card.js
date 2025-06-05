@@ -819,7 +819,8 @@ class SoundbeatsCard extends HTMLElement {
             points: entity.attributes && entity.attributes.points !== undefined ? entity.attributes.points : 0,
             participating: entity.attributes && entity.attributes.participating !== undefined ? entity.attributes.participating : true,
             year_guess: entity.attributes && entity.attributes.year_guess !== undefined ? entity.attributes.year_guess : 1990,
-            betting: entity.attributes && entity.attributes.betting !== undefined ? entity.attributes.betting : false
+            betting: entity.attributes && entity.attributes.betting !== undefined ? entity.attributes.betting : false,
+            last_round_betting: entity.attributes && entity.attributes.last_round_betting !== undefined ? entity.attributes.last_round_betting : false
           };
         } else {
           // Fallback to default if entity doesn't exist yet
@@ -828,7 +829,8 @@ class SoundbeatsCard extends HTMLElement {
             points: 0,
             participating: true,
             year_guess: 1990,
-            betting: false
+            betting: false,
+            last_round_betting: false
           };
         }
       }
@@ -843,7 +845,8 @@ class SoundbeatsCard extends HTMLElement {
         points: 0,
         participating: true,
         year_guess: 1990,
-        betting: false
+        betting: false,
+        last_round_betting: false
       };
     }
     return defaultTeams;
@@ -974,7 +977,7 @@ class SoundbeatsCard extends HTMLElement {
     
     const songYear = parseInt(currentSong.year, 10);
     const teamGuess = team.year_guess;
-    const wasBetting = team.betting; // Note: betting should be false after evaluation
+    const wasBetting = team.last_round_betting;
     
     if (!wasBetting) {
       return `<div class="result-info">Guess: ${teamGuess} | Actual: ${songYear}</div>`;

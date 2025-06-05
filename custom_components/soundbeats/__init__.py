@@ -102,6 +102,9 @@ async def _register_services(hass: HomeAssistant) -> None:
                 team_sensor.update_team_participating(True)
                 if hasattr(team_sensor, 'update_team_betting'):
                     team_sensor.update_team_betting(False)
+                if hasattr(team_sensor, '_last_round_betting'):
+                    team_sensor._last_round_betting = False
+                    team_sensor.async_write_ha_state()
             else:
                 # Fallback to direct state setting
                 team_entity_id = f"sensor.soundbeats_team_{i}"
@@ -142,6 +145,9 @@ async def _register_services(hass: HomeAssistant) -> None:
                 team_sensor.update_team_participating(True)
                 if hasattr(team_sensor, 'update_team_betting'):
                     team_sensor.update_team_betting(False)
+                if hasattr(team_sensor, '_last_round_betting'):
+                    team_sensor._last_round_betting = False
+                    team_sensor.async_write_ha_state()
             else:
                 # Fallback to direct state setting
                 team_entity_id = f"sensor.soundbeats_team_{i}"
