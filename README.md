@@ -96,7 +96,11 @@ The integration automatically provides a comprehensive custom Lovelace card with
 - **Game Settings**: Start new games and adjust countdown timer duration (expandable section, collapsed by default)
 - **Audio Player Selection**: Choose from available Home Assistant media players (unavailable players are automatically filtered out)
 - **Team Management**: Edit team names and set participation status (expandable section, collapsed by default)
-- **Song Controls**: Compact "Next Song" button appears in the bottom right corner of the song display during active rounds
+
+- **Song Controls**: "Next Song" button appears in the bottom left corner of the song display during active rounds
+  - **Smart Audio Player Validation**: If no audio player is selected when clicking "Next Song", an alert notification banner slides in from the right side
+  - **User-Friendly Alerts**: The alert banner provides clear guidance and can be dismissed by clicking the close button
+  - **Zero-Setup Integration**: Alert system works automatically without any configuration required
 
 #### Teams Overview Section
 - **Horizontal Scrollable Leaderboard**: All active teams displayed in a single horizontal row with compact cards that scroll when overflowing
@@ -231,7 +235,7 @@ If the next song function triggers the timer but doesn't start playing music, ch
 
 #### Common Audio Issues
 - **Spotify URLs**: If you see Spotify URLs in the debug section, ensure your selected media player supports Spotify playback (e.g., a configured Spotify integration)
-- **No Audio Player Selected**: Make sure you select an audio player in the admin settings section
+- **No Audio Player Selected**: The system now shows an alert notification banner when you click "Next Song" without selecting an audio player. Simply choose an audio player in the admin settings section to resolve this.
 - **Media Player Compatibility**: Not all media players support all URL types - try different media players if one doesn't work
 - **Network Connectivity**: Ensure your media player has internet access for streaming
 

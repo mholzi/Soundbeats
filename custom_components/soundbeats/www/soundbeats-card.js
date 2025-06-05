@@ -920,7 +920,82 @@ class SoundbeatsCard extends HTMLElement {
           color: var(--secondary-text-color, #666);
           font-style: italic;
         }
+        
+        /* Alert Banner Styles */
+        .alert-banner {
+          position: fixed;
+          top: 20px;
+          right: -400px;
+          width: 350px;
+          background: var(--error-color, #f44336);
+          color: var(--text-primary-color, white);
+          padding: 16px;
+          border-radius: 8px;
+          box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .alert-banner.show {
+          right: 20px;
+        }
+        
+        .alert-banner .alert-icon {
+          font-size: 1.5em;
+          color: var(--text-primary-color, white);
+          flex-shrink: 0;
+        }
+        
+        .alert-banner .alert-content {
+          flex: 1;
+        }
+        
+        .alert-banner .alert-title {
+          font-weight: 600;
+          font-size: 1.1em;
+          margin: 0 0 4px 0;
+        }
+        
+        .alert-banner .alert-message {
+          font-size: 0.9em;
+          opacity: 0.9;
+          margin: 0;
+          line-height: 1.3;
+        }
+        
+        .alert-banner .alert-dismiss {
+          background: none;
+          border: none;
+          color: var(--text-primary-color, white);
+          font-size: 1.2em;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          opacity: 0.8;
+          transition: opacity 0.2s ease;
+          flex-shrink: 0;
+        }
+        
+        .alert-banner .alert-dismiss:hover {
+          opacity: 1;
+          background: rgba(255, 255, 255, 0.1);
+        }
       </style>
+      
+      <!-- Alert Banner for No Audio Player Selected -->
+      <div class="alert-banner" id="no-audio-player-alert">
+        <ha-icon icon="mdi:alert-circle" class="alert-icon"></ha-icon>
+        <div class="alert-content">
+          <div class="alert-title">No Audio Player Selected</div>
+          <div class="alert-message">Please select an audio player in the admin settings before starting the next song.</div>
+        </div>
+        <button class="alert-dismiss" onclick="this.getRootNode().host.hideAlertBanner()">
+          <ha-icon icon="mdi:close"></ha-icon>
+        </button>
+      </div>
       
       <div class="soundbeats-card">
         <!-- Title Section - Always visible -->
@@ -1412,9 +1487,32 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   nextSong() {
+    // Check if audio player is selected first
+    const selectedPlayer = this.getSelectedAudioPlayer();
+    
+    if (!selectedPlayer) {
+      // Show alert banner if no audio player is selected
+      this.showAlertBanner();
+      return;
+    }
+    
     // Call service to skip to next song
     if (this.hass) {
       this.hass.callService('soundbeats', 'next_song', {});
+    }
+  }
+
+  showAlertBanner() {
+    const alertBanner = this.shadowRoot.querySelector('#no-audio-player-alert');
+    if (alertBanner) {
+      alertBanner.classList.add('show');
+    }
+  }
+
+  hideAlertBanner() {
+    const alertBanner = this.shadowRoot.querySelector('#no-audio-player-alert');
+    if (alertBanner) {
+      alertBanner.classList.remove('show');
     }
   }
 
