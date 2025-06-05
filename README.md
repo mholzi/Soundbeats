@@ -34,13 +34,14 @@ Soundbeats is a competitive music guessing game where teams compete to identify 
 
 1. **Teams Setup**: Up to 5 teams can participate, each with customizable names
 2. **Song Playback**: Songs are played through your selected Home Assistant media player
-3. **Guessing Phase**: Teams have a configurable countdown timer (default 30 seconds) to guess the year
-4. **Scoring System**: 
+3. **Round Tracking**: The system automatically tracks round numbers, starting from 0 and incrementing after each song evaluation
+4. **Guessing Phase**: Teams have a configurable countdown timer (default 30 seconds) to guess the year
+5. **Scoring System**: 
    - **20 points** for exact year matches
    - **10 points** for guesses within ±2 years
    - **5 points** for guesses within ±5 years
    - **0 points** for guesses more than 5 years off
-5. **Auto-Evaluation**: Points are automatically calculated and awarded when the timer expires
+6. **Auto-Evaluation**: Points are automatically calculated and awarded when the timer expires, and the round counter increments
 
 ## Configuration
 
@@ -68,7 +69,7 @@ The integration automatically creates the following entities:
 - `sensor.soundbeats_team_1` through `sensor.soundbeats_team_5` - Individual team information
 - `sensor.soundbeats_countdown_timer` - Configurable timer duration  
 - `sensor.soundbeats_countdown_current` - Live countdown value
-
+- `sensor.soundbeats_round_counter` - Current round number (increments after each round evaluation)
 - `sensor.soundbeats_game_mode` - Current game mode (default: Classic)
 - `sensor.soundbeats_current_song` - Currently playing song information and selected media player
 
@@ -103,7 +104,7 @@ To use the card, add it to your Lovelace dashboard by selecting **"Custom: Sound
 The integration provides comprehensive Home Assistant services for automation and external control:
 
 #### Game Control Services
-- `soundbeats.start_game` - Start a new game session (resets teams and stops countdown)
+- `soundbeats.start_game` - Start a new game session (resets teams, round counter, and stops countdown)
 - `soundbeats.stop_game` - Stop the current game session  
 - `soundbeats.reset_game` - Reset the game to initial state
 - `soundbeats.next_song` - Skip to the next song and start countdown timer

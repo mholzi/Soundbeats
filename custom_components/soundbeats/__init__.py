@@ -91,6 +91,13 @@ async def _register_services(hass: HomeAssistant) -> None:
         else:
             hass.states.async_set("sensor.soundbeats_countdown_current", 0)
         
+        # Reset round counter to 0
+        round_counter_sensor = entities.get("round_counter_sensor")
+        if round_counter_sensor and hasattr(round_counter_sensor, 'reset_round_counter'):
+            round_counter_sensor.reset_round_counter()
+        else:
+            hass.states.async_set("sensor.soundbeats_round_counter", 0)
+        
         # Reset all teams to default names and 0 points
         team_sensors = entities.get("team_sensors", {})
         for i in range(1, 6):
