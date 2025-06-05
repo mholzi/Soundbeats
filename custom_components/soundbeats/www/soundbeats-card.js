@@ -137,6 +137,62 @@ class SoundbeatsCard extends HTMLElement {
           justify-content: space-between;
           position: relative;
           overflow: hidden;
+          min-height: 48px;
+        }
+        
+        /* Ranking-based header colors */
+        .team-header.rank-1 {
+          background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #DAA520 100%);
+          color: #000;
+        }
+        
+        .team-header.rank-2 {
+          background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 50%, #909090 100%);
+          color: #000;
+        }
+        
+        .team-header.rank-3 {
+          background: linear-gradient(135deg, #CD7F32 0%, #B8860B 50%, #A0522D 100%);
+          color: #fff;
+        }
+        
+        .team-header.rank-other {
+          background: linear-gradient(135deg, #6c757d 0%, #5a6268 50%, #495057 100%);
+          color: #fff;
+        }
+        
+        .rank-badge {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          background: rgba(255, 255, 255, 0.9);
+          border-radius: 50%;
+          margin-right: 12px;
+          position: relative;
+          z-index: 2;
+          flex-shrink: 0;
+        }
+        
+        .rank-badge ha-icon {
+          color: #333;
+          --mdc-icon-size: 24px;
+        }
+        
+        .team-header.rank-1 .rank-badge {
+          background: rgba(255, 255, 255, 0.95);
+          box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        }
+        
+        .team-header.rank-2 .rank-badge {
+          background: rgba(255, 255, 255, 0.95);
+          box-shadow: 0 0 8px rgba(192, 192, 192, 0.5);
+        }
+        
+        .team-header.rank-3 .rank-badge {
+          background: rgba(255, 255, 255, 0.95);
+          box-shadow: 0 0 8px rgba(205, 127, 50, 0.5);
         }
         
         .team-header::before {
@@ -153,6 +209,8 @@ class SoundbeatsCard extends HTMLElement {
         
         .team-content {
           padding: 12px 16px;
+          background: var(--card-background-color, #f8f9fa);
+          border-top: 1px solid var(--divider-color, #e0e0e0);
         }
         
         .team-info {
@@ -165,9 +223,19 @@ class SoundbeatsCard extends HTMLElement {
         
         .team-name {
           font-weight: 500;
-          color: var(--text-primary-color, white);
           position: relative;
           z-index: 1;
+          flex: 1;
+        }
+        
+        .team-header.rank-1 .team-name,
+        .team-header.rank-2 .team-name {
+          color: #000;
+        }
+        
+        .team-header.rank-3 .team-name,
+        .team-header.rank-other .team-name {
+          color: var(--text-primary-color, white);
         }
         
         .team-points {
@@ -180,6 +248,20 @@ class SoundbeatsCard extends HTMLElement {
           border: 1px solid rgba(255, 255, 255, 0.3);
           position: relative;
           z-index: 1;
+        }
+        
+        .team-header.rank-1 .team-points,
+        .team-header.rank-2 .team-points {
+          background: rgba(0, 0, 0, 0.1);
+          color: #000;
+          border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        
+        .team-header.rank-3 .team-points,
+        .team-header.rank-other .team-points {
+          background: rgba(255, 255, 255, 0.2);
+          color: var(--text-primary-color, white);
+          border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
         .team-participating {
@@ -778,6 +860,22 @@ class SoundbeatsCard extends HTMLElement {
     return defaultTeams;
   }
 
+  getTeamRankings() {
+    // Calculate team rankings based on points among participating teams
+    const teams = this.getTeams();
+    const participatingTeams = Object.entries(teams)
+      .filter(([teamId, team]) => team.participating)
+      .map(([teamId, team]) => ({ teamId, ...team }))
+      .sort((a, b) => b.points - a.points); // Sort by points descending
+    
+    const rankings = {};
+    participatingTeams.forEach((team, index) => {
+      rankings[team.teamId] = index + 1; // Rank starts from 1
+    });
+    
+    return rankings;
+  }
+
   renderTeamManagement() {
     const teams = this.getTeams();
     
@@ -801,14 +899,25 @@ class SoundbeatsCard extends HTMLElement {
 
   renderTeams() {
     const teams = this.getTeams();
+    const rankings = this.getTeamRankings();
     const isCountdownRunning = this.getCountdownCurrent() > 0;
     const currentYear = new Date().getFullYear();
     
     return Object.entries(teams)
       .filter(([teamId, team]) => team.participating)
-      .map(([teamId, team]) => `
+      .map(([teamId, team]) => {
+        const rank = rankings[teamId] || 0;
+        const rankClass = rank === 1 ? 'rank-1' : 
+                         rank === 2 ? 'rank-2' : 
+                         rank === 3 ? 'rank-3' : 'rank-other';
+        const rankIcon = `mdi:numeric-${rank}-circle`;
+        
+        return `
       <div class="team-item" data-team="${teamId}">
-        <div class="team-header">
+        <div class="team-header ${rankClass}">
+          <div class="rank-badge">
+            <ha-icon icon="${rankIcon}"></ha-icon>
+          </div>
           <span class="team-name">${team.name}</span>
           <span class="team-points">${team.points} pts</span>
         </div>
@@ -839,7 +948,8 @@ class SoundbeatsCard extends HTMLElement {
           ` : ''}
         </div>
       </div>
-    `).join('');
+    `;
+      }).join('');
   }
 
   updateTeamName(teamId, name) {

@@ -41,7 +41,16 @@ Soundbeats is a competitive music guessing game where teams compete to identify 
    - **10 points** for guesses within ±2 years
    - **5 points** for guesses within ±5 years
    - **0 points** for guesses more than 5 years off
-6. **Auto-Evaluation**: Points are automatically calculated and awarded when the timer expires, and the round counter increments
+6. **Auto-Evaluation**: Points are automatically calculated and awarded when the timer expires
+7. **Team Rankings**: Teams are dynamically ranked based on their total points among active participants
+   - **Visual Ranking Indicators**: Each team displays a circular badge with their current position (1st, 2nd, 3rd, etc.)
+   - **Color-Coded Leaderboard**: Team headers change color based on ranking:
+     - **Gold gradient** for 1st place
+     - **Silver gradient** for 2nd place
+     - **Bronze gradient** for 3rd place
+     - **Neutral gray gradient** for all other positions
+   - **Real-Time Updates**: Rankings and colors update immediately as points change during gameplay
+
 
 ## Configuration
 
@@ -90,11 +99,19 @@ To use the card, add it to your Lovelace dashboard by selecting **"Custom: Sound
 ### Game Features
 
 - **Smart Team Management**: Up to 5 teams with persistent names and scores
+- **Dynamic Team Rankings**: Teams are automatically ranked based on points with visual indicators
+  - **Ranking Display**: Circular badges showing team position (1st, 2nd, 3rd, etc.) using MDI numeric icons
+  - **Color-Coded Headers**: 
+    - **Gold** gradient for 1st place teams
+    - **Silver** gradient for 2nd place teams  
+    - **Bronze** gradient for 3rd place teams
+    - **Neutral gray** gradient for all other positions
+  - **Visual Distinction**: Clear separation between team headers and content areas
 - **Flexible Audio Integration**: Works with any Home Assistant media player
 - **Configurable Timing**: Adjustable countdown timer (5-300 seconds)
 - **Auto-Scoring**: Automatic point calculation based on guess accuracy
 - **State Persistence**: Team information and settings persist across restarts
-- **Real-time Updates**: Live score updates and countdown display
+- **Real-time Updates**: Live score updates, countdown display, and ranking changes
 - **Spotify Integration**: Supports Spotify URLs and other media formats
 - **Debug Tools**: Built-in troubleshooting information for media playback
 - **Robust Display**: Always shows meaningful song information with fallback values for improved user experience
