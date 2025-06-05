@@ -42,8 +42,9 @@ async def async_setup_entry(
     audio_sensor = SoundbeatsAudioPlayerSensor()
     game_mode_sensor = SoundbeatsGameModeSensor()
     current_song_sensor = SoundbeatsCurrentSongSensor()
+    round_counter_sensor = SoundbeatsRoundCounterSensor()
     
-    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, game_mode_sensor, current_song_sensor])
+    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, game_mode_sensor, current_song_sensor, round_counter_sensor])
     
     # Store entity references in hass data for service access
     hass.data.setdefault(DOMAIN, {})
@@ -55,6 +56,7 @@ async def async_setup_entry(
         "audio_sensor": audio_sensor,
         "game_mode_sensor": game_mode_sensor,
         "current_song_sensor": current_song_sensor,
+        "round_counter_sensor": round_counter_sensor,
     }
     
     async_add_entities(entities, True)
@@ -404,6 +406,16 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
                     team_sensor.update_team_betting(False)
                 else:
                     _LOGGER.warning("Team sensor %s has no update_team_betting method", team_key)
+            
+            # Increment round counter after all teams have been evaluated
+            if hasattr(self.hass, 'data') and DOMAIN in self.hass.data:
+                entities = self.hass.data[DOMAIN].get("entities", {})
+                round_counter_sensor = entities.get("round_counter_sensor")
+                if round_counter_sensor and hasattr(round_counter_sensor, 'increment_round_counter'):
+                    round_counter_sensor.increment_round_counter()
+                    _LOGGER.info("Round counter incremented to %d", round_counter_sensor.state)
+                else:
+                    _LOGGER.warning("Round counter sensor not found or has no increment method")
                                
         except Exception as e:
             _LOGGER.error("Error during round evaluation: %s", e)
@@ -540,3 +552,55 @@ class SoundbeatsCurrentSongSensor(SensorEntity):
     async def async_update(self) -> None:
         """Update the sensor."""
         _LOGGER.debug("Updating Soundbeats current song sensor")
+
+
+class SoundbeatsRoundCounterSensor(SensorEntity, RestoreEntity):
+    """Representation of a Soundbeats round counter sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the round counter sensor."""
+        self._attr_name = "Soundbeats Round Counter"
+        self._attr_unique_id = "soundbeats_round_counter"
+        self._attr_icon = "mdi:counter"
+        self._attr_unit_of_measurement = None
+        self._round_count = 0
+
+    async def async_added_to_hass(self) -> None:
+        """Called when entity is added to hass."""
+        await super().async_added_to_hass()
+        
+        # Restore previous state if available
+        if (last_state := await self.async_get_last_state()) is not None:
+            try:
+                self._round_count = int(last_state.state)
+                _LOGGER.debug("Restored round counter: %d", self._round_count)
+            except (ValueError, TypeError):
+                _LOGGER.warning("Could not restore round counter state, using default")
+                self._round_count = 0
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor (round count)."""
+        return self._round_count
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes."""
+        return {
+            "friendly_name": "Soundbeats Round Counter",
+            "description": "Current round number in the Soundbeats game",
+        }
+
+    def reset_round_counter(self) -> None:
+        """Reset the round counter to 0."""
+        self._round_count = 0
+        self.async_write_ha_state()
+
+    def increment_round_counter(self) -> None:
+        """Increment the round counter by 1."""
+        self._round_count += 1
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats round counter sensor")
