@@ -1521,6 +1521,9 @@ class SoundbeatsCard extends HTMLElement {
     // Update team display values (but not input fields)
     this.updateTeamDisplayValues();
     
+    // Update teams overview description and content
+    this.updateTeamsOverviewDisplay();
+    
     // Update timer display value only if slider is not being actively used
     this.updateTimerDisplayValue();
     
@@ -1637,6 +1640,32 @@ class SoundbeatsCard extends HTMLElement {
     });
   }
 
+  updateTeamsOverviewDisplay() {
+    // Update the overview description and content
+    const overviewDescription = this.shadowRoot.querySelector('.overview-description');
+    const teamsOverviewContainer = this.shadowRoot.querySelector('.teams-overview-container');
+    
+    if (overviewDescription) {
+      const countdownCurrent = this.getCountdownCurrent();
+      const roundCounter = this.getRoundCounter();
+      
+      let descriptionText;
+      if (countdownCurrent > 0) {
+        descriptionText = 'Leaderboard during guessing round';
+      } else if (roundCounter > 0) {
+        descriptionText = 'Final results from last round';
+      } else {
+        descriptionText = 'Teams ready for next game';
+      }
+      
+      overviewDescription.textContent = descriptionText;
+    }
+    
+    if (teamsOverviewContainer) {
+      teamsOverviewContainer.innerHTML = this.renderOtherTeamsOverview();
+    }
+  }
+
   updateTimerDisplayValue() {
     const timerSlider = this.shadowRoot.querySelector('.timer-slider');
     const timerValue = this.shadowRoot.querySelector('.timer-value');
@@ -1704,6 +1733,12 @@ class SoundbeatsCard extends HTMLElement {
       
       // Recreate the teams
       teamsContainer.innerHTML = this.renderTeams();
+      
+      // Also recreate the teams overview section
+      const teamsOverviewContainer = this.shadowRoot.querySelector('.teams-overview-container');
+      if (teamsOverviewContainer) {
+        teamsOverviewContainer.innerHTML = this.renderOtherTeamsOverview();
+      }
       
       if (teamManagementContainer) {
         teamManagementContainer.innerHTML = this.renderTeamManagement();
