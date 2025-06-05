@@ -350,6 +350,7 @@ automation:
 - Clear your browser cache and refresh the page  
 - Check that you're selecting **"Custom: Soundbeats Card"** when adding a new card
 - Verify the integration appears in Settings → Devices & Services
+- If the card still doesn't appear after installation via UI, restart Home Assistant to ensure frontend resources are properly registered
 
 ### Audio/Music Playback Issues
 
