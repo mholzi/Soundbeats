@@ -93,7 +93,7 @@ The integration automatically creates the following entities:
 The integration automatically provides a comprehensive custom Lovelace card with no additional setup required. The card features role-based sections:
 
 #### Admin Sections (Admin Users Only)
-- **Game Settings**: Configure countdown timer duration and start new games (expandable section, collapsed by default)
+- **Game Settings**: Start new games and adjust countdown timer duration (expandable section, collapsed by default)
 - **Audio Player Selection**: Choose from available Home Assistant media players (unavailable players are automatically filtered out)
 - **Team Management**: Edit team names and set participation status (expandable section, collapsed by default)
 - **Song Controls**: "Next Song" button appears in the bottom left corner of the song display during active rounds
@@ -113,7 +113,7 @@ The integration automatically provides a comprehensive custom Lovelace card with
 - **Interactive Controls**: Year guess sliders, betting buttons, and detailed results when timer expires
 - **Personal Team Views**: Separate detailed interface for each team's gameplay experience
 
-**Note**: The Game Settings and Team Management sections feature expandable/collapsible interfaces with chevron icons. Click on the section headers to expand or collapse these sections. The expanded state persists throughout your session but resets when the page is reloaded.
+**Note**: The admin sections feature expandable/collapsible interfaces with chevron icons. Click on the section headers to expand or collapse these sections. The expanded state persists throughout your session but resets when the page is reloaded. The card requires zero manual setup for users.
 
 To use the card, add it to your Lovelace dashboard by selecting **"Custom: Soundbeats Card"** when adding a new card.
 
@@ -143,7 +143,7 @@ To use the card, add it to your Lovelace dashboard by selecting **"Custom: Sound
 - **Spotify Integration**: Supports Spotify URLs and other media formats
 - **Debug Tools**: Built-in troubleshooting information for media playback
 - **Robust Display**: Always shows meaningful song information with fallback values for improved user experience
-- **Collapsible Interface**: Admin sections (Game Settings and Team Management) feature expandable/collapsible interfaces for cleaner UI organization
+- **Collapsible Interface**: Admin sections feature expandable/collapsible interfaces for cleaner UI organization
 
 ### Services
 
