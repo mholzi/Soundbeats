@@ -253,6 +253,35 @@ The integration works with any Home Assistant media player, including:
 - Verify the countdown current sensor is updating properly
 - Look for JavaScript errors in browser developer console
 
+### Betting UI Issues
+
+#### BET Button Behavior Problems
+If the BET button shows unexpected visual behavior on mobile or desktop:
+
+**Mobile Devices:**
+- **Issue**: Tapping the BET button triggers blue hover color instead of orange betting state
+- **Solution**: The integration now uses CSS media queries to disable hover effects on touch devices
+- **Expected Behavior**: 
+  - Tap "Place Bet" → Button immediately turns orange with "BETTING!" text and pulse animation
+  - Tap "BETTING!" → Button returns to blue "Place Bet" state
+  - Orange state only appears when backend confirms betting is active
+
+**Betting Info Display:**
+- **Bonus points info** ("Win: 20pts | Lose: 0pts") should appear immediately below the button when betting is active
+- **If not showing**: Refresh the page or check that the team sensor entity is updating correctly
+- **Timing**: Info display is controlled by the backend `betting` property, not just button clicks
+
+**State Synchronization:**
+- Button visual state reflects the actual backend entity state (`team.betting` property)
+- If button appears stuck in wrong state, check Home Assistant logs for service call errors
+- The betting state persists across page refreshes and accurately reflects the team's actual betting status
+
+#### Troubleshooting Betting State
+1. **Check entity state**: Go to Developer Tools → States and verify `sensor.soundbeats_team_X` has correct `betting` attribute
+2. **Service call verification**: Check Home Assistant logs for successful `soundbeats.update_team_betting` service calls
+3. **Browser cache**: Clear browser cache if button behavior seems inconsistent
+4. **CSS conflicts**: Disable browser extensions that might override CSS hover behavior
+
 ### Performance Issues
 
 #### Slow Updates
