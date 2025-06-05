@@ -2,98 +2,62 @@
   {
     "url": "https://open.spotify.com/track/4lBBoyZgJfm0Epu4xbZisU?si=gkwG4LC6Q0qL5OfKzkOj0w",
     "year": 1990,
-    "id": 1,
-    "song_name": "Blaze of Glory",
-    "artist": "Jon Bon Jovi",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b2739c63d8c1c5ff4ba7e8b8dadc"
+    "id": 1
   },
   {
     "url": "https://open.spotify.com/track/3P5dVXm98CgVuEpcW2HsUk?si=voZVk407TIyUrOcx1WZNtQ",
     "year": 1990,
-    "id": 2,
-    "song_name": "Nothing Else Matters",
-    "artist": "Metallica",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b273cf84c5b276431b473e924802"
+    "id": 2
   },
   {
     "url": "https://open.spotify.com/track/1DIXPcTDzTj8ZMHt3PDt8p?si=WxKOXwv1Sg-5hxDVh5G30g",
     "year": 1995,
-    "id": 3,
-    "song_name": "Gangsta's Paradise",
-    "artist": "Coolio",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b273f5e8a5be14b19f88fb57508e"
+    "id": 3
   },
   {
     "url": "https://open.spotify.com/track/0v1XpBHnsbkCn7iJ9Ucr1l?si=nxdGmpLKQxajTwLCeARZbg",
     "year": 2000,
-    "id": 4,
-    "song_name": "Beautiful Day",
-    "artist": "U2",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b273c8b444df094279e70d0ed856"
+    "id": 4
   },
   {
     "url": "https://open.spotify.com/track/7xXSaVgEvUrV1GCc3oO8HC?si=-TKptD9mRRCJPjDvUaPNPQ",
     "year": 2000,
-    "id": 5,
-    "song_name": "Californication",
-    "artist": "Red Hot Chili Peppers",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b2730bf69b5b1c76bcedf067b38b"
+    "id": 5
   },
   {
     "url": "https://open.spotify.com/track/0IbTukfZdB91gclEXUQZkH?si=MAjBL05bRlKwPHY9N9qSTA",
     "year": 2000,
-    "id": 6,
-    "song_name": "The Real Slim Shady",
-    "artist": "Eminem",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b273dbb3dd82da45b7d7f31b1b42"
+    "id": 6
   },
   {
     "url": "https://open.spotify.com/track/2vlgOAH3M8Fmo19wOjeRyw?si=GFrL89h-QwmzadvR1be5Rg",
     "year": 2000,
-    "id": 7,
-    "song_name": "Yellow",
-    "artist": "Coldplay",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b273de09e8e9f1ba24b3f7eaeff3"
+    "id": 7
   },
   {
     "url": "https://open.spotify.com/track/7mhxoW5aWHn5QiZqT4rS4S?si=xz2bwUWkQ3-2N_i_ONZ6oA",
     "year": 1977,
-    "id": 8,
-    "song_name": "Hotel California",
-    "artist": "Eagles",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b273ce4f1737bc8a646c8c4bd25a"
+    "id": 8
   },
   {
     "url": "https://open.spotify.com/track/1BqnZOkYJbvYLOhN0qPJDm?si=vqKqpWuFT3mprR98NB7jVQ",
     "year": 1977,
-    "id": 9,
-    "song_name": "Don't Stop Me Now",
-    "artist": "Queen",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b2734637341b9f507521afa9941b"
+    "id": 9
   },
   {
     "url": "https://open.spotify.com/track/2LScqpywMqGcnum6nNaxXX?si=zv_WkYQhQoKrySZylr_a4g",
     "year": 1977,
-    "id": 10,
-    "song_name": "Stayin' Alive",
-    "artist": "Bee Gees",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b273e3cf7c2ddfc3d3c9c4b96665"
+    "id": 10
   },
   {
     "url": "https://open.spotify.com/track/57TaM8GozkJBz90xvQ1xME?si=AEj4wKoIR5q9DVPg09Np2A",
     "year": 1977,
-    "id": 11,
-    "song_name": "Dancing Queen",
-    "artist": "ABBA",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b2738e48d43b0d8e1b20bc468dd0"
+    "id": 11
   },
   {
     "url": "https://open.spotify.com/track/5ubvP9oKmxLUVq506fgLhk?si=0f229fa8f4a34855",
     "year": 1978,
-    "id": 12,
-    "song_name": "Le Freak",
-    "artist": "CHIC",
-    "entity_picture": "https://i.scdn.co/image/ab67616d0000b2736a95f2bd03608c1b32b7e4f6"
+    "id": 12
   },
   {
     "url": "https://open.spotify.com/track/0B9x2BRHqj3Qer7biM3pU3?si=dea798b1e4514a39",

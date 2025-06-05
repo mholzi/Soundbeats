@@ -366,36 +366,36 @@ class SoundbeatsCurrentSongSensor(SensorEntity):
         self._attr_name = "Soundbeats Current Song"
         self._attr_unique_id = "soundbeats_current_song"
         self._attr_icon = "mdi:music-note"
-        self._current_song = None
+        self._current_song_data = None
 
     @property
     def state(self) -> str:
-        """Return the state of the sensor (current song ID or None)."""
-        return str(self._current_song) if self._current_song is not None else "None"
+        """Return the state of the sensor (media player entity ID or None)."""
+        if self._current_song_data is not None:
+            return self._current_song_data.get("media_player", "None")
+        return "None"
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
-        if self._current_song is None:
+        if self._current_song_data is None:
             return {}
         
         return {
-            "song_id": self._current_song.get("id"),
-            "song_name": self._current_song.get("song_name"),
-            "artist": self._current_song.get("artist"),
-            "year": self._current_song.get("year"),
-            "entity_picture": self._current_song.get("entity_picture"),
-            "url": self._current_song.get("url"),
+            "media_player": self._current_song_data.get("media_player"),
+            "song_id": self._current_song_data.get("song_id"),
+            "year": self._current_song_data.get("year"),
+            "url": self._current_song_data.get("url"),
         }
 
     def update_current_song(self, song_data: dict) -> None:
-        """Update the current song."""
-        self._current_song = song_data
+        """Update the current song data."""
+        self._current_song_data = song_data
         self.async_write_ha_state()
 
     def clear_current_song(self) -> None:
         """Clear the current song."""
-        self._current_song = None
+        self._current_song_data = None
         self.async_write_ha_state()
 
     async def async_update(self) -> None:

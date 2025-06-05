@@ -701,17 +701,24 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getCurrentSong() {
-    // Get current song from the dedicated sensor entity
+    // Get current song from the media player entity state
     if (this.hass && this.hass.states) {
-      const entity = this.hass.states['sensor.soundbeats_current_song'];
-      if (entity && entity.state !== 'None' && entity.attributes) {
-        return {
-          song_name: entity.attributes.song_name,
-          artist: entity.attributes.artist,
-          year: entity.attributes.year,
-          entity_picture: entity.attributes.entity_picture,
-          url: entity.attributes.url
-        };
+      const currentSongEntity = this.hass.states['sensor.soundbeats_current_song'];
+      if (currentSongEntity && currentSongEntity.state !== 'None') {
+        const mediaPlayerEntityId = currentSongEntity.state;
+        const mediaPlayerEntity = this.hass.states[mediaPlayerEntityId];
+        
+        if (mediaPlayerEntity && mediaPlayerEntity.attributes) {
+          // Get song information from media player entity attributes
+          const attributes = mediaPlayerEntity.attributes;
+          return {
+            song_name: attributes.media_title || 'Unknown Title',
+            artist: attributes.media_artist || 'Unknown Artist', 
+            year: currentSongEntity.attributes.year || '',
+            entity_picture: attributes.entity_picture || mediaPlayerEntity.attributes.entity_picture || '',
+            url: currentSongEntity.attributes.url || ''
+          };
+        }
       }
     }
     return null;
