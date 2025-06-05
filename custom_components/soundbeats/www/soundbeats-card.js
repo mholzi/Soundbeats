@@ -1157,6 +1157,11 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateExpanderState() {
+    // Ensure shadowRoot is available before trying to update elements
+    if (!this.shadowRoot || !this.shadowRoot.querySelector) {
+      return;
+    }
+    
     // Update the Game Settings section
     const gameSettingsHeader = this.shadowRoot.querySelector('.section.admin-section .expandable-header');
     if (gameSettingsHeader) {
