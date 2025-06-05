@@ -1041,9 +1041,8 @@ class SoundbeatsCard extends HTMLElement {
           ` : ''}
         </div>
         
-        <!-- Teams Overview Section - Hidden when round counter is 0 -->
-        ${this.getRoundCounter() > 0 ? `
-        <div class="section teams-overview-section">
+        <!-- Teams Overview Section - Conditionally hidden when round counter is 0 -->
+        <div class="section teams-overview-section" ${this.getRoundCounter() === 0 ? 'style="display: none;"' : ''}>
           <h3>
             <ha-icon icon="mdi:trophy-outline" class="icon"></ha-icon>
             Teams Overview
@@ -1053,7 +1052,6 @@ class SoundbeatsCard extends HTMLElement {
             ${this.renderOtherTeamsOverview()}
           </div>
         </div>
-        ` : ''}
         
         <!-- Team Section - Always visible -->
         <div class="section team-section">

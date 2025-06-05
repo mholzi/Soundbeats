@@ -60,6 +60,8 @@ Soundbeats is a competitive music guessing game where teams compete to identify 
 
 No manual configuration is required! The integration will be automatically available in your Home Assistant interface after installation.
 
+**Zero-Setup Design**: All features including team rankings, visual styling, and interface behaviors work out-of-the-box with intelligent defaults. The UI automatically adapts to game state changes, hiding unnecessary sections when not relevant and optimizing readability without any user configuration needed.
+
 1. Go to Settings → Devices & Services
 2. Click "Add Integration"
 3. Search for "Soundbeats"
@@ -103,12 +105,13 @@ The integration automatically provides a comprehensive custom Lovelace card with
   - **Zero-Setup Integration**: Alert system works automatically without any configuration required
 
 #### Teams Overview Section
+- **Round-Aware Visibility**: Team ranking section automatically appears only when the game has started (round counter > 0), keeping the interface clean before gameplay begins
 - **Horizontal Scrollable Leaderboard**: All active teams displayed in a single horizontal row with compact cards that scroll when overflowing
 - **Compact Card Design**: Much smaller team cards (80-120px wide) with points prominently displayed at the top and team names in small font at the bottom
 - **Enhanced Visual Layout**: 
   - **Header Alignment**: Title section perfectly aligns with card edges for a cleaner look
   - **Badge Positioning**: Guessed year and bet indicators positioned in the top right corner of each team card
-  - **Improved Contrast**: Enhanced background colors for better text readability across all ranking levels
+  - **Improved Contrast**: Enhanced background colors ensure text and icons are always clearly visible, with dark backgrounds for non-medal teams
 - **Context-Aware Display**: 
   - **During countdown (timer running)**: Shows ranking badge, current points at top, team name at bottom, and compact "BET" indicators in top right corner
   - **When timer is 0 (round over)**: Displays ranking badge, current points at top, team name at bottom, and last round guess year in top right corner
@@ -132,7 +135,8 @@ To use the card, add it to your Lovelace dashboard by selecting **"Custom: Sound
   - **Perfect Alignment**: Header sections align seamlessly with card boundaries for a professional look
   - **Optimized Controls**: Compact, right-aligned controls for better space utilization
   - **Corner Badge System**: Key indicators (betting status, guess years) positioned in card corners for maximum visibility
-- **Comprehensive Teams Overview**: Horizontal scrollable leaderboard showing all teams in compact cards
+- **Comprehensive Teams Overview**: Horizontal scrollable leaderboard showing all teams in compact cards (only visible during active gameplay)
+  - **Smart Visibility**: Section automatically appears when the game starts (round 1+) and stays hidden before gameplay begins for a cleaner interface
   - **Real-time Leaderboard**: During countdown, shows current standings with compact betting indicators positioned in top right corners
   - **Round Results View**: After timer expires, displays final guesses and updated points with year indicators in top right corners
   - **Medal-Style Rankings**: Gold/silver/bronze visual hierarchy for top 3 teams with enhanced contrast for better readability
