@@ -43,8 +43,9 @@ async def async_setup_entry(
     game_mode_sensor = SoundbeatsGameModeSensor()
     current_song_sensor = SoundbeatsCurrentSongSensor()
     round_counter_sensor = SoundbeatsRoundCounterSensor()
+    played_songs_sensor = SoundbeatsPlayedSongsSensor()
     
-    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, game_mode_sensor, current_song_sensor, round_counter_sensor])
+    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, game_mode_sensor, current_song_sensor, round_counter_sensor, played_songs_sensor])
     
     # Store entity references in hass data for service access
     hass.data.setdefault(DOMAIN, {})
@@ -57,6 +58,7 @@ async def async_setup_entry(
         "game_mode_sensor": game_mode_sensor,
         "current_song_sensor": current_song_sensor,
         "round_counter_sensor": round_counter_sensor,
+        "played_songs_sensor": played_songs_sensor,
     }
     
     async_add_entities(entities, True)
@@ -604,3 +606,49 @@ class SoundbeatsRoundCounterSensor(SensorEntity, RestoreEntity):
     async def async_update(self) -> None:
         """Update the sensor."""
         _LOGGER.debug("Updating Soundbeats round counter sensor")
+
+
+class SoundbeatsPlayedSongsSensor(SensorEntity):
+    """Representation of a Soundbeats played songs sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the played songs sensor."""
+        self._attr_name = "Soundbeats Played Songs"
+        self._attr_unique_id = "soundbeats_played_songs"
+        self._attr_icon = "mdi:playlist-music"
+        self._played_song_ids = []
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor (number of played songs)."""
+        return len(self._played_song_ids)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes."""
+        return {
+            "played_song_ids": self._played_song_ids,
+            "friendly_name": "Soundbeats Played Songs",
+            "description": "List of song IDs played since the current game started",
+        }
+
+    def add_played_song(self, song_id: int) -> None:
+        """Add a song ID to the played songs list."""
+        if song_id not in self._played_song_ids:
+            self._played_song_ids.append(song_id)
+            _LOGGER.debug("Added song ID %d to played list. Total played: %d", song_id, len(self._played_song_ids))
+            self.async_write_ha_state()
+
+    def reset_played_songs(self) -> None:
+        """Reset the played songs list to empty."""
+        self._played_song_ids = []
+        _LOGGER.info("Reset played songs list")
+        self.async_write_ha_state()
+
+    def is_song_played(self, song_id: int) -> bool:
+        """Check if a song ID has been played."""
+        return song_id in self._played_song_ids
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats played songs sensor")
