@@ -638,8 +638,11 @@ class SoundbeatsCard extends HTMLElement {
   renderTeams() {
     const teams = this.getTeams();
     const isCountdownZero = this.getCountdownCurrent() === 0;
+    const currentYear = new Date().getFullYear();
     
-    return Object.entries(teams).map(([teamId, team]) => `
+    return Object.entries(teams)
+      .filter(([teamId, team]) => team.participating)
+      .map(([teamId, team]) => `
       <div class="team-item" data-team="${teamId}">
         <div class="team-header">
           <span class="team-name">${team.name}</span>
@@ -650,7 +653,7 @@ class SoundbeatsCard extends HTMLElement {
             <div class="year-guess-section">
               <label class="year-guess-label">Guess the year this song was published:</label>
               <div class="year-guess-control">
-                <input type="range" class="year-slider" min="1950" max="2024" value="1990" 
+                <input type="range" class="year-slider" min="1950" max="${currentYear}" value="1990" 
                        oninput="this.nextElementSibling.textContent = this.value">
                 <span class="year-value">1990</span>
               </div>
