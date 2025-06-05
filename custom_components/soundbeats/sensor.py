@@ -42,8 +42,9 @@ async def async_setup_entry(
     audio_sensor = SoundbeatsAudioPlayerSensor()
     player_count_sensor = SoundbeatsPlayerCountSensor()
     game_mode_sensor = SoundbeatsGameModeSensor()
+    current_song_sensor = SoundbeatsCurrentSongSensor()
     
-    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, player_count_sensor, game_mode_sensor])
+    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, player_count_sensor, game_mode_sensor, current_song_sensor])
     
     # Store entity references in hass data for service access
     hass.data.setdefault(DOMAIN, {})
@@ -55,6 +56,7 @@ async def async_setup_entry(
         "audio_sensor": audio_sensor,
         "player_count_sensor": player_count_sensor,
         "game_mode_sensor": game_mode_sensor,
+        "current_song_sensor": current_song_sensor,
     }
     
     async_add_entities(entities, True)
@@ -354,3 +356,48 @@ class SoundbeatsGameModeSensor(SensorEntity):
     async def async_update(self) -> None:
         """Update the sensor."""
         _LOGGER.debug("Updating Soundbeats game mode sensor")
+
+
+class SoundbeatsCurrentSongSensor(SensorEntity):
+    """Representation of a Soundbeats current song sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the current song sensor."""
+        self._attr_name = "Soundbeats Current Song"
+        self._attr_unique_id = "soundbeats_current_song"
+        self._attr_icon = "mdi:music-note"
+        self._current_song = None
+
+    @property
+    def state(self) -> str:
+        """Return the state of the sensor (current song ID or None)."""
+        return str(self._current_song) if self._current_song is not None else "None"
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes."""
+        if self._current_song is None:
+            return {}
+        
+        return {
+            "song_id": self._current_song.get("id"),
+            "song_name": self._current_song.get("song_name"),
+            "artist": self._current_song.get("artist"),
+            "year": self._current_song.get("year"),
+            "entity_picture": self._current_song.get("entity_picture"),
+            "url": self._current_song.get("url"),
+        }
+
+    def update_current_song(self, song_data: dict) -> None:
+        """Update the current song."""
+        self._current_song = song_data
+        self.async_write_ha_state()
+
+    def clear_current_song(self) -> None:
+        """Clear the current song."""
+        self._current_song = None
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats current song sensor")

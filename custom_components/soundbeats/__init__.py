@@ -1,6 +1,8 @@
 """The Soundbeats integration."""
+import json
 import logging
 import os
+import random
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -152,6 +154,23 @@ async def _register_services(hass: HomeAssistant) -> None:
         entities = _get_entities()
         countdown_sensor = entities.get("countdown_sensor")
         countdown_current_sensor = entities.get("countdown_current_sensor")
+        current_song_sensor = entities.get("current_song_sensor")
+        
+        # Randomly select a song from songs.json
+        try:
+            songs_file = os.path.join(os.path.dirname(__file__), "songs.json")
+            with open(songs_file, 'r') as f:
+                songs = json.load(f)
+            
+            if songs:
+                selected_song = random.choice(songs)
+                _LOGGER.info("Selected song: %s by %s", selected_song.get("song_name"), selected_song.get("artist"))
+                
+                # Update the current song sensor
+                if current_song_sensor and hasattr(current_song_sensor, 'update_current_song'):
+                    current_song_sensor.update_current_song(selected_song)
+        except Exception as e:
+            _LOGGER.error("Failed to select random song: %s", e)
         
         if countdown_sensor and countdown_current_sensor:
             # Get the configured timer length

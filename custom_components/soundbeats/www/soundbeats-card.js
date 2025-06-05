@@ -341,6 +341,46 @@ class SoundbeatsCard extends HTMLElement {
           background: var(--text-primary-color, white);
           transition: width 1s linear;
         }
+        
+        .song-section {
+          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, rgba(3, 169, 244, 0.1) 100%);
+          border: 2px solid var(--primary-color, #03a9f4);
+        }
+        
+        .song-card {
+          text-align: center;
+          padding: 16px;
+        }
+        
+        .song-image {
+          width: 150px;
+          height: 150px;
+          border-radius: 8px;
+          margin: 0 auto 16px;
+          display: block;
+          object-fit: cover;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .song-name {
+          font-size: 1.5em;
+          font-weight: bold;
+          margin: 8px 0;
+          color: var(--primary-text-color);
+        }
+        
+        .song-artist {
+          font-size: 1.2em;
+          margin: 8px 0;
+          color: var(--secondary-text-color);
+        }
+        
+        .song-year {
+          font-size: 1.1em;
+          font-weight: bold;
+          margin: 8px 0;
+          color: var(--primary-color, #03a9f4);
+        }
       </style>
       
       <div class="soundbeats-card">
@@ -363,6 +403,22 @@ class SoundbeatsCard extends HTMLElement {
           <div class="countdown-progress">
             <div class="countdown-progress-bar" style="width: ${this.getCountdownProgressPercent()}%"></div>
           </div>
+        </div>
+        
+        <!-- Song Section - Only visible when countdown is 0 and song is selected -->
+        <div class="section song-section ${this.getCountdownCurrent() === 0 && this.getCurrentSong() ? '' : 'hidden'}">
+          <h3>
+            <ha-icon icon="mdi:music" class="icon"></ha-icon>
+            Current Song
+          </h3>
+          ${this.getCurrentSong() ? `
+            <div class="song-card">
+              <img src="${this.getCurrentSong().entity_picture}" alt="Song Cover" class="song-image" />
+              <div class="song-name">${this.getCurrentSong().song_name}</div>
+              <div class="song-artist">${this.getCurrentSong().artist}</div>
+              <div class="song-year">${this.getCurrentSong().year}</div>
+            </div>
+          ` : ''}
         </div>
         
         <!-- Team Section - Always visible -->
@@ -644,6 +700,23 @@ class SoundbeatsCard extends HTMLElement {
     return Math.round((current / total) * 100);
   }
 
+  getCurrentSong() {
+    // Get current song from the dedicated sensor entity
+    if (this.hass && this.hass.states) {
+      const entity = this.hass.states['sensor.soundbeats_current_song'];
+      if (entity && entity.state !== 'None' && entity.attributes) {
+        return {
+          song_name: entity.attributes.song_name,
+          artist: entity.attributes.artist,
+          year: entity.attributes.year,
+          entity_picture: entity.attributes.entity_picture,
+          url: entity.attributes.url
+        };
+      }
+    }
+    return null;
+  }
+
   getSelectedAudioPlayer() {
     // Get selected audio player from the dedicated sensor entity
     if (this.hass && this.hass.states) {
@@ -714,6 +787,9 @@ class SoundbeatsCard extends HTMLElement {
     // Update countdown display
     this.updateCountdownDisplay();
     
+    // Update song display
+    this.updateSongDisplay();
+    
     // Update team display values (but not input fields)
     this.updateTeamDisplayValues();
     
@@ -750,6 +826,32 @@ class SoundbeatsCard extends HTMLElement {
     if (countdownProgressBar) {
       const progressPercent = this.getCountdownProgressPercent();
       countdownProgressBar.style.width = `${progressPercent}%`;
+    }
+  }
+
+  updateSongDisplay() {
+    const songSection = this.shadowRoot.querySelector('.song-section');
+    const currentCountdown = this.getCountdownCurrent();
+    const currentSong = this.getCurrentSong();
+    
+    // Show/hide song section based on whether countdown is 0 and song is available
+    if (songSection) {
+      if (currentCountdown === 0 && currentSong) {
+        songSection.classList.remove('hidden');
+        
+        // Update song information
+        const songImage = songSection.querySelector('.song-image');
+        const songName = songSection.querySelector('.song-name');
+        const songArtist = songSection.querySelector('.song-artist');
+        const songYear = songSection.querySelector('.song-year');
+        
+        if (songImage) songImage.src = currentSong.entity_picture;
+        if (songName) songName.textContent = currentSong.song_name;
+        if (songArtist) songArtist.textContent = currentSong.artist;
+        if (songYear) songYear.textContent = currentSong.year;
+      } else {
+        songSection.classList.add('hidden');
+      }
     }
   }
 
