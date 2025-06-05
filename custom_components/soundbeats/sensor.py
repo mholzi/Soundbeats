@@ -110,6 +110,8 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
         self._points = 0
         self._participating = True
         self._year_guess = 1990
+        self._betting = False
+        self._last_round_betting = False
 
     async def async_added_to_hass(self) -> None:
         """Called when entity is added to hass."""
@@ -135,6 +137,14 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
                     if "year_guess" in last_state.attributes:
                         self._year_guess = int(last_state.attributes["year_guess"])
                         _LOGGER.debug("Restored team %d year guess: %d", self._team_number, self._year_guess)
+                    
+                    if "betting" in last_state.attributes:
+                        self._betting = bool(last_state.attributes["betting"])
+                        _LOGGER.debug("Restored team %d betting: %s", self._team_number, self._betting)
+                    
+                    if "last_round_betting" in last_state.attributes:
+                        self._last_round_betting = bool(last_state.attributes["last_round_betting"])
+                        _LOGGER.debug("Restored team %d last round betting: %s", self._team_number, self._last_round_betting)
                         
             except (ValueError, TypeError, KeyError) as e:
                 _LOGGER.warning("Could not restore team %d state: %s, using defaults", self._team_number, e)
@@ -142,6 +152,8 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
                 self._points = 0
                 self._participating = True
                 self._year_guess = 1990
+                self._betting = False
+                self._last_round_betting = False
 
     @property
     def state(self) -> str:
@@ -156,6 +168,8 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
             "participating": self._participating,
             "team_number": self._team_number,
             "year_guess": self._year_guess,
+            "betting": self._betting,
+            "last_round_betting": self._last_round_betting,
         }
 
     def update_team_name(self, name: str) -> None:
@@ -176,6 +190,11 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
     def update_team_year_guess(self, year_guess: int) -> None:
         """Update the team's year guess."""
         self._year_guess = year_guess
+        self.async_write_ha_state()
+
+    def update_team_betting(self, betting: bool) -> None:
+        """Update the team's betting status."""
+        self._betting = betting
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
@@ -328,6 +347,7 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
                     continue  # Skip non-participating teams
                 
                 year_guess = team_attrs.get("year_guess")
+                betting = team_attrs.get("betting", False)
                 if year_guess is None:
                     continue
                     
@@ -337,31 +357,55 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
                     _LOGGER.warning("Invalid year guess for team %s: %s", team_key, year_guess)
                     continue
                 
-                # Calculate points based on accuracy
+                # Calculate points based on accuracy and betting
                 year_difference = abs(song_year - year_guess)
                 points_to_add = 0
                 
-                if year_difference == 0:
-                    points_to_add = 20  # Exact match
-                elif year_difference <= 2:
-                    points_to_add = 10  # Within 2 years
-                elif year_difference <= 5:
-                    points_to_add = 5   # Within 5 years
-                
-                if points_to_add > 0:
-                    current_points = team_attrs.get("points", 0)
-                    new_points = current_points + points_to_add
-                    
-                    # Update team points
-                    if hasattr(team_sensor, 'update_team_points'):
-                        team_sensor.update_team_points(new_points)
-                        _LOGGER.info("Team %s: guess %d, actual %d, awarded %d points (total: %d)", 
-                                   team_key, year_guess, song_year, points_to_add, new_points)
+                if betting:
+                    # Betting logic: 20 points if exact match, 0 points otherwise
+                    if year_difference == 0:
+                        points_to_add = 20  # Exact match with bet
+                        _LOGGER.info("Team %s: BETTING WIN! guess %d, actual %d, awarded %d points", 
+                                   team_key, year_guess, song_year, points_to_add)
                     else:
-                        _LOGGER.warning("Team sensor %s has no update_team_points method", team_key)
+                        points_to_add = 0  # No points for betting and wrong guess
+                        _LOGGER.info("Team %s: BETTING LOSS! guess %d, actual %d, no points awarded", 
+                                   team_key, year_guess, song_year)
                 else:
-                    _LOGGER.info("Team %s: guess %d, actual %d, no points awarded (difference: %d years)", 
-                               team_key, year_guess, song_year, year_difference)
+                    # Normal scoring logic
+                    if year_difference == 0:
+                        points_to_add = 20  # Exact match
+                    elif year_difference <= 2:
+                        points_to_add = 10  # Within 2 years
+                    elif year_difference <= 5:
+                        points_to_add = 5   # Within 5 years
+                    
+                    if points_to_add > 0:
+                        _LOGGER.info("Team %s: guess %d, actual %d, awarded %d points", 
+                                   team_key, year_guess, song_year, points_to_add)
+                    else:
+                        _LOGGER.info("Team %s: guess %d, actual %d, no points awarded (difference: %d years)", 
+                                   team_key, year_guess, song_year, year_difference)
+                
+                # Update team points
+                current_points = team_attrs.get("points", 0)
+                new_points = current_points + points_to_add
+                
+                if hasattr(team_sensor, 'update_team_points'):
+                    team_sensor.update_team_points(new_points)
+                else:
+                    _LOGGER.warning("Team sensor %s has no update_team_points method", team_key)
+                
+                # Store betting state for result display before resetting
+                if hasattr(team_sensor, '_last_round_betting'):
+                    team_sensor._last_round_betting = betting
+                    team_sensor.async_write_ha_state()
+                
+                # Reset betting state after evaluation
+                if hasattr(team_sensor, 'update_team_betting'):
+                    team_sensor.update_team_betting(False)
+                else:
+                    _LOGGER.warning("Team sensor %s has no update_team_betting method", team_key)
                                
         except Exception as e:
             _LOGGER.error("Error during round evaluation: %s", e)

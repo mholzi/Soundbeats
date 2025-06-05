@@ -283,6 +283,104 @@ class SoundbeatsCard extends HTMLElement {
           font-size: 0.9em;
         }
         
+        .betting-section {
+          margin-top: 12px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+        }
+        
+        .bet-button {
+          background: var(--primary-color, #03a9f4);
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 20px;
+          cursor: pointer;
+          font-size: 0.9em;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.3s ease;
+          text-transform: uppercase;
+        }
+        
+        .bet-button:hover {
+          background: var(--primary-color-dark, #0288d1);
+          transform: translateY(-1px);
+        }
+        
+        .bet-button.betting-active {
+          background: var(--warning-color, #ff9800);
+          animation: pulse-betting 2s infinite;
+        }
+        
+        .bet-button.betting-active:hover {
+          background: var(--warning-color-dark, #f57c00);
+        }
+        
+        @keyframes pulse-betting {
+          0%, 100% { 
+            box-shadow: 0 0 5px var(--warning-color, #ff9800);
+          }
+          50% { 
+            box-shadow: 0 0 15px var(--warning-color, #ff9800);
+          }
+        }
+        
+        .betting-info {
+          font-size: 0.8em;
+          color: var(--warning-color, #ff9800);
+          font-weight: bold;
+        }
+        
+        .bet-result-section {
+          margin-top: 12px;
+        }
+        
+        .bet-result {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          border-radius: 8px;
+          margin-bottom: 8px;
+        }
+        
+        .bet-result.bet-win {
+          background: var(--success-color, #4caf50);
+          color: white;
+        }
+        
+        .bet-result.bet-loss {
+          background: var(--error-color, #f44336);
+          color: white;
+        }
+        
+        .result-icon {
+          font-size: 1.5em;
+        }
+        
+        .result-text {
+          flex: 1;
+        }
+        
+        .result-details {
+          font-size: 0.9em;
+          opacity: 0.9;
+          margin-top: 4px;
+        }
+        
+        .result-info {
+          padding: 8px;
+          background: var(--divider-color, #e0e0e0);
+          border-radius: 4px;
+          font-size: 0.9em;
+          text-align: center;
+        }
+        
         .team-controls {
           display: flex;
           gap: 4px;
@@ -720,7 +818,9 @@ class SoundbeatsCard extends HTMLElement {
             name: entity.state,
             points: entity.attributes && entity.attributes.points !== undefined ? entity.attributes.points : 0,
             participating: entity.attributes && entity.attributes.participating !== undefined ? entity.attributes.participating : true,
-            year_guess: entity.attributes && entity.attributes.year_guess !== undefined ? entity.attributes.year_guess : 1990
+            year_guess: entity.attributes && entity.attributes.year_guess !== undefined ? entity.attributes.year_guess : 1990,
+            betting: entity.attributes && entity.attributes.betting !== undefined ? entity.attributes.betting : false,
+            last_round_betting: entity.attributes && entity.attributes.last_round_betting !== undefined ? entity.attributes.last_round_betting : false
           };
         } else {
           // Fallback to default if entity doesn't exist yet
@@ -728,7 +828,9 @@ class SoundbeatsCard extends HTMLElement {
             name: `Team ${i}`,
             points: 0,
             participating: true,
-            year_guess: 1990
+            year_guess: 1990,
+            betting: false,
+            last_round_betting: false
           };
         }
       }
@@ -742,7 +844,9 @@ class SoundbeatsCard extends HTMLElement {
         name: `Team ${i}`,
         points: 0,
         participating: true,
-        year_guess: 1990
+        year_guess: 1990,
+        betting: false,
+        last_round_betting: false
       };
     }
     return defaultTeams;
@@ -791,6 +895,18 @@ class SoundbeatsCard extends HTMLElement {
                        oninput="this.nextElementSibling.textContent = this.value; this.getRootNode().host.updateTeamYearGuess('${teamId}', this.value)">
                 <span class="year-value">${team.year_guess}</span>
               </div>
+              <div class="betting-section">
+                <button class="bet-button ${team.betting ? 'betting-active' : ''}" 
+                        onclick="this.getRootNode().host.toggleTeamBetting('${teamId}', ${!team.betting})">
+                  <ha-icon icon="mdi:${team.betting ? 'cards-diamond' : 'cards-diamond-outline'}" class="icon"></ha-icon>
+                  ${team.betting ? 'BETTING!' : 'Place Bet'}
+                </button>
+                ${team.betting ? '<span class="betting-info">Win: 20pts | Lose: 0pts</span>' : ''}
+              </div>
+            </div>
+          ` : this.getCurrentSong() ? `
+            <div class="bet-result-section">
+              ${this.renderBetResult(teamId, team)}
             </div>
           ` : ''}
         </div>
@@ -841,6 +957,46 @@ class SoundbeatsCard extends HTMLElement {
         year_guess: parseInt(yearGuess, 10)
       });
     }
+  }
+
+  toggleTeamBetting(teamId, betting) {
+    // Call service to toggle team betting
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'update_team_betting', {
+        team_id: teamId,
+        betting: betting
+      });
+    }
+  }
+
+  renderBetResult(teamId, team) {
+    const currentSong = this.getCurrentSong();
+    if (!currentSong || !currentSong.year) {
+      return '';
+    }
+    
+    const songYear = parseInt(currentSong.year, 10);
+    const teamGuess = team.year_guess;
+    const wasBetting = team.last_round_betting;
+    
+    if (!wasBetting) {
+      return `<div class="result-info">Guess: ${teamGuess} | Actual: ${songYear}</div>`;
+    }
+    
+    const wasCorrect = Math.abs(songYear - teamGuess) === 0;
+    
+    return `
+      <div class="bet-result ${wasCorrect ? 'bet-win' : 'bet-loss'}">
+        <ha-icon icon="mdi:${wasCorrect ? 'trophy' : 'close-circle'}" class="result-icon"></ha-icon>
+        <div class="result-text">
+          <strong>${wasCorrect ? 'BET WON!' : 'BET LOST!'}</strong>
+          <div class="result-details">
+            Your guess: ${teamGuess} | Actual year: ${songYear}
+            <br>Points earned: ${wasCorrect ? '20' : '0'}
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   startNewGame() {

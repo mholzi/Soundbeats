@@ -100,6 +100,11 @@ async def _register_services(hass: HomeAssistant) -> None:
                 team_sensor.update_team_name(f"Team {i}")
                 team_sensor.update_team_points(0)
                 team_sensor.update_team_participating(True)
+                if hasattr(team_sensor, 'update_team_betting'):
+                    team_sensor.update_team_betting(False)
+                if hasattr(team_sensor, '_last_round_betting'):
+                    team_sensor._last_round_betting = False
+                    team_sensor.async_write_ha_state()
             else:
                 # Fallback to direct state setting
                 team_entity_id = f"sensor.soundbeats_team_{i}"
@@ -138,6 +143,11 @@ async def _register_services(hass: HomeAssistant) -> None:
                 team_sensor.update_team_name(f"Team {i}")
                 team_sensor.update_team_points(0)
                 team_sensor.update_team_participating(True)
+                if hasattr(team_sensor, 'update_team_betting'):
+                    team_sensor.update_team_betting(False)
+                if hasattr(team_sensor, '_last_round_betting'):
+                    team_sensor._last_round_betting = False
+                    team_sensor.async_write_ha_state()
             else:
                 # Fallback to direct state setting
                 team_entity_id = f"sensor.soundbeats_team_{i}"
@@ -417,6 +427,35 @@ async def _register_services(hass: HomeAssistant) -> None:
                 attrs["year_guess"] = int(year_guess)
                 hass.states.async_set(entity_id, state_obj.state, attrs)
 
+    async def update_team_betting(call):
+        team_id = call.data.get("team_id")
+        betting = call.data.get("betting")
+        if not team_id or betting is None:
+            _LOGGER.error("Missing team_id or betting")
+            return
+        
+        # Extract team number from team_id (e.g., "team_1" -> "1")
+        team_number = team_id.split('_')[-1]
+        unique_id = f"soundbeats_team_{team_number}"
+        
+        # Find the team sensor entity and call its update method
+        entities = _get_entities()
+        team_sensors = entities.get("team_sensors", {})
+        team_sensor = team_sensors.get(unique_id)
+        
+        if team_sensor and hasattr(team_sensor, 'update_team_betting'):
+            _LOGGER.debug("Updating team %s betting to %s via entity method", team_number, betting)
+            team_sensor.update_team_betting(bool(betting))
+        else:
+            # Fallback to direct state setting
+            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
+            entity_id = f"sensor.soundbeats_team_{team_number}"
+            state_obj = hass.states.get(entity_id)
+            if state_obj:
+                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
+                attrs["betting"] = bool(betting)
+                hass.states.async_set(entity_id, state_obj.state, attrs)
+
     # Register all services under the "soundbeats" domain
     hass.services.async_register(DOMAIN, "start_game", start_game)
     hass.services.async_register(DOMAIN, "stop_game", stop_game)
@@ -426,6 +465,7 @@ async def _register_services(hass: HomeAssistant) -> None:
     hass.services.async_register(DOMAIN, "update_team_points", update_team_points)
     hass.services.async_register(DOMAIN, "update_team_participating", update_team_participating)
     hass.services.async_register(DOMAIN, "update_team_year_guess", update_team_year_guess)
+    hass.services.async_register(DOMAIN, "update_team_betting", update_team_betting)
     hass.services.async_register(DOMAIN, "update_countdown_timer_length", update_countdown_timer_length)
     hass.services.async_register(DOMAIN, "update_audio_player", update_audio_player)
 
@@ -445,6 +485,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 "update_team_name",
                 "update_team_points",
                 "update_team_participating",
+                "update_team_year_guess",
+                "update_team_betting",
                 "update_countdown_timer_length",
                 "update_audio_player",
             ]:
