@@ -161,10 +161,14 @@ async def _register_services(hass: HomeAssistant) -> None:
         selected_player = None
         if audio_sensor and hasattr(audio_sensor, 'state'):
             selected_player = audio_sensor.state
+            _LOGGER.debug("Got selected player from audio_sensor: %s", selected_player)
         else:
             audio_entity = hass.states.get("sensor.soundbeats_audio_player")
             if audio_entity and audio_entity.state != "None":
                 selected_player = audio_entity.state
+                _LOGGER.debug("Got selected player from state: %s", selected_player)
+            else:
+                _LOGGER.debug("No audio entity found or state is None. Entity: %s", audio_entity)
         
         if not selected_player:
             _LOGGER.warning("No audio player selected. Please select one in the settings.")
@@ -188,24 +192,34 @@ async def _register_services(hass: HomeAssistant) -> None:
                     
                     # Play the song on the selected media player
                     try:
+                        song_url = selected_song.get("url")
+                        _LOGGER.info("Attempting to play song URL '%s' on media player '%s'", song_url, selected_player)
+                        
+                        # Check if URL is a Spotify URL and adjust media_content_type accordingly
+                        media_content_type = "music"
+                        if song_url and "spotify.com" in song_url:
+                            media_content_type = "spotify"
+                            _LOGGER.info("Detected Spotify URL, setting media_content_type to 'spotify'")
+                        
                         await hass.services.async_call(
                             "media_player",
                             "play_media",
                             {
                                 "entity_id": selected_player,
-                                "media_content_id": selected_song.get("url"),
-                                "media_content_type": "music"
+                                "media_content_id": song_url,
+                                "media_content_type": media_content_type
                             }
                         )
-                        _LOGGER.info("Started playing song on %s", selected_player)
+                        _LOGGER.info("Successfully called media_player.play_media service for %s", selected_player)
                         
-                        # Update the current song sensor with the media player entity ID and song details
+        # Update the current song sensor with the media player entity ID and song details
                         if current_song_sensor and hasattr(current_song_sensor, 'update_current_song'):
                             current_song_sensor.update_current_song({
                                 "media_player": selected_player,
                                 "song_id": selected_song.get("id"),
                                 "year": selected_song.get("year"),
-                                "url": selected_song.get("url")
+                                "url": selected_song.get("url"),
+                                "media_content_type": media_content_type
                             })
                     except Exception as e:
                         _LOGGER.error("Failed to play song on media player %s: %s", selected_player, e)

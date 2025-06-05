@@ -147,6 +147,13 @@ class SoundbeatsCard extends HTMLElement {
           word-break: break-all;
         }
         
+        .debug-warning {
+          background: rgba(255, 193, 7, 0.3);
+          padding: 8px;
+          border-radius: 4px;
+          border-left: 4px solid #ffc107;
+        }
+        
         .teams-container {
           margin-top: 16px;
         }
@@ -634,12 +641,34 @@ class SoundbeatsCard extends HTMLElement {
             </div>
             <div class="debug-item">
               <strong>Current Song URL:</strong> 
-              <span class="debug-value">${this.getCurrentSongUrl() || 'No song playing'}</span>
+              <span class="debug-value">${this.getCurrentSongUrl() || 'No song URL available'}</span>
+            </div>
+            <div class="debug-item">
+              <strong>Current Song Media Content Type:</strong> 
+              <span class="debug-value">${this.getCurrentSongMediaContentType() || 'Unknown'}</span>
             </div>
             <div class="debug-item">
               <strong>Current Song Media Player:</strong> 
               <span class="debug-value">${this.getCurrentSongMediaPlayer() || 'No media player assigned'}</span>
             </div>
+            <div class="debug-item">
+              <strong>Current Song Sensor State:</strong> 
+              <span class="debug-value">${this.getCurrentSongSensorState()}</span>
+            </div>
+            <div class="debug-item">
+              <strong>Game Status:</strong> 
+              <span class="debug-value">${this.getGameStatus()}</span>
+            </div>
+            <div class="debug-item">
+              <strong>Countdown Current:</strong> 
+              <span class="debug-value">${this.getCountdownCurrent()}s</span>
+            </div>
+            ${this.getCurrentSongUrl() && this.getCurrentSongUrl().includes('spotify.com') ? `
+              <div class="debug-item debug-warning">
+                <strong>⚠️ Spotify URL Detected:</strong> 
+                <span class="debug-value">Make sure your selected media player supports Spotify playback</span>
+              </div>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -893,6 +922,17 @@ class SoundbeatsCard extends HTMLElement {
     return null;
   }
 
+  getCurrentSongMediaContentType() {
+    // Get current song media content type from the sensor attributes
+    if (this.hass && this.hass.states) {
+      const currentSongEntity = this.hass.states['sensor.soundbeats_current_song'];
+      if (currentSongEntity && currentSongEntity.attributes) {
+        return currentSongEntity.attributes.media_content_type || null;
+      }
+    }
+    return null;
+  }
+
   getCurrentSongMediaPlayer() {
     // Get current song media player from the sensor state
     if (this.hass && this.hass.states) {
@@ -902,6 +942,19 @@ class SoundbeatsCard extends HTMLElement {
       }
     }
     return null;
+  }
+
+  getCurrentSongSensorState() {
+    // Get current song sensor state and attributes for debugging
+    if (this.hass && this.hass.states) {
+      const currentSongEntity = this.hass.states['sensor.soundbeats_current_song'];
+      if (currentSongEntity) {
+        const attributes = currentSongEntity.attributes || {};
+        return `State: ${currentSongEntity.state}, Attributes: ${JSON.stringify(attributes)}`;
+      }
+      return 'Sensor not found';
+    }
+    return 'HASS not available';
   }
 
   getSelectedAudioPlayer() {
