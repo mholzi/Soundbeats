@@ -208,6 +208,8 @@ The integration automatically provides a comprehensive custom Lovelace card with
 #### Individual Team Cards
 - **User-Specific Access**: Individual team cards are only displayed for teams assigned to the current Home Assistant user ID, ensuring personalized gameplay and preventing access to other users' teams.
 - **Interactive Controls**: Year guess sliders, betting buttons, and detailed results when timer expires
+  - **Reactive Bet Buttons**: Button state (active/inactive, text, and styling) automatically updates in real-time when backend state changes, with no page reload required
+  - **Zero-Setup Synchronization**: Bet button state is always kept in sync with Home Assistant backend state without any special user setup or configuration
 - **Personal Team Views**: Separate detailed interface for each team's gameplay experience
 - **Enhanced Scoring Display**: Clear, detailed explanations of points earned after each round
   - **Automatic Scoring Explanations**: Shows points earned and reasoning for all guesses (e.g., "Points earned: 10. You were within 2 years of the correct answer.")
@@ -439,6 +441,8 @@ If the BET button shows unexpected visual behavior on mobile or desktop:
 
 **State Synchronization:**
 - Button visual state reflects the actual backend entity state (`team.betting` property)
+- **Real-time Updates**: Bet button state is automatically synchronized with backend state changes without requiring page reload
+- **No Setup Required**: Button state synchronization works out-of-the-box with the Lovelace Card integration
 - If button appears stuck in wrong state, check Home Assistant logs for service call errors
 - The betting state persists across page refreshes and accurately reflects the team's actual betting status
 
