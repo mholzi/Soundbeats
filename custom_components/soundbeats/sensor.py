@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorEntity, RestoreEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -140,7 +140,7 @@ class SoundbeatsTeamSensor(SensorEntity):
         _LOGGER.debug("Updating Soundbeats team %d sensor", self._team_number)
 
 
-class SoundbeatsCountdownTimerSensor(SensorEntity):
+class SoundbeatsCountdownTimerSensor(SensorEntity, RestoreEntity):
     """Representation of a Soundbeats countdown timer sensor."""
 
     def __init__(self) -> None:
@@ -150,6 +150,19 @@ class SoundbeatsCountdownTimerSensor(SensorEntity):
         self._attr_icon = "mdi:timer"
         self._attr_unit_of_measurement = "s"
         self._timer_length = 30
+
+    async def async_added_to_hass(self) -> None:
+        """Called when entity is added to hass."""
+        await super().async_added_to_hass()
+        
+        # Restore previous state if available
+        if (last_state := await self.async_get_last_state()) is not None:
+            try:
+                self._timer_length = int(last_state.state)
+                _LOGGER.debug("Restored countdown timer length: %d", self._timer_length)
+            except (ValueError, TypeError):
+                _LOGGER.warning("Could not restore countdown timer state, using default")
+                self._timer_length = 30
 
     @property
     def state(self) -> int:
@@ -166,7 +179,7 @@ class SoundbeatsCountdownTimerSensor(SensorEntity):
         _LOGGER.debug("Updating Soundbeats countdown timer sensor")
 
 
-class SoundbeatsAudioPlayerSensor(SensorEntity):
+class SoundbeatsAudioPlayerSensor(SensorEntity, RestoreEntity):
     """Representation of a Soundbeats audio player sensor."""
 
     def __init__(self) -> None:
@@ -175,6 +188,18 @@ class SoundbeatsAudioPlayerSensor(SensorEntity):
         self._attr_unique_id = "soundbeats_audio_player"
         self._attr_icon = "mdi:speaker"
         self._audio_player = None
+
+    async def async_added_to_hass(self) -> None:
+        """Called when entity is added to hass."""
+        await super().async_added_to_hass()
+        
+        # Restore previous state if available
+        if (last_state := await self.async_get_last_state()) is not None:
+            if last_state.state != "None":
+                self._audio_player = last_state.state
+                _LOGGER.debug("Restored audio player: %s", self._audio_player)
+            else:
+                _LOGGER.debug("Previous audio player was None, keeping default")
 
     @property
     def state(self) -> str:
