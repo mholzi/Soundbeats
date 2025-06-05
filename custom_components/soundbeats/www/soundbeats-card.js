@@ -3334,5 +3334,5 @@ window.customCards.push({
 console.info(
   '%c  SOUNDBEATS-CARD  \n%c  Version 1.0.0   ',
   'color: orange; font-weight: bold; background: black',
-  'color: white; font-weight: bold; background: dimgray',
+  'color: white; font-weight: bold; background: dimgray'
 );
