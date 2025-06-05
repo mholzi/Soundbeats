@@ -58,6 +58,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {}
 
+    # Register frontend resources (card JS) for config entry setup
+    await _register_frontend_resources(hass)
+
     # Forward to sensor platform (so sensor.py is loaded)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
