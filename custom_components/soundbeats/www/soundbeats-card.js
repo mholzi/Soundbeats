@@ -760,11 +760,18 @@ class SoundbeatsCard extends HTMLElement {
     
     if (!teamsContainer) return;
     
+    // Check if any input field in team management is currently focused - if so, block recreation
+    const isUserEditing = teamManagementContainer && 
+      (teamManagementContainer.contains(document.activeElement) && 
+       (document.activeElement.type === 'text' || document.activeElement.type === 'checkbox'));
+    
     Object.entries(teams).forEach(([teamId, team]) => {
       const teamItem = teamsContainer.querySelector(`[data-team="${teamId}"]`);
       if (!teamItem) {
-        // Team item doesn't exist, need to add it
-        this.recreateTeamsSection();
+        // Team item doesn't exist, need to add it - but only if user is not editing
+        if (!isUserEditing) {
+          this.recreateTeamsSection();
+        }
         return;
       }
       
@@ -836,6 +843,15 @@ class SoundbeatsCard extends HTMLElement {
     // Only recreate if teams structure has changed significantly
     const teamsContainer = this.shadowRoot.querySelector('.teams-container');
     const teamManagementContainer = this.shadowRoot.querySelector('.team-management-container');
+    
+    // Block recreation if user is actively editing any input field
+    const isUserEditing = teamManagementContainer && 
+      (teamManagementContainer.contains(document.activeElement) && 
+       (document.activeElement.type === 'text' || document.activeElement.type === 'checkbox'));
+       
+    if (isUserEditing) {
+      return; // Don't recreate while user is editing
+    }
     
     if (teamsContainer) {
       // Save focus state before recreation
