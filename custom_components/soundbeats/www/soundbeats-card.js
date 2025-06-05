@@ -7,6 +7,9 @@ class SoundbeatsCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+    // Initialize expander state - both sections collapsed by default
+    this.gameSettingsExpanded = false;
+    this.teamManagementExpanded = false;
   }
 
   setConfig(config) {
@@ -645,6 +648,45 @@ class SoundbeatsCard extends HTMLElement {
           margin: 8px 0;
           color: var(--primary-color, #03a9f4);
         }
+
+        .expandable-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          cursor: pointer;
+          user-select: none;
+        }
+
+        .expandable-header:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+          margin: -4px;
+          padding: 4px;
+        }
+
+        .expander-icon {
+          transition: transform 0.3s ease;
+          font-size: 1.2em;
+        }
+
+        .expander-icon.expanded {
+          transform: rotate(180deg);
+        }
+
+        .expandable-content {
+          overflow: hidden;
+          transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+        }
+
+        .expandable-content.collapsed {
+          max-height: 0;
+          opacity: 0;
+        }
+
+        .expandable-content.expanded {
+          max-height: 1000px;
+          opacity: 1;
+        }
       </style>
       
       <div class="soundbeats-card">
@@ -718,47 +760,52 @@ class SoundbeatsCard extends HTMLElement {
 
         <!-- Game Settings Section - Only visible to admins -->
         <div class="section admin-section ${isAdmin ? '' : 'hidden'}">
-          <h3>
-            <ha-icon icon="mdi:cog" class="icon"></ha-icon>
-            Game Settings
-          </h3>
-          <p>Configure game settings that persist across resets.</p>
-          <div class="game-settings">
-            <div class="setting-item">
-              <div class="setting-label">
-                <ha-icon icon="mdi:timer-outline" class="icon"></ha-icon>
-                Countdown Timer Length
+          <div class="expandable-header" onclick="this.getRootNode().host.toggleGameSettings()">
+            <h3>
+              <ha-icon icon="mdi:cog" class="icon"></ha-icon>
+              Game Settings
+            </h3>
+            <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.gameSettingsExpanded ? 'expanded' : ''}"></ha-icon>
+          </div>
+          <div class="expandable-content ${this.gameSettingsExpanded ? 'expanded' : 'collapsed'}">
+            <p>Configure game settings that persist across resets.</p>
+            <div class="game-settings">
+              <div class="setting-item">
+                <div class="setting-label">
+                  <ha-icon icon="mdi:timer-outline" class="icon"></ha-icon>
+                  Countdown Timer Length
+                </div>
+                <div class="setting-control">
+                  <input 
+                    type="range" 
+                    class="timer-slider" 
+                    min="5" 
+                    max="300" 
+                    step="5" 
+                    value="${this.getCountdownTimerLength()}"
+                    oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + 's';"
+                  />
+                  <span class="timer-value">${this.getCountdownTimerLength()}s</span>
+                </div>
               </div>
-              <div class="setting-control">
-                <input 
-                  type="range" 
-                  class="timer-slider" 
-                  min="5" 
-                  max="300" 
-                  step="5" 
-                  value="${this.getCountdownTimerLength()}"
-                  oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + 's';"
-                />
-                <span class="timer-value">${this.getCountdownTimerLength()}s</span>
-              </div>
-            </div>
-            <div class="setting-item">
-              <div class="setting-label">
-                <ha-icon icon="mdi:speaker" class="icon"></ha-icon>
-                Audio Player
-              </div>
-              <div class="setting-control">
-                <select 
-                  class="audio-player-select" 
-                  onchange="this.getRootNode().host.updateAudioPlayer(this.value)"
-                >
-                  <option value="">Select an audio player...</option>
-                  ${this.getMediaPlayers().map(player => 
-                    `<option value="${player.entity_id}" ${this.getSelectedAudioPlayer() === player.entity_id ? 'selected' : ''}>
-                      ${player.name}
-                    </option>`
-                  ).join('')}
-                </select>
+              <div class="setting-item">
+                <div class="setting-label">
+                  <ha-icon icon="mdi:speaker" class="icon"></ha-icon>
+                  Audio Player
+                </div>
+                <div class="setting-control">
+                  <select 
+                    class="audio-player-select" 
+                    onchange="this.getRootNode().host.updateAudioPlayer(this.value)"
+                  >
+                    <option value="">Select an audio player...</option>
+                    ${this.getMediaPlayers().map(player => 
+                      `<option value="${player.entity_id}" ${this.getSelectedAudioPlayer() === player.entity_id ? 'selected' : ''}>
+                        ${player.name}
+                      </option>`
+                    ).join('')}
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -766,13 +813,18 @@ class SoundbeatsCard extends HTMLElement {
 
         <!-- Team Management Section - Only visible to admins -->
         <div class="section admin-section ${isAdmin ? '' : 'hidden'}">
-          <h3>
-            <ha-icon icon="mdi:account-group-outline" class="icon"></ha-icon>
-            Team Management
-          </h3>
-          <p>Configure team names and participation status.</p>
-          <div class="team-management-container">
-            ${this.renderTeamManagement()}
+          <div class="expandable-header" onclick="this.getRootNode().host.toggleTeamManagement()">
+            <h3>
+              <ha-icon icon="mdi:account-group-outline" class="icon"></ha-icon>
+              Team Management
+            </h3>
+            <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.teamManagementExpanded ? 'expanded' : ''}"></ha-icon>
+          </div>
+          <div class="expandable-content ${this.teamManagementExpanded ? 'expanded' : 'collapsed'}">
+            <p>Configure team names and participation status.</p>
+            <div class="team-management-container">
+              ${this.renderTeamManagement()}
+            </div>
           </div>
         </div>
       </div>
@@ -1220,6 +1272,53 @@ class SoundbeatsCard extends HTMLElement {
       this.hass.callService('soundbeats', 'update_audio_player', {
         audio_player: audioPlayer
       });
+    }
+  }
+
+  toggleGameSettings() {
+    this.gameSettingsExpanded = !this.gameSettingsExpanded;
+    // Update only the expander elements to preserve input states
+    this.updateExpanderState();
+  }
+
+  toggleTeamManagement() {
+    this.teamManagementExpanded = !this.teamManagementExpanded;
+    // Update only the expander elements to preserve input states
+    this.updateExpanderState();
+  }
+
+  updateExpanderState() {
+    // Ensure shadowRoot is available before trying to update elements
+    if (!this.shadowRoot || !this.shadowRoot.querySelector) {
+      return;
+    }
+    
+    // Update the Game Settings section
+    const gameSettingsHeader = this.shadowRoot.querySelector('.section.admin-section .expandable-header');
+    if (gameSettingsHeader) {
+      const gameSettingsIcon = gameSettingsHeader.querySelector('.expander-icon');
+      const gameSettingsContent = gameSettingsHeader.nextElementSibling;
+      
+      if (gameSettingsIcon) {
+        gameSettingsIcon.className = `expander-icon ${this.gameSettingsExpanded ? 'expanded' : ''}`;
+      }
+      if (gameSettingsContent) {
+        gameSettingsContent.className = `expandable-content ${this.gameSettingsExpanded ? 'expanded' : 'collapsed'}`;
+      }
+    }
+
+    // Update the Team Management section
+    const teamManagementHeader = this.shadowRoot.querySelectorAll('.section.admin-section .expandable-header')[1];
+    if (teamManagementHeader) {
+      const teamManagementIcon = teamManagementHeader.querySelector('.expander-icon');
+      const teamManagementContent = teamManagementHeader.nextElementSibling;
+      
+      if (teamManagementIcon) {
+        teamManagementIcon.className = `expander-icon ${this.teamManagementExpanded ? 'expanded' : ''}`;
+      }
+      if (teamManagementContent) {
+        teamManagementContent.className = `expandable-content ${this.teamManagementExpanded ? 'expanded' : 'collapsed'}`;
+      }
     }
   }
 
