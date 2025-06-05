@@ -158,7 +158,7 @@ The integration automatically provides a comprehensive custom Lovelace card with
 #### Admin Sections (Admin Users Only)
 - **Game Settings**: Start new games and adjust countdown timer duration (expandable section, collapsed by default)
 - **Audio Player Selection**: Choose from available Home Assistant media players (unavailable players are automatically filtered out)
-- **Team Management**: Edit team names and set participation status (expandable section, collapsed by default)
+- **Team Management**: Edit team names, set participation status, and assign teams to Home Assistant users (expandable section, collapsed by default). User assignments control which teams are visible to each user - only teams assigned to a user's Home Assistant user ID will appear in their team cards and overview sections.
 
 - **Song Controls**: Admin-only controls appear on the song display during active rounds
   - **Next Song Button**: Located in the bottom-right corner for skipping to the next song
@@ -171,8 +171,9 @@ The integration automatically provides a comprehensive custom Lovelace card with
   - **Zero-Setup Integration**: All controls work automatically without any configuration required
 
 #### Teams Overview Section
+- **User-Specific Display**: Team cards and overview only show teams assigned to the current Home Assistant user via the team management section. Each user sees only their assigned teams for a personalized experience.
 - **Round-Aware Visibility**: Team ranking section automatically appears only when the game has started (round counter > 0), keeping the interface clean before gameplay begins
-- **Horizontal Scrollable Leaderboard**: All active teams displayed in a single horizontal row with compact cards that scroll when overflowing
+- **Horizontal Scrollable Leaderboard**: User-assigned active teams displayed in a single horizontal row with compact cards that scroll when overflowing
 - **Compact Card Design**: Much smaller team cards (80-120px wide) with points prominently displayed at the top and team names in small font at the bottom
 - **Enhanced Visual Layout**: 
   - **Header Alignment**: Title section perfectly aligns with card edges for a cleaner look
@@ -187,6 +188,7 @@ The integration automatically provides a comprehensive custom Lovelace card with
 - **No Manual Setup**: All functionality is built into the integration with zero configuration required
 
 #### Individual Team Cards
+- **User-Specific Access**: Individual team cards are only displayed for teams assigned to the current Home Assistant user ID, ensuring personalized gameplay and preventing access to other users' teams.
 - **Interactive Controls**: Year guess sliders, betting buttons, and detailed results when timer expires
 - **Personal Team Views**: Separate detailed interface for each team's gameplay experience
 - **Enhanced Scoring Display**: Clear, detailed explanations of points earned after each round
