@@ -114,6 +114,25 @@ The highscore system integrates seamlessly with the existing game flow:
 
 **Zero Setup Required**: The entire highscore system works automatically upon installation with no configuration, manual setup, or additional steps needed.
 
+### Troubleshooting Highscore Display
+
+#### Diagnostic Feature
+
+When the highscore section displays "Highscore data not available", a **diagnostic information panel** becomes available to help troubleshoot the issue:
+
+- **📋 Expandable Panel**: Click on "Diagnostic Information" to expand the troubleshooting details
+- **🔍 Entity Status**: Shows whether the `sensor.soundbeats_highscore` entity exists in Home Assistant
+- **📝 Available Entities**: Lists all Soundbeats-related entities if the highscore sensor is missing
+- **💡 Troubleshooting Steps**: Provides specific guidance for resolving common issues
+
+**Common Solutions:**
+1. **Integration Status**: Verify the Soundbeats integration is properly installed and running
+2. **Entity Creation**: Check that the integration has successfully created the highscore sensor
+3. **Home Assistant Restart**: Restart Home Assistant if the sensor was recently added
+4. **Developer Tools**: Use Home Assistant's Developer Tools → States to verify entity presence
+
+**Usage:** The diagnostic panel only appears when needed and is designed to be unobtrusive, helping users quickly identify and resolve highscore display issues without affecting normal operation.
+
 
 ## Configuration
 
@@ -157,8 +176,7 @@ The integration automatically provides a comprehensive custom Lovelace card with
 
 #### Admin Sections (Admin Users Only)
 - **Game Settings**: Start new games and adjust countdown timer duration (expandable section, collapsed by default)
-- **Audio Player Selection**: Choose from available Home Assistant media players (unavailable players are automatically filtered out)
-- **Team Management**: Edit team names, set participation status, and assign teams to Home Assistant users (expandable section, collapsed by default). User assignments control which teams are visible to each user - only teams assigned to a user's Home Assistant user ID will appear in their team cards and overview sections.
+- 
 
 - **Song Controls**: Admin-only controls appear on the song display during active rounds
   - **Next Song Button**: Located in the bottom-right corner for skipping to the next song
