@@ -80,9 +80,9 @@ The integration automatically provides a comprehensive custom Lovelace card with
 
 #### User Sections (Visible to All)
 - **Title Section**: Game branding
-- **Team Status**: Real-time team standings, points, and participation status (game status is available in debug section)
+- **Team Status**: Real-time team standings, points, and participation status (game status and mode are available in debug section)
 - **Current Song**: Song information with artwork when playing (shown only during reveal phase)
-- **Debug Information**: Troubleshooting data for audio setup including current game status
+- **Debug Information**: Troubleshooting data for audio setup including current game status and mode
 
 #### Admin Sections (Admin Users Only)
 - **Admin Controls**: Start/stop game, next song controls
