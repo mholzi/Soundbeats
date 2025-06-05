@@ -44,13 +44,17 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .title-section {
-          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, rgba(3, 169, 244, 0.8) 50%, var(--accent-color, #ff5722) 100%);
-          color: var(--text-primary-color, white);
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #e94560 75%, #f39c12 100%);
+          color: #ffffff;
           text-align: center;
           position: relative;
           overflow: hidden;
           margin: -16px -16px 24px -16px;
-          padding: 12px 16px;
+          padding: 20px 16px 24px 16px;
+          box-shadow: 
+            0 8px 32px rgba(233, 69, 96, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          border-bottom: 3px solid rgba(243, 156, 18, 0.6);
         }
         
         .title-section::before {
@@ -60,9 +64,48 @@ class SoundbeatsCard extends HTMLElement {
           left: 0;
           right: 0;
           bottom: 0;
-          background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+          background: 
+            radial-gradient(circle at 15% 85%, rgba(233, 69, 96, 0.4) 0%, transparent 40%),
+            radial-gradient(circle at 85% 15%, rgba(243, 156, 18, 0.3) 0%, transparent 40%),
+            radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
           pointer-events: none;
+          animation: headerGlow 4s ease-in-out infinite alternate;
+        }
+        
+        .title-section::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, 
+            transparent 0%, 
+            rgba(243, 156, 18, 0.8) 20%, 
+            rgba(233, 69, 96, 0.8) 50%, 
+            rgba(243, 156, 18, 0.8) 80%, 
+            transparent 100%);
+          animation: musicPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes headerGlow {
+          0% {
+            opacity: 0.8;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+        
+        @keyframes musicPulse {
+          0%, 100% {
+            transform: scaleX(0.8);
+            opacity: 0.6;
+          }
+          50% {
+            transform: scaleX(1);
+            opacity: 1;
+          }
         }
         
         .team-section {
@@ -80,6 +123,215 @@ class SoundbeatsCard extends HTMLElement {
           margin: 0 0 8px 0;
           font-size: 1.2em;
           font-weight: 500;
+        }
+        
+        .title-section h2 {
+          margin: 0 0 12px 0;
+          font-size: 1.8em;
+          font-weight: 700;
+          text-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.3),
+            0 0 20px rgba(243, 156, 18, 0.4);
+          letter-spacing: 0.5px;
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+        }
+        
+        .title-section p {
+          margin: 0;
+          font-size: 1.1em;
+          font-weight: 400;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+          opacity: 0.95;
+          letter-spacing: 0.3px;
+          position: relative;
+          z-index: 2;
+        }
+        
+        .title-section .icon {
+          font-size: 1.4em;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+          animation: iconBounce 3s ease-in-out infinite;
+        }
+        
+        @keyframes iconBounce {
+          0%, 100% {
+            transform: translateY(0) rotate(0deg);
+          }
+          25% {
+            transform: translateY(-3px) rotate(-5deg);
+          }
+          75% {
+            transform: translateY(-1px) rotate(3deg);
+          }
+        }
+        
+        .floating-notes {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          pointer-events: none;
+          z-index: 1;
+        }
+        
+        .note {
+          position: absolute;
+          font-size: 1.2em;
+          color: rgba(255, 255, 255, 0.3);
+          animation: floatNote 6s ease-in-out infinite;
+        }
+        
+        .note-1 {
+          top: 15%;
+          left: 10%;
+          animation-delay: 0s;
+          animation-duration: 5s;
+        }
+        
+        .note-2 {
+          top: 25%;
+          right: 15%;
+          animation-delay: 1.5s;
+          animation-duration: 7s;
+        }
+        
+        .note-3 {
+          bottom: 30%;
+          left: 20%;
+          animation-delay: 3s;
+          animation-duration: 6s;
+        }
+        
+        .note-4 {
+          bottom: 20%;
+          right: 25%;
+          animation-delay: 4.5s;
+          animation-duration: 5.5s;
+        }
+        
+        .note-5 {
+          top: 40%;
+          left: 50%;
+          animation-delay: 2s;
+          animation-duration: 8s;
+        }
+        
+        @keyframes floatNote {
+          0%, 100% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0.2;
+          }
+          25% {
+            transform: translateY(-8px) rotate(5deg);
+            opacity: 0.4;
+          }
+          50% {
+            transform: translateY(-4px) rotate(-3deg);
+            opacity: 0.3;
+          }
+          75% {
+            transform: translateY(-6px) rotate(2deg);
+            opacity: 0.35;
+          }
+        }
+        
+        .sound-waves {
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 3px;
+          z-index: 1;
+        }
+        
+        .wave {
+          width: 3px;
+          background: linear-gradient(to top, rgba(243, 156, 18, 0.6), rgba(233, 69, 96, 0.4));
+          border-radius: 2px;
+          animation: soundWave 1.5s ease-in-out infinite;
+        }
+        
+        .wave-1 {
+          height: 8px;
+          animation-delay: 0s;
+        }
+        
+        .wave-2 {
+          height: 12px;
+          animation-delay: 0.1s;
+        }
+        
+        .wave-3 {
+          height: 16px;
+          animation-delay: 0.2s;
+        }
+        
+        .wave-4 {
+          height: 12px;
+          animation-delay: 0.3s;
+        }
+        
+        .wave-5 {
+          height: 8px;
+          animation-delay: 0.4s;
+        }
+        
+        @keyframes soundWave {
+          0%, 100% {
+            transform: scaleY(0.5);
+            opacity: 0.6;
+          }
+          50% {
+            transform: scaleY(1);
+            opacity: 1;
+          }
+        }
+        
+        /* Responsive design for title section */
+        @media (max-width: 768px) {
+          .title-section {
+            padding: 16px 12px 20px 12px;
+          }
+          
+          .title-section h2 {
+            font-size: 1.5em;
+            gap: 8px;
+          }
+          
+          .title-section p {
+            font-size: 1em;
+          }
+          
+          .floating-notes .note {
+            font-size: 1em;
+          }
+          
+          .sound-waves {
+            gap: 2px;
+          }
+          
+          .wave {
+            width: 2px;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .title-section h2 {
+            font-size: 1.3em;
+            flex-direction: column;
+            gap: 4px;
+          }
+          
+          .title-section p {
+            font-size: 0.9em;
+          }
         }
         
         .section h3 {
@@ -1020,11 +1272,25 @@ class SoundbeatsCard extends HTMLElement {
       <div class="soundbeats-card">
         <!-- Title Section - Always visible -->
         <div class="section title-section">
+          <div class="floating-notes">
+            <div class="note note-1">♪</div>
+            <div class="note note-2">♫</div>
+            <div class="note note-3">♪</div>
+            <div class="note note-4">♬</div>
+            <div class="note note-5">♪</div>
+          </div>
           <h2>
             <ha-icon icon="mdi:music-note" class="icon"></ha-icon>
             Soundbeats Party Game
           </h2>
           <p>The ultimate Home Assistant party game experience!</p>
+          <div class="sound-waves">
+            <div class="wave wave-1"></div>
+            <div class="wave wave-2"></div>
+            <div class="wave wave-3"></div>
+            <div class="wave wave-4"></div>
+            <div class="wave wave-5"></div>
+          </div>
         </div>
         
         <!-- Countdown Section - Only visible when timer is running -->
