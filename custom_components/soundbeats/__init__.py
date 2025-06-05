@@ -208,6 +208,7 @@ async def _register_services(hass: HomeAssistant) -> None:
         else:
             # Randomly select a song from songs.json that hasn't been played yet
             try:
+                selected_song = None  # Initialize to None to handle exceptions
                 songs_file = os.path.join(os.path.dirname(__file__), "songs.json")
                 
                 def _load_songs_file():
