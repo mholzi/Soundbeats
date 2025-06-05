@@ -1172,7 +1172,6 @@ class SoundbeatsCard extends HTMLElement {
           animation: pulse-bet-overview 2s infinite;
           text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
           box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);
-        }
           white-space: nowrap;
         }
         
