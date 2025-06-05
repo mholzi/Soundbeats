@@ -98,13 +98,6 @@ async def _register_services(hass: HomeAssistant) -> None:
         else:
             hass.states.async_set("sensor.soundbeats_round_counter", 0)
         
-        # Reset played songs list
-        played_songs_sensor = entities.get("played_songs_sensor")
-        if played_songs_sensor and hasattr(played_songs_sensor, 'reset_played_songs'):
-            played_songs_sensor.reset_played_songs()
-        else:
-            hass.states.async_set("sensor.soundbeats_played_songs", 0, {"played_song_ids": []})
-        
         # Reset all teams to default names and 0 points
         team_sensors = entities.get("team_sensors", {})
         for i in range(1, 6):
@@ -206,7 +199,7 @@ async def _register_services(hass: HomeAssistant) -> None:
             if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
                 current_song_sensor.clear_current_song()
         else:
-            # Randomly select a song from songs.json that hasn't been played yet
+            # Randomly select a song from songs.json
             try:
                 songs_file = os.path.join(os.path.dirname(__file__), "songs.json")
                 
@@ -217,76 +210,45 @@ async def _register_services(hass: HomeAssistant) -> None:
                 songs = await hass.async_add_executor_job(_load_songs_file)
                 
                 if songs:
-                    # Get played songs sensor to check which songs have been played
-                    played_songs_sensor = entities.get("played_songs_sensor")
-                    played_song_ids = []
+                    selected_song = random.choice(songs)
+                    _LOGGER.info("Selected song with ID %s from year %s", selected_song.get("id"), selected_song.get("year"))
                     
-                    if played_songs_sensor and hasattr(played_songs_sensor, 'extra_state_attributes'):
-                        played_song_ids = played_songs_sensor.extra_state_attributes.get("played_song_ids", [])
-                    
-                    # Filter out already played songs
-                    unplayed_songs = [song for song in songs if song.get("id") not in played_song_ids]
-                    
-                    if unplayed_songs:
-                        # Select random song from unplayed songs
-                        selected_song = random.choice(unplayed_songs)
-                        song_id = selected_song.get("id")
+                    # Play the song on the selected media player
+                    try:
+                        song_url = selected_song.get("url")
+                        _LOGGER.info("Attempting to play song URL '%s' on media player '%s'", song_url, selected_player)
                         
-                        _LOGGER.info("Selected unplayed song with ID %s from year %s (%d unplayed songs remaining)", 
-                                   song_id, selected_song.get("year"), len(unplayed_songs) - 1)
+                        # Check if URL is a Spotify URL and adjust media_content_type accordingly
+                        media_content_type = "music"
+                        if song_url and "spotify.com" in song_url:
+                            media_content_type = "spotify"
+                            _LOGGER.info("Detected Spotify URL, setting media_content_type to 'spotify'")
                         
-                        # Add song to played list
-                        if played_songs_sensor and hasattr(played_songs_sensor, 'add_played_song'):
-                            played_songs_sensor.add_played_song(song_id)
-                    else:
-                        # All songs have been played
-                        _LOGGER.warning("All songs have been played! Total songs: %d", len(songs))
-                        selected_song = None
+                        await hass.services.async_call(
+                            "media_player",
+                            "play_media",
+                            {
+                                "entity_id": selected_player,
+                                "media_content_id": song_url,
+                                "media_content_type": media_content_type
+                            }
+                        )
+                        _LOGGER.info("Successfully called media_player.play_media service for %s", selected_player)
                         
-                        # Clear the current song sensor to trigger warning display
+        # Update the current song sensor with the media player entity ID and song details
+                        if current_song_sensor and hasattr(current_song_sensor, 'update_current_song'):
+                            current_song_sensor.update_current_song({
+                                "media_player": selected_player,
+                                "song_id": selected_song.get("id"),
+                                "year": selected_song.get("year"),
+                                "url": selected_song.get("url"),
+                                "media_content_type": media_content_type
+                            })
+                    except Exception as e:
+                        _LOGGER.error("Failed to play song on media player %s: %s", selected_player, e)
+                        # Clear the current song sensor on error
                         if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
                             current_song_sensor.clear_current_song()
-                        
-                        # We'll handle the warning display in the frontend
-                        return
-                    
-                    if selected_song:
-                        # Play the song on the selected media player
-                        try:
-                            song_url = selected_song.get("url")
-                            _LOGGER.info("Attempting to play song URL '%s' on media player '%s'", song_url, selected_player)
-                            
-                            # Check if URL is a Spotify URL and adjust media_content_type accordingly
-                            media_content_type = "music"
-                            if song_url and "spotify.com" in song_url:
-                                media_content_type = "spotify"
-                                _LOGGER.info("Detected Spotify URL, setting media_content_type to 'spotify'")
-                            
-                            await hass.services.async_call(
-                                "media_player",
-                                "play_media",
-                                {
-                                    "entity_id": selected_player,
-                                    "media_content_id": song_url,
-                                    "media_content_type": media_content_type
-                                }
-                            )
-                            _LOGGER.info("Successfully called media_player.play_media service for %s", selected_player)
-                            
-            # Update the current song sensor with the media player entity ID and song details
-                            if current_song_sensor and hasattr(current_song_sensor, 'update_current_song'):
-                                current_song_sensor.update_current_song({
-                                    "media_player": selected_player,
-                                    "song_id": selected_song.get("id"),
-                                    "year": selected_song.get("year"),
-                                    "url": selected_song.get("url"),
-                                    "media_content_type": media_content_type
-                                })
-                        except Exception as e:
-                            _LOGGER.error("Failed to play song on media player %s: %s", selected_player, e)
-                            # Clear the current song sensor on error
-                            if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
-                                current_song_sensor.clear_current_song()
                 else:
                     _LOGGER.warning("No songs found in songs.json")
                     if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
