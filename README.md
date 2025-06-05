@@ -56,6 +56,65 @@ Soundbeats is a competitive music guessing game where teams compete to identify 
    - **No Manual Setup**: All ranking logic is automatically handled by the integration
 
 
+## Highscore System
+
+Soundbeats features a comprehensive highscore tracking system that automatically monitors and celebrates team achievements with **zero configuration required**.
+
+### Automatic Highscore Tracking
+
+The integration continuously tracks two types of records:
+
+- **All-Time Absolute Highscore**: The highest total score ever achieved by any team across all games and rounds
+- **Per-Round Highscores**: The highest score achieved during each specific round number (Round 1, Round 2, etc.)
+
+### Visual Highscore Display
+
+#### Dedicated Highscore Section
+The Lovelace card includes a dedicated **"Highscores"** section that displays:
+
+- **🏆 All-Time Record**: Shows the absolute highest score with crown icon and golden styling
+- **📋 Round Records**: Lists the highest score achieved for each round number played
+- **Elegant Design**: Features golden gradient backgrounds and trophy-themed styling
+- **Real-Time Updates**: Displays update immediately when new records are set
+
+#### New Record Banner Notifications
+
+When teams break highscore records, **celebratory banner notifications** automatically appear:
+
+- **Prominent Display**: Golden animated banners slide in from the right side of the screen
+- **Record-Specific Messages**: 
+  - "New all-time record: X points! 🏆" for absolute highscore
+  - "New Round X record: Y points! 🎯" for round-specific records
+- **Eye-Catching Animation**: Features glowing effects, crown animations, and pulsing borders
+- **Auto-Dismiss**: Banners automatically disappear after 8 seconds or can be manually closed
+- **Smart Detection**: Only triggers for genuine new records, not initial setup
+
+### Highscore Persistence
+
+- **Permanent Storage**: All highscore data persists across Home Assistant restarts and integration updates
+- **RestoreEntity Integration**: Built on Home Assistant's reliable state restoration system
+- **Zero Data Loss**: Records are safely maintained even during system maintenance
+
+### Integration Features
+
+- **Automatic Detection**: The system automatically compares current team scores against existing records after each round
+- **Immediate Recognition**: New records are detected and celebrated within seconds of being achieved
+- **Multi-Record Support**: Teams can break both absolute and round records in the same round
+- **No False Positives**: Smart initialization prevents triggering notifications on first load
+
+### Technical Details
+
+The highscore system integrates seamlessly with the existing game flow:
+
+1. **Round Evaluation**: After each countdown timer expires and points are awarded
+2. **Record Checking**: The system compares new team scores against existing records
+3. **Record Updates**: New records are immediately stored in the highscore sensor
+4. **UI Notification**: Banner notifications trigger for any broken records
+5. **Display Updates**: The highscore section refreshes to show new records
+
+**Zero Setup Required**: The entire highscore system works automatically upon installation with no configuration, manual setup, or additional steps needed.
+
+
 ## Configuration
 
 No manual configuration is required! The integration will be automatically available in your Home Assistant interface after installation.
@@ -87,6 +146,7 @@ The integration automatically creates the following entities:
 - `sensor.soundbeats_round_counter` - Current round number (increments after each round evaluation)
 - `sensor.soundbeats_game_mode` - Current game mode (default: Classic)
 - `sensor.soundbeats_current_song` - Currently playing song information and selected media player
+- `sensor.soundbeats_highscore` - Highscore tracking for absolute and per-round records
 
 **Note:** The `sensor.soundbeats_current_song` automatically manages all music-related functionality including song metadata (`year` and `url` properties) and the selected media player entity. This sensor serves as the single source of truth for both the currently selected media player and any playing song information. The integration automatically coordinates between this custom sensor (for year, URL, and media player selection) and your selected media player (for title, artist, and artwork) to provide complete song information with zero manual configuration required.
 
@@ -99,10 +159,15 @@ The integration automatically provides a comprehensive custom Lovelace card with
 - **Audio Player Selection**: Choose from available Home Assistant media players (unavailable players are automatically filtered out)
 - **Team Management**: Edit team names and set participation status (expandable section, collapsed by default)
 
-- **Song Controls**: "Next Song" button appears in the bottom left corner of the song display during active rounds
-  - **Smart Audio Player Validation**: If no audio player is selected when clicking "Next Song", an alert notification banner slides in from the right side
+- **Song Controls**: Admin-only controls appear on the song display during active rounds
+  - **Next Song Button**: Located in the bottom-right corner for skipping to the next song
+  - **Volume Control Buttons**: Located in the bottom-left corner for adjusting media player volume
+    - **Volume Up**: Increase volume by 10% with a single click
+    - **Volume Down**: Decrease volume by 10% with a single click
+    - **Consistent Styling**: Matches the design of other admin controls with hover effects
+  - **Smart Audio Player Validation**: If no audio player is selected when using song controls, an alert notification banner slides in from the right side
   - **User-Friendly Alerts**: The alert banner provides clear guidance and can be dismissed by clicking the close button
-  - **Zero-Setup Integration**: Alert system works automatically without any configuration required
+  - **Zero-Setup Integration**: All controls work automatically without any configuration required
 
 #### Teams Overview Section
 - **Round-Aware Visibility**: Team ranking section automatically appears only when the game has started (round counter > 0), keeping the interface clean before gameplay begins
@@ -157,9 +222,33 @@ The Soundbeats card features a visually stunning, **zero-setup** header that bri
 
 **Zero-Setup Philosophy**: The enhanced header design works immediately upon installation with no configuration required. All animations, colors, and effects are automatically applied to create an engaging, party-ready interface that matches the excitement of the game itself.
 
+### UI Improvements & Accessibility
+
+The Soundbeats card has been enhanced with improved visibility and clarity across all interface areas, maintaining the zero-setup philosophy:
+
+- **Enhanced Team Overview Visibility**:
+  - **Improved Typography**: Team names increased from 0.7em to 0.8em with enhanced font weight (600) for better readability
+  - **Larger Point Display**: Team points increased from 0.9em to 1.0em with enhanced contrast through text shadows
+  - **Better Visual Hierarchy**: Rank badges increased from 1.2em to 1.3em with drop-shadow effects for improved visibility
+  - **Enhanced Contrast**: All ranking colors now feature stronger shadows and better text contrast
+
+- **Refined Team Cards**:
+  - **Improved Spacing**: Increased padding from 8px to 10px with larger corner radius (10px) for a more premium feel
+  - **Enhanced Visual Appeal**: Increased card width (85-130px) and added subtle box shadows for better depth
+  - **Stronger Medal Colors**: Gold, silver, and bronze rankings now have enhanced shadows and improved font weights
+  - **Better Badge Styling**: Betting badges feature improved padding, shadows, and contrast for maximum visibility
+
+- **Streamlined Betting Interface**:
+  - **Cleaner Button Design**: Removed diamond icons from betting buttons and overview badges for a cleaner, more focused appearance
+  - **Better Focus on State**: Betting state clearly indicated through color changes and animations without visual clutter
+  - **Consistent Styling**: All betting indicators maintain the same high-contrast orange theme for instant recognition
+
+- **Zero Configuration Required**: All UI improvements are automatically applied with no setup needed - simply install and enjoy the enhanced experience
+
 ### Game Features
 
 - **Smart Team Management**: Up to 5 teams with persistent names and scores
+- **Comprehensive Highscore Tracking**: Automatic all-time and per-round record keeping with celebratory notifications
 - **Premium Visual Experience**: Modern, animated header design with zero-setup required
   - **Musical Theme**: Floating notes, sound wave visualizers, and rhythmic animations
   - **Professional Aesthetics**: Deep gradients, dynamic shadows, and premium typography
@@ -194,6 +283,7 @@ The Soundbeats card features a visually stunning, **zero-setup** header that bri
 - **Debug Tools**: Built-in troubleshooting information for media playback
 - **Robust Display**: Always shows meaningful song information with fallback values for improved user experience
 - **Collapsible Interface**: Admin sections feature expandable/collapsible interfaces for cleaner UI organization
+- **Advanced Highscore System**: Automatic tracking of all-time and per-round records with animated celebration banners
 
 ### Services
 
@@ -377,6 +467,7 @@ The integration includes a JSON-based song database (`songs.json`) with:
 - Real-time countdown timer with visual feedback
 - Persistent team data across Home Assistant restarts
 - Role-based UI visibility (admin vs. regular users)
+- Admin volume control for media players (up/down buttons)
 - Debug information for troubleshooting media playback
 
 ### Music Addition Strategy
