@@ -124,6 +124,29 @@ class SoundbeatsCard extends HTMLElement {
           display: none !important;
         }
         
+        .debug-section {
+          background: var(--info-color, #2196f3);
+          color: white;
+          border-left: 4px solid var(--accent-color, #ff5722);
+        }
+        
+        .debug-info {
+          margin-top: 12px;
+        }
+        
+        .debug-item {
+          margin-bottom: 8px;
+          font-size: 14px;
+        }
+        
+        .debug-value {
+          font-family: monospace;
+          background: rgba(255, 255, 255, 0.2);
+          padding: 2px 6px;
+          border-radius: 4px;
+          word-break: break-all;
+        }
+        
         .teams-container {
           margin-top: 16px;
         }
@@ -596,6 +619,29 @@ class SoundbeatsCard extends HTMLElement {
             ${this.renderTeamManagement()}
           </div>
         </div>
+        
+        <!-- Debug Section - Always visible for troubleshooting -->
+        <div class="section debug-section">
+          <h3>
+            <ha-icon icon="mdi:bug" class="icon"></ha-icon>
+            Debug Information
+          </h3>
+          <p>Debugging information for the next song function:</p>
+          <div class="debug-info">
+            <div class="debug-item">
+              <strong>Selected Audio Player:</strong> 
+              <span class="debug-value">${this.getSelectedAudioPlayer() || 'None selected'}</span>
+            </div>
+            <div class="debug-item">
+              <strong>Current Song URL:</strong> 
+              <span class="debug-value">${this.getCurrentSongUrl() || 'No song playing'}</span>
+            </div>
+            <div class="debug-item">
+              <strong>Current Song Media Player:</strong> 
+              <span class="debug-value">${this.getCurrentSongMediaPlayer() || 'No media player assigned'}</span>
+            </div>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -831,6 +877,28 @@ class SoundbeatsCard extends HTMLElement {
             url: currentSongEntity.attributes.url || ''
           };
         }
+      }
+    }
+    return null;
+  }
+
+  getCurrentSongUrl() {
+    // Get current song URL from the sensor attributes
+    if (this.hass && this.hass.states) {
+      const currentSongEntity = this.hass.states['sensor.soundbeats_current_song'];
+      if (currentSongEntity && currentSongEntity.attributes) {
+        return currentSongEntity.attributes.url || null;
+      }
+    }
+    return null;
+  }
+
+  getCurrentSongMediaPlayer() {
+    // Get current song media player from the sensor state
+    if (this.hass && this.hass.states) {
+      const currentSongEntity = this.hass.states['sensor.soundbeats_current_song'];
+      if (currentSongEntity && currentSongEntity.state !== 'None') {
+        return currentSongEntity.state;
       }
     }
     return null;
