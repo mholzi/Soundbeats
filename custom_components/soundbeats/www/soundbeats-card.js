@@ -734,7 +734,7 @@ class SoundbeatsCard extends HTMLElement {
           <p>Debugging information for the next song function:</p>
           <div class="debug-info">
             <div class="debug-item">
-              <strong>Selected Audio Player:</strong> 
+              <strong>Selected Audio Player (from Current Song Sensor):</strong> 
               <span class="debug-value">${this.getSelectedAudioPlayer() || 'None selected'}</span>
             </div>
             <div class="debug-item">
@@ -744,10 +744,6 @@ class SoundbeatsCard extends HTMLElement {
             <div class="debug-item">
               <strong>Current Song Media Content Type:</strong> 
               <span class="debug-value">${this.getCurrentSongMediaContentType() || 'Unknown'}</span>
-            </div>
-            <div class="debug-item">
-              <strong>Current Song Media Player:</strong> 
-              <span class="debug-value">${this.getCurrentSongMediaPlayer() || 'No media player assigned'}</span>
             </div>
             <div class="debug-item">
               <strong>Current Song Sensor State:</strong> 
@@ -1128,9 +1124,9 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getSelectedAudioPlayer() {
-    // Get selected audio player from the dedicated sensor entity
+    // Get selected audio player from the current song sensor state
     if (this.hass && this.hass.states) {
-      const entity = this.hass.states['sensor.soundbeats_audio_player'];
+      const entity = this.hass.states['sensor.soundbeats_current_song'];
       if (entity && entity.state && entity.state !== 'None') {
         return entity.state;
       }

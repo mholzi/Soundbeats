@@ -54,7 +54,7 @@ No manual configuration is required! The integration will be automatically avail
 
 The integration is now ready to use!
 
-**Music Data Management:** Soundbeats automatically handles all song metadata including release years and playback URLs. You do not need to configure these properties in your media player entities - the integration manages this data internally through its custom sensor while utilizing your selected media player for audio playback and retrieving song titles, artists, and artwork.
+**Music Data Management:** Soundbeats automatically handles all song metadata including release years and playback URLs. You do not need to configure these properties in your media player entities - the integration manages this data internally through its custom sensor while utilizing your selected media player for audio playback and retrieving song titles, artists, and artwork. Media player selection is handled automatically through the integration's interface with no separate configuration required.
 
 ## Usage
 
@@ -68,12 +68,11 @@ The integration automatically creates the following entities:
 - `sensor.soundbeats_team_1` through `sensor.soundbeats_team_5` - Individual team information
 - `sensor.soundbeats_countdown_timer` - Configurable timer duration  
 - `sensor.soundbeats_countdown_current` - Live countdown value
-- `sensor.soundbeats_audio_player` - Selected media player
 - `sensor.soundbeats_player_count` - Number of active players
 - `sensor.soundbeats_game_mode` - Current game mode (default: Classic)
-- `sensor.soundbeats_current_song` - Currently playing song information
+- `sensor.soundbeats_current_song` - Currently playing song information and selected media player
 
-**Note:** The `sensor.soundbeats_current_song` automatically manages song metadata including `year` and `url` properties. These are handled entirely by the Soundbeats integration and do not require any manual configuration or modification of your media player entities. The integration automatically coordinates between the custom sensor (for year and URL data) and your selected media player (for title, artist, and artwork) to provide complete song information.
+**Note:** The `sensor.soundbeats_current_song` automatically manages all music-related functionality including song metadata (`year` and `url` properties) and the selected media player entity. This sensor serves as the single source of truth for both the currently selected media player and any playing song information. The integration automatically coordinates between this custom sensor (for year, URL, and media player selection) and your selected media player (for title, artist, and artwork) to provide complete song information with zero manual configuration required.
 
 ### Lovelace Card
 
@@ -125,7 +124,7 @@ The integration provides comprehensive Home Assistant services for automation an
 #### Game Configuration Services  
 - `soundbeats.update_countdown_timer_length` - Update countdown timer duration
   - **Parameters**: `timer_length` (5-300 seconds, increments of 5)
-- `soundbeats.update_audio_player` - Update selected audio player
+- `soundbeats.update_audio_player` - Update selected media player (managed automatically via Current Song sensor)
   - **Parameters**: `audio_player` (media_player entity ID)
 
 ### Automation Examples
