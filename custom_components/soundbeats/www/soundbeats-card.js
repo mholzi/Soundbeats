@@ -1044,24 +1044,38 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getCurrentSong() {
-    // Get current song from the media player entity state
+    // Get current song information with year and url exclusively from sensor, media info from media player
     if (this.hass && this.hass.states) {
       const currentSongEntity = this.hass.states['sensor.soundbeats_current_song'];
-      if (currentSongEntity && currentSongEntity.state !== 'None') {
-        const mediaPlayerEntityId = currentSongEntity.state;
-        const mediaPlayerEntity = this.hass.states[mediaPlayerEntityId];
+      if (currentSongEntity && currentSongEntity.attributes) {
+        // Always get year and url from sensor attributes (exclusive source)
+        const year = currentSongEntity.attributes.year || '';
+        const url = currentSongEntity.attributes.url || '';
         
-        if (mediaPlayerEntity && mediaPlayerEntity.attributes) {
-          // Get song information from media player entity attributes
-          const attributes = mediaPlayerEntity.attributes;
-          return {
-            song_name: attributes.media_title || 'Unknown Title',
-            artist: attributes.media_artist || 'Unknown Artist', 
-            year: currentSongEntity.attributes.year || '',
-            entity_picture: attributes.entity_picture || mediaPlayerEntity.attributes.entity_picture || '',
-            url: currentSongEntity.attributes.url || ''
-          };
+        // Get media player info if available
+        let song_name = 'Unknown Title';
+        let artist = 'Unknown Artist';
+        let entity_picture = '';
+        
+        if (currentSongEntity.state !== 'None') {
+          const mediaPlayerEntityId = currentSongEntity.state;
+          const mediaPlayerEntity = this.hass.states[mediaPlayerEntityId];
+          
+          if (mediaPlayerEntity && mediaPlayerEntity.attributes) {
+            const attributes = mediaPlayerEntity.attributes;
+            song_name = attributes.media_title || 'Unknown Title';
+            artist = attributes.media_artist || 'Unknown Artist';
+            entity_picture = attributes.entity_picture || '';
+          }
         }
+        
+        return {
+          song_name: song_name,
+          artist: artist,
+          year: year,
+          entity_picture: entity_picture,
+          url: url
+        };
       }
     }
     return null;

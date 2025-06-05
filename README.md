@@ -54,6 +54,8 @@ No manual configuration is required! The integration will be automatically avail
 
 The integration is now ready to use!
 
+**Music Data Management:** Soundbeats automatically handles all song metadata including release years and playback URLs. You do not need to configure these properties in your media player entities - the integration manages this data internally through its custom sensor while utilizing your selected media player for audio playback and retrieving song titles, artists, and artwork.
+
 ## Usage
 
 Once installed and configured, the integration creates multiple sensor entities to track game state and provides a rich web interface for gameplay.
@@ -70,6 +72,8 @@ The integration automatically creates the following entities:
 - `sensor.soundbeats_player_count` - Number of active players
 - `sensor.soundbeats_game_mode` - Current game mode (default: Classic)
 - `sensor.soundbeats_current_song` - Currently playing song information
+
+**Note:** The `sensor.soundbeats_current_song` automatically manages song metadata including `year` and `url` properties. These are handled entirely by the Soundbeats integration and do not require any manual configuration or modification of your media player entities. The integration automatically coordinates between the custom sensor (for year and URL data) and your selected media player (for title, artist, and artwork) to provide complete song information.
 
 ### Lovelace Card
 
