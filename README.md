@@ -177,7 +177,8 @@ The integration automatically provides a comprehensive custom Lovelace card with
 #### Admin Sections (Admin Users Only)
 - **Game Settings**: Start new games and adjust countdown timer duration (expandable section, collapsed by default)
 - **Audio Player Selection**: Choose from available Home Assistant media players (unavailable players are automatically filtered out)
-- **Team Management**: Edit team names and set participation status (expandable section, collapsed by default)
+- **Team Management**: Edit team names, assign users to teams, and set participation status (expandable section, collapsed by default)
+  - **User Assignment**: Only manually created Home Assistant users are shown in the dropdown for team assignment. Assistant-created users (names starting with 'Home Assistant') are automatically excluded
 
 - **Song Controls**: Admin-only controls appear on the song display during active rounds
   - **Next Song Button**: Located in the bottom-right corner for skipping to the next song
