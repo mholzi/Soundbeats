@@ -109,6 +109,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
         self._team_name = f"Team {team_number}"
         self._points = 0
         self._participating = True
+        self._year_guess = 1990
 
     async def async_added_to_hass(self) -> None:
         """Called when entity is added to hass."""
@@ -130,12 +131,17 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
                     if "participating" in last_state.attributes:
                         self._participating = bool(last_state.attributes["participating"])
                         _LOGGER.debug("Restored team %d participating: %s", self._team_number, self._participating)
+                    
+                    if "year_guess" in last_state.attributes:
+                        self._year_guess = int(last_state.attributes["year_guess"])
+                        _LOGGER.debug("Restored team %d year guess: %d", self._team_number, self._year_guess)
                         
             except (ValueError, TypeError, KeyError) as e:
                 _LOGGER.warning("Could not restore team %d state: %s, using defaults", self._team_number, e)
                 self._team_name = f"Team {self._team_number}"
                 self._points = 0
                 self._participating = True
+                self._year_guess = 1990
 
     @property
     def state(self) -> str:
@@ -149,6 +155,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
             "points": self._points,
             "participating": self._participating,
             "team_number": self._team_number,
+            "year_guess": self._year_guess,
         }
 
     def update_team_name(self, name: str) -> None:
@@ -164,6 +171,11 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
     def update_team_participating(self, participating: bool) -> None:
         """Update the team's participating status."""
         self._participating = participating
+        self.async_write_ha_state()
+
+    def update_team_year_guess(self, year_guess: int) -> None:
+        """Update the team's year guess."""
+        self._year_guess = year_guess
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
@@ -240,19 +252,19 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
         
         # Schedule countdown decrement
         if duration > 0:
-            self._countdown_task = self.hass.helpers.event.async_call_later(
-                1, self._decrement_countdown
+            self._countdown_task = self.hass.loop.call_later(
+                1, self._async_decrement_countdown
             )
 
     def stop_countdown(self) -> None:
         """Stop the countdown timer."""
         if self._countdown_task:
-            self._countdown_task()  # Cancel the scheduled task
+            self._countdown_task.cancel()  # Cancel the scheduled task
             self._countdown_task = None
         self._current_countdown = 0
         self.async_write_ha_state()
 
-    async def _decrement_countdown(self, _) -> None:
+    def _async_decrement_countdown(self) -> None:
         """Decrement the countdown by 1 second."""
         if self._current_countdown > 0:
             self._current_countdown -= 1
@@ -260,8 +272,8 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
             
             # Schedule next decrement if countdown is still running
             if self._current_countdown > 0:
-                self._countdown_task = self.hass.helpers.event.async_call_later(
-                    1, self._decrement_countdown
+                self._countdown_task = self.hass.loop.call_later(
+                    1, self._async_decrement_countdown
                 )
             else:
                 self._countdown_task = None
