@@ -46,6 +46,9 @@ async def async_setup_entry(
     played_songs_sensor = SoundbeatsPlayedSongsSensor()
     
     entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, game_mode_sensor, current_song_sensor, round_counter_sensor, played_songs_sensor])
+    highscore_sensor = SoundbeatsHighscoreSensor()
+    
+    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, game_mode_sensor, current_song_sensor, round_counter_sensor, highscore_sensor])
     
     # Store entity references in hass data for service access
     hass.data.setdefault(DOMAIN, {})
@@ -59,6 +62,7 @@ async def async_setup_entry(
         "current_song_sensor": current_song_sensor,
         "round_counter_sensor": round_counter_sensor,
         "played_songs_sensor": played_songs_sensor,
+        "highscore_sensor": highscore_sensor,
     }
     
     async_add_entities(entities, True)
@@ -114,6 +118,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
         self._year_guess = 1990
         self._betting = False
         self._last_round_betting = False
+        self._user_id = None
 
     async def async_added_to_hass(self) -> None:
         """Called when entity is added to hass."""
@@ -147,6 +152,10 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
                     if "last_round_betting" in last_state.attributes:
                         self._last_round_betting = bool(last_state.attributes["last_round_betting"])
                         _LOGGER.debug("Restored team %d last round betting: %s", self._team_number, self._last_round_betting)
+                    
+                    if "user_id" in last_state.attributes:
+                        self._user_id = last_state.attributes["user_id"]
+                        _LOGGER.debug("Restored team %d user_id: %s", self._team_number, self._user_id)
                         
             except (ValueError, TypeError, KeyError) as e:
                 _LOGGER.warning("Could not restore team %d state: %s, using defaults", self._team_number, e)
@@ -156,6 +165,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
                 self._year_guess = 1990
                 self._betting = False
                 self._last_round_betting = False
+                self._user_id = None
 
     @property
     def state(self) -> str:
@@ -172,6 +182,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
             "year_guess": self._year_guess,
             "betting": self._betting,
             "last_round_betting": self._last_round_betting,
+            "user_id": self._user_id,
         }
 
     def update_team_name(self, name: str) -> None:
@@ -197,6 +208,11 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
     def update_team_betting(self, betting: bool) -> None:
         """Update the team's betting status."""
         self._betting = betting
+        self.async_write_ha_state()
+
+    def update_team_user_id(self, user_id: str) -> None:
+        """Update the team's assigned user ID."""
+        self._user_id = user_id
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
@@ -418,6 +434,29 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
                     _LOGGER.info("Round counter incremented to %d", round_counter_sensor.state)
                 else:
                     _LOGGER.warning("Round counter sensor not found or has no increment method")
+                
+                # Update highscores after round evaluation
+                highscore_sensor = entities.get("highscore_sensor")
+                if highscore_sensor and hasattr(highscore_sensor, 'update_highscore'):
+                    current_round = round_counter_sensor.state if round_counter_sensor else 1
+                    team_sensors = entities.get("team_sensors", {})
+                    
+                    # Check each participating team's total score for highscore records
+                    for team_key, team_sensor in team_sensors.items():
+                        if not team_sensor or not hasattr(team_sensor, 'extra_state_attributes'):
+                            continue
+                        team_attrs = team_sensor.extra_state_attributes
+                        if not team_attrs.get("participating", False):
+                            continue
+                        
+                        team_score = team_attrs.get("points", 0)
+                        if team_score > 0:  # Only check for highscore if team has points
+                            records_broken = highscore_sensor.update_highscore(team_score, current_round)
+                            if records_broken["absolute"] or records_broken["round"]:
+                                _LOGGER.info("Team %s broke records - Absolute: %s, Round %d: %s", 
+                                           team_key, records_broken["absolute"], current_round, records_broken["round"])
+                else:
+                    _LOGGER.warning("Highscore sensor not found or has no update method")
                                
         except Exception as e:
             _LOGGER.error("Error during round evaluation: %s", e)
@@ -622,6 +661,44 @@ class SoundbeatsPlayedSongsSensor(SensorEntity):
     def state(self) -> int:
         """Return the state of the sensor (number of played songs)."""
         return len(self._played_song_ids)
+class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
+    """Representation of a Soundbeats highscore sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the highscore sensor."""
+        self._attr_name = "Soundbeats Highscore"
+        self._attr_unique_id = "soundbeats_highscore"
+        self._attr_icon = "mdi:trophy"
+        self._attr_unit_of_measurement = "points"
+        self._absolute_highscore = 0
+        self._round_highscores = {}
+
+    async def async_added_to_hass(self) -> None:
+        """Called when entity is added to hass."""
+        await super().async_added_to_hass()
+        
+        # Restore previous state if available
+        if (last_state := await self.async_get_last_state()) is not None:
+            try:
+                self._absolute_highscore = int(last_state.state)
+                _LOGGER.debug("Restored absolute highscore: %d", self._absolute_highscore)
+                
+                # Restore round highscores from attributes
+                if last_state.attributes:
+                    for key, value in last_state.attributes.items():
+                        if key.startswith("round_") and isinstance(value, (int, float)):
+                            self._round_highscores[key] = int(value)
+                    _LOGGER.debug("Restored round highscores: %s", self._round_highscores)
+                    
+            except (ValueError, TypeError):
+                _LOGGER.warning("Could not restore highscore state, using defaults")
+                self._absolute_highscore = 0
+                self._round_highscores = {}
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor (absolute highscore)."""
+        return self._absolute_highscore
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -652,3 +729,45 @@ class SoundbeatsPlayedSongsSensor(SensorEntity):
     async def async_update(self) -> None:
         """Update the sensor."""
         _LOGGER.debug("Updating Soundbeats played songs sensor")
+        attributes = {
+            "friendly_name": "Soundbeats Highscore",
+            "description": "Absolute and per-round highscores for Soundbeats game",
+        }
+        # Add round highscores as attributes
+        attributes.update(self._round_highscores)
+        return attributes
+
+    def update_highscore(self, team_score: int, round_number: int) -> dict[str, bool]:
+        """Update highscore records and return which records were broken.
+        
+        Args:
+            team_score: The team's total aggregated score
+            round_number: The current round number
+            
+        Returns:
+            Dict with 'absolute' and 'round' keys indicating if records were broken
+        """
+        records_broken = {"absolute": False, "round": False}
+        
+        # Check absolute highscore
+        if team_score > self._absolute_highscore:
+            self._absolute_highscore = team_score
+            records_broken["absolute"] = True
+            _LOGGER.info("NEW ABSOLUTE HIGHSCORE: %d points!", team_score)
+        
+        # Check round-specific highscore
+        round_key = f"round_{round_number}"
+        current_round_record = self._round_highscores.get(round_key, 0)
+        if team_score > current_round_record:
+            self._round_highscores[round_key] = team_score
+            records_broken["round"] = True
+            _LOGGER.info("NEW ROUND %d HIGHSCORE: %d points!", round_number, team_score)
+        
+        if records_broken["absolute"] or records_broken["round"]:
+            self.async_write_ha_state()
+        
+        return records_broken
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats highscore sensor")

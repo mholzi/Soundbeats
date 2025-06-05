@@ -10,6 +10,14 @@ class SoundbeatsCard extends HTMLElement {
     // Initialize expander state - both sections collapsed by default
     this.gameSettingsExpanded = false;
     this.teamManagementExpanded = false;
+
+    // Initialize user data cache
+    this.homeAssistantUsers = [];
+    this.usersLoaded = false;
+    // Track previous highscore states for banner notifications
+    this._lastAbsoluteHighscore = null;
+    this._lastRoundHighscores = {};
+    this._activeBanners = [];
   }
 
   setConfig(config) {
@@ -815,6 +823,8 @@ class SoundbeatsCard extends HTMLElement {
           gap: 12px;
           align-items: center;
           flex: 1;
+          flex-wrap: wrap;
+          min-width: 0;
         }
         
         .participation-control {
@@ -895,6 +905,18 @@ class SoundbeatsCard extends HTMLElement {
           background: var(--card-background-color, white);
           color: var(--primary-text-color);
           font-size: 14px;
+        }
+
+        .team-user-select {
+          flex: 1;
+          padding: 8px 12px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 4px;
+          background: var(--card-background-color, white);
+          color: var(--primary-text-color);
+          font-size: 14px;
+          min-width: 150px;
+          max-width: 200px;
         }
         
         .countdown-section {
@@ -987,6 +1009,39 @@ class SoundbeatsCard extends HTMLElement {
           background: rgba(255, 255, 255, 0.3);
         }
 
+        .song-volume-buttons {
+          position: absolute;
+          bottom: 8px;
+          left: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .song-volume-button {
+          background: rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          color: var(--primary-text-color);
+          padding: 4px 6px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.8em;
+          transition: background 0.3s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 24px;
+          min-height: 24px;
+        }
+
+        .song-volume-button:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+
+        .song-volume-button ha-icon {
+          --mdc-icon-size: 16px;
+        }
+
         .expandable-header {
           display: flex;
           align-items: center;
@@ -1066,51 +1121,58 @@ class SoundbeatsCard extends HTMLElement {
           display: flex;
           flex-direction: column;
           align-items: center;
-          padding: 8px;
-          border-radius: 8px;
+          padding: 10px 8px;
+          border-radius: 10px;
           background: var(--card-background-color, white);
           border: 2px solid transparent;
           transition: all 0.3s ease;
-          min-width: 80px;
-          max-width: 120px;
+          min-width: 85px;
+          max-width: 130px;
           flex-shrink: 0;
           text-align: center;
           position: relative;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .overview-team-item.rank-1 {
           background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
           color: #000;
           border-color: #FFD700;
-          box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+          box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+          font-weight: 600;
         }
         
         .overview-team-item.rank-2 {
           background: linear-gradient(135deg, #E8E8E8 0%, #D0D0D0 50%, #B8B8B8 100%);
           color: #000;
           border-color: #C0C0C0;
-          box-shadow: 0 4px 8px rgba(192, 192, 192, 0.3);
+          box-shadow: 0 4px 12px rgba(192, 192, 192, 0.4);
+          font-weight: 600;
         }
         
         .overview-team-item.rank-3 {
           background: linear-gradient(135deg, #D2691E 0%, #CD853F 50%, #BC8F8F 100%);
           color: #000;
           border-color: #CD7F32;
-          box-shadow: 0 4px 8px rgba(205, 127, 50, 0.3);
+          box-shadow: 0 4px 12px rgba(205, 127, 50, 0.4);
+          font-weight: 600;
         }
         
         .overview-team-item.rank-other {
           background: linear-gradient(135deg, #6c757d 0%, #5a6268 50%, #495057 100%);
           color: #fff;
           border-color: #495057;
+          box-shadow: 0 4px 8px rgba(73, 80, 87, 0.3);
+          font-weight: 500;
         }
         
         .overview-rank-badge {
           margin-bottom: 4px;
-          font-size: 1.2em;
+          font-size: 1.3em;
           display: flex;
           align-items: center;
           justify-content: center;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
         
         .overview-team-info {
@@ -1124,19 +1186,21 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .overview-team-name {
-          font-weight: 500;
-          font-size: 0.7em;
-          line-height: 1.1;
+          font-weight: 600;
+          font-size: 0.8em;
+          line-height: 1.2;
           word-break: break-word;
           hyphens: auto;
           max-width: 100%;
           order: 2;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
         
         .overview-team-points {
           font-weight: bold;
-          font-size: 0.9em;
+          font-size: 1.0em;
           order: 1;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
         }
         
         .overview-team-badges {
@@ -1153,14 +1217,16 @@ class SoundbeatsCard extends HTMLElement {
         .overview-bet-badge {
           background: var(--warning-color, #ff9800);
           color: white;
-          padding: 1px 4px;
-          border-radius: 6px;
-          font-size: 0.55em;
+          padding: 2px 6px;
+          border-radius: 8px;
+          font-size: 0.6em;
           font-weight: bold;
           display: flex;
           align-items: center;
           gap: 1px;
           animation: pulse-bet-overview 2s infinite;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);
           white-space: nowrap;
         }
         
@@ -1255,6 +1321,189 @@ class SoundbeatsCard extends HTMLElement {
           opacity: 1;
           background: rgba(255, 255, 255, 0.1);
         }
+        
+        /* Highscore Record Banner Styles */
+        .highscore-banner {
+          position: fixed;
+          top: 20px;
+          right: -400px;
+          width: 350px;
+          background: linear-gradient(135deg, #ff6b35 0%, #f39c12 50%, #ffd700 100%);
+          color: #fff;
+          padding: 16px;
+          border-radius: 8px;
+          box-shadow: 
+            0px 4px 12px rgba(0, 0, 0, 0.3),
+            0px 0px 20px rgba(255, 215, 0, 0.4);
+          z-index: 1001;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          border: 2px solid rgba(255, 215, 0, 0.6);
+          animation: bannerGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .highscore-banner.show {
+          right: 20px;
+        }
+        
+        @keyframes bannerGlow {
+          0% {
+            box-shadow: 
+              0px 4px 12px rgba(0, 0, 0, 0.3),
+              0px 0px 20px rgba(255, 215, 0, 0.4);
+          }
+          100% {
+            box-shadow: 
+              0px 4px 12px rgba(0, 0, 0, 0.3),
+              0px 0px 30px rgba(255, 215, 0, 0.6);
+          }
+        }
+        
+        .highscore-banner .banner-icon {
+          font-size: 1.8em;
+          color: #ffd700;
+          flex-shrink: 0;
+          animation: crownBounce 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes crownBounce {
+          0%, 100% {
+            transform: rotate(0deg) scale(1);
+          }
+          50% {
+            transform: rotate(-5deg) scale(1.1);
+          }
+        }
+        
+        .highscore-banner .banner-content {
+          flex: 1;
+        }
+        
+        .highscore-banner .banner-title {
+          font-weight: 700;
+          font-size: 1.2em;
+          margin: 0 0 4px 0;
+          text-shadow: 
+            0 1px 2px rgba(0, 0, 0, 0.3),
+            0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .highscore-banner .banner-message {
+          font-size: 0.95em;
+          margin: 0;
+          line-height: 1.3;
+          text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+        }
+        
+        .highscore-banner .banner-dismiss {
+          background: none;
+          border: none;
+          color: #fff;
+          font-size: 1.2em;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          opacity: 0.8;
+          transition: opacity 0.2s ease, background 0.2s ease;
+          flex-shrink: 0;
+        }
+        
+        .highscore-banner .banner-dismiss:hover {
+          opacity: 1;
+          background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Highscore Section Styles */
+        .highscore-section {
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
+          border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .highscore-display {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        
+        .absolute-highscore {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%);
+          border-radius: 8px;
+          border: 2px solid rgba(255, 215, 0, 0.4);
+        }
+        
+        .crown-icon {
+          color: #ffd700;
+          font-size: 1.5em;
+        }
+        
+        .highscore-label {
+          font-weight: bold;
+          color: var(--primary-text-color, #333);
+        }
+        
+        .highscore-value {
+          font-size: 1.4em;
+          font-weight: bold;
+          color: #ff8c00;
+        }
+        
+        .round-highscores {
+          padding: 12px;
+          background: rgba(255, 255, 255, 0.5);
+          border-radius: 6px;
+          border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        .round-highscores-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 12px;
+          font-weight: bold;
+          color: var(--primary-text-color, #333);
+        }
+        
+        .round-highscores-list {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+          gap: 8px;
+        }
+        
+        .round-highscore-item {
+          display: flex;
+          flex-direction: column;
+          padding: 8px;
+          background: rgba(255, 215, 0, 0.1);
+          border-radius: 4px;
+          border: 1px solid rgba(255, 215, 0, 0.2);
+          text-align: center;
+        }
+        
+        .round-number {
+          font-size: 0.85em;
+          font-weight: bold;
+          color: var(--secondary-text-color, #666);
+          margin-bottom: 4px;
+        }
+        
+        .round-score {
+          font-size: 1.1em;
+          font-weight: bold;
+          color: #ff8c00;
+        }
+        
+        .highscore-empty {
+          text-align: center;
+          color: var(--secondary-text-color, #666);
+          font-style: italic;
+          padding: 16px;
+        }
       </style>
       
       <!-- Alert Banner for No Audio Player Selected -->
@@ -1277,6 +1526,18 @@ class SoundbeatsCard extends HTMLElement {
           <div class="alert-message">All available songs have been played. Start a new game to reset the playlist.</div>
         </div>
         <button class="alert-dismiss" onclick="this.getRootNode().host.hideAlertBanner('all-songs-played-alert')">
+          <ha-icon icon="mdi:close"></ha-icon>
+        </button>
+      </div>
+      
+      <!-- Highscore Record Banner -->
+      <div class="highscore-banner" id="highscore-record-banner">
+        <ha-icon icon="mdi:crown" class="banner-icon"></ha-icon>
+        <div class="banner-content">
+          <div class="banner-title">🎉 NEW RECORD! 🎉</div>
+          <div class="banner-message" id="highscore-banner-message">Congratulations on the new highscore!</div>
+        </div>
+        <button class="banner-dismiss" onclick="this.getRootNode().host.hideHighscoreBanner()">
           <ha-icon icon="mdi:close"></ha-icon>
         </button>
       </div>
@@ -1330,6 +1591,14 @@ class SoundbeatsCard extends HTMLElement {
               <div class="song-artist">${this.getCurrentSong().artist}</div>
               <div class="song-year">${this.getCurrentSong().year}</div>
               ${isAdmin ? `
+                <div class="song-volume-buttons">
+                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeUp()" title="Volume Up">
+                    <ha-icon icon="mdi:volume-plus"></ha-icon>
+                  </button>
+                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeDown()" title="Volume Down">
+                    <ha-icon icon="mdi:volume-minus"></ha-icon>
+                  </button>
+                </div>
                 <button class="song-next-button" onclick="this.getRootNode().host.nextSong()">
                   <ha-icon icon="mdi:skip-next" class="icon"></ha-icon>
                   Next Song
@@ -1349,6 +1618,15 @@ class SoundbeatsCard extends HTMLElement {
           <div class="teams-overview-container">
             ${this.renderOtherTeamsOverview()}
           </div>
+        </div>
+        
+        <!-- Highscore Section - Always visible -->
+        <div class="section highscore-section">
+          <h3>
+            <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
+            Highscores
+          </h3>
+          ${this.renderHighscores()}
         </div>
         
         <!-- Team Section - Always visible -->
@@ -1490,7 +1768,8 @@ class SoundbeatsCard extends HTMLElement {
             participating: entity.attributes && entity.attributes.participating !== undefined ? entity.attributes.participating : true,
             year_guess: entity.attributes && entity.attributes.year_guess !== undefined ? entity.attributes.year_guess : 1990,
             betting: entity.attributes && entity.attributes.betting !== undefined ? entity.attributes.betting : false,
-            last_round_betting: entity.attributes && entity.attributes.last_round_betting !== undefined ? entity.attributes.last_round_betting : false
+            last_round_betting: entity.attributes && entity.attributes.last_round_betting !== undefined ? entity.attributes.last_round_betting : false,
+            user_id: entity.attributes && entity.attributes.user_id !== undefined ? entity.attributes.user_id : null
           };
         } else {
           // Fallback to default if entity doesn't exist yet
@@ -1500,7 +1779,8 @@ class SoundbeatsCard extends HTMLElement {
             participating: true,
             year_guess: 1990,
             betting: false,
-            last_round_betting: false
+            last_round_betting: false,
+            user_id: null
           };
         }
       }
@@ -1516,7 +1796,8 @@ class SoundbeatsCard extends HTMLElement {
         participating: true,
         year_guess: 1990,
         betting: false,
-        last_round_betting: false
+        last_round_betting: false,
+        user_id: null
       };
     }
     return defaultTeams;
@@ -1548,6 +1829,20 @@ class SoundbeatsCard extends HTMLElement {
     return rankings;
   }
 
+  async loadHomeAssistantUsers() {
+    // Load Home Assistant users if not already loaded
+    if (!this.usersLoaded && this.hass) {
+      try {
+        this.homeAssistantUsers = await this.getHomeAssistantUsers();
+        this.usersLoaded = true;
+      } catch (error) {
+        console.warn('Failed to load Home Assistant users:', error);
+        this.homeAssistantUsers = [];
+        this.usersLoaded = true;
+      }
+    }
+  }
+
   renderTeamManagement() {
     const teams = this.getTeams();
     
@@ -1559,6 +1854,18 @@ class SoundbeatsCard extends HTMLElement {
         <div class="team-management-controls">
           <input type="text" class="team-input" placeholder="Team Name" value="${team.name}" 
                  oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+          <select 
+            class="team-user-select" 
+            onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
+            title="Assign user to team"
+          >
+            <option value="">Select user...</option>
+            ${this.homeAssistantUsers.map(user => 
+              `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
+                ${user.name}
+              </option>`
+            ).join('')}
+          </select>
           <label class="participation-control">
             <input type="checkbox" class="participating-checkbox" ${team.participating ? 'checked' : ''} 
                    onchange="this.getRootNode().host.updateTeamParticipating('${teamId}', this.checked)">
@@ -1615,7 +1922,6 @@ class SoundbeatsCard extends HTMLElement {
                 <button class="bet-button ${team.betting ? 'betting-active' : ''}" 
                         onclick="this.getRootNode().host.toggleTeamBetting('${teamId}', ${!team.betting})"
                         aria-label="${team.betting ? 'Cancel bet' : 'Place bet for ' + team.name}">
-                  <ha-icon icon="mdi:${team.betting ? 'cards-diamond' : 'cards-diamond-outline'}" class="icon"></ha-icon>
                   ${team.betting ? 'BETTING!' : 'Place Bet'}
                 </button>
                 ${team.betting ? '<div class="betting-info">Win: 20pts | Lose: 0pts</div>' : ''}
@@ -1666,6 +1972,16 @@ class SoundbeatsCard extends HTMLElement {
       setTimeout(() => {
         this.recreateTeamsSection();
       }, 100);
+    }
+  }
+
+  updateTeamUserId(teamId, userId) {
+    // Call service to update team user ID
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'update_team_user_id', {
+        team_id: teamId,
+        user_id: userId || null
+      });
     }
   }
 
@@ -1800,7 +2116,6 @@ class SoundbeatsCard extends HTMLElement {
           <div class="overview-team-badges">
             ${isCountdownRunning && team.betting ? `
               <div class="overview-bet-badge">
-                <ha-icon icon="mdi:cards-diamond"></ha-icon>
                 <span>BET</span>
               </div>
             ` : ''}
@@ -1813,6 +2128,55 @@ class SoundbeatsCard extends HTMLElement {
         </div>
       `;
     }).join('');
+  }
+
+  renderHighscores() {
+    const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
+    
+    if (!highscoreEntity) {
+      return '<div class="highscore-empty">Highscore data not available</div>';
+    }
+    
+    const absoluteHighscore = highscoreEntity.state;
+    const attributes = highscoreEntity.attributes || {};
+    
+    // Extract round highscores and sort them by round number
+    const roundHighscores = Object.entries(attributes)
+      .filter(([key, value]) => key.startsWith('round_') && typeof value === 'number')
+      .sort(([a], [b]) => {
+        const roundA = parseInt(a.replace('round_', ''));
+        const roundB = parseInt(b.replace('round_', ''));
+        return roundA - roundB;
+      });
+    
+    return `
+      <div class="highscore-display">
+        <div class="absolute-highscore">
+          <ha-icon icon="mdi:crown" class="icon crown-icon"></ha-icon>
+          <span class="highscore-label">All-Time Record:</span>
+          <span class="highscore-value">${absoluteHighscore} pts</span>
+        </div>
+        ${roundHighscores.length > 0 ? `
+          <div class="round-highscores">
+            <div class="round-highscores-header">
+              <ha-icon icon="mdi:format-list-numbered" class="icon"></ha-icon>
+              Round Records:
+            </div>
+            <div class="round-highscores-list">
+              ${roundHighscores.map(([roundKey, score]) => {
+                const roundNumber = roundKey.replace('round_', '');
+                return `
+                  <div class="round-highscore-item">
+                    <span class="round-number">Round ${roundNumber}:</span>
+                    <span class="round-score">${score} pts</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
   }
 
   startNewGame() {
@@ -1838,6 +2202,42 @@ class SoundbeatsCard extends HTMLElement {
     }
   }
 
+  volumeUp() {
+    // Check if audio player is selected first
+    const selectedPlayer = this.getSelectedAudioPlayer();
+    
+    if (!selectedPlayer) {
+      // Show alert banner if no audio player is selected
+      this.showAlertBanner();
+      return;
+    }
+    
+    // Call Home Assistant service to increase volume by 10%
+    if (this.hass) {
+      this.hass.callService('media_player', 'volume_up', {
+        entity_id: selectedPlayer
+      });
+    }
+  }
+
+  volumeDown() {
+    // Check if audio player is selected first
+    const selectedPlayer = this.getSelectedAudioPlayer();
+    
+    if (!selectedPlayer) {
+      // Show alert banner if no audio player is selected
+      this.showAlertBanner();
+      return;
+    }
+    
+    // Call Home Assistant service to decrease volume by 10%
+    if (this.hass) {
+      this.hass.callService('media_player', 'volume_down', {
+        entity_id: selectedPlayer
+      });
+    }
+  }
+
   showAlertBanner() {
     const alertBanner = this.shadowRoot.querySelector('#no-audio-player-alert');
     if (alertBanner) {
@@ -1859,6 +2259,68 @@ class SoundbeatsCard extends HTMLElement {
     if (alertBanner) {
       alertBanner.classList.remove('show');
     }
+  }
+
+  showHighscoreBanner(message) {
+    const highscoreBanner = this.shadowRoot.querySelector('#highscore-record-banner');
+    const messageElement = this.shadowRoot.querySelector('#highscore-banner-message');
+    if (highscoreBanner && messageElement) {
+      messageElement.textContent = message;
+      highscoreBanner.classList.add('show');
+      
+      // Auto-hide after 8 seconds
+      setTimeout(() => {
+        this.hideHighscoreBanner();
+      }, 8000);
+    }
+  }
+
+  hideHighscoreBanner() {
+    const highscoreBanner = this.shadowRoot.querySelector('#highscore-record-banner');
+    if (highscoreBanner) {
+      highscoreBanner.classList.remove('show');
+    }
+  }
+
+  checkForNewHighscoreRecords() {
+    const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
+    if (!highscoreEntity) {
+      return;
+    }
+    
+    const currentAbsolute = parseInt(highscoreEntity.state, 10) || 0;
+    const currentAttributes = highscoreEntity.attributes || {};
+    
+    // Check for new absolute highscore
+    if (this._lastAbsoluteHighscore !== null && currentAbsolute > this._lastAbsoluteHighscore && currentAbsolute > 0) {
+      this.showHighscoreBanner(`New all-time record: ${currentAbsolute} points! 🏆`);
+    }
+    
+    // Check for new round highscores
+    Object.entries(currentAttributes).forEach(([key, value]) => {
+      if (key.startsWith('round_') && typeof value === 'number') {
+        const lastValue = this._lastRoundHighscores[key];
+        if (lastValue !== undefined && value > lastValue && value > 0) {
+          const roundNumber = key.replace('round_', '');
+          this.showHighscoreBanner(`New Round ${roundNumber} record: ${value} points! 🎯`);
+        }
+      }
+    });
+    
+    // Update tracking values
+    this._lastAbsoluteHighscore = currentAbsolute;
+    this._lastRoundHighscores = { ...currentAttributes };
+  }
+
+  initializeHighscoreTracking() {
+    const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
+    if (!highscoreEntity) {
+      return;
+    }
+    
+    // Initialize with current values to prevent false positives on first load
+    this._lastAbsoluteHighscore = parseInt(highscoreEntity.state, 10) || 0;
+    this._lastRoundHighscores = { ...highscoreEntity.attributes } || {};
   }
 
   getCountdownTimerLength() {
@@ -2015,6 +2477,26 @@ class SoundbeatsCard extends HTMLElement {
     return mediaPlayers;
   }
 
+  getHomeAssistantUsers() {
+    // Get all Home Assistant users
+    // This uses the Home Assistant websocket connection to fetch user data
+    if (this.hass && this.hass.user) {
+      return this.hass.callWS({
+        type: 'config/auth/list'
+      }).then(users => {
+        return users.map(user => ({
+          id: user.id,
+          name: user.name || 'Unknown User',
+          is_active: user.is_active !== false
+        })).filter(user => user.is_active);  // Only return active users
+      }).catch(error => {
+        console.warn('Could not fetch Home Assistant users:', error);
+        return [];
+      });
+    }
+    return Promise.resolve([]);
+  }
+
   updateCountdownTimerLength(timerLength) {
     // Call service to update countdown timer length
     if (this.hass) {
@@ -2138,6 +2620,8 @@ class SoundbeatsCard extends HTMLElement {
       // Hide the alert if we have a current song
       this.hideAlertBanner('all-songs-played-alert');
     }
+    // Check for new highscore records and show banner if needed
+    this.checkForNewHighscoreRecords();
   }
 
   updateCountdownDisplay() {
@@ -2373,6 +2857,22 @@ class SoundbeatsCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    
+    // Load users when hass becomes available for the first time
+    if (hass && !this.usersLoaded) {
+      this.loadHomeAssistantUsers().then(() => {
+        // Re-render team management if it exists to show the user dropdowns
+        const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
+        if (teamManagementContainer) {
+          teamManagementContainer.innerHTML = this.renderTeamManagement();
+        }
+      });
+    // Initialize highscore tracking on first load
+    if (!this._highscoreTrackingInitialized) {
+      this.initializeHighscoreTracking();
+      this._highscoreTrackingInitialized = true;
+    }
+    
     // Only update dynamic content without full re-render to preserve input states
     if (this.shadowRoot.innerHTML) {
       this.updateDisplayValues();
