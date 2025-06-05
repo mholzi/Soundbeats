@@ -95,7 +95,7 @@ class SoundbeatsSensor(SensorEntity):
         _LOGGER.debug("Updating Soundbeats main sensor")
 
 
-class SoundbeatsTeamSensor(SensorEntity):
+class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
     """Representation of a Soundbeats team sensor."""
 
     def __init__(self, team_number: int) -> None:
@@ -107,6 +107,33 @@ class SoundbeatsTeamSensor(SensorEntity):
         self._team_name = f"Team {team_number}"
         self._points = 0
         self._participating = True
+
+    async def async_added_to_hass(self) -> None:
+        """Called when entity is added to hass."""
+        await super().async_added_to_hass()
+        
+        # Restore previous state if available
+        if (last_state := await self.async_get_last_state()) is not None:
+            try:
+                # Restore team name from the state
+                self._team_name = last_state.state
+                _LOGGER.debug("Restored team %d name: %s", self._team_number, self._team_name)
+                
+                # Restore attributes if available
+                if last_state.attributes:
+                    if "points" in last_state.attributes:
+                        self._points = int(last_state.attributes["points"])
+                        _LOGGER.debug("Restored team %d points: %d", self._team_number, self._points)
+                    
+                    if "participating" in last_state.attributes:
+                        self._participating = bool(last_state.attributes["participating"])
+                        _LOGGER.debug("Restored team %d participating: %s", self._team_number, self._participating)
+                        
+            except (ValueError, TypeError, KeyError) as e:
+                _LOGGER.warning("Could not restore team %d state: %s, using defaults", self._team_number, e)
+                self._team_name = f"Team {self._team_number}"
+                self._points = 0
+                self._participating = True
 
     @property
     def state(self) -> str:
