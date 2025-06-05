@@ -146,6 +146,7 @@ The integration automatically creates the following entities:
 - `sensor.soundbeats_round_counter` - Current round number (increments after each round evaluation)
 - `sensor.soundbeats_game_mode` - Current game mode (default: Classic)
 - `sensor.soundbeats_current_song` - Currently playing song information and selected media player
+- `sensor.soundbeats_played_songs` - Tracks song IDs played since current game started
 - `sensor.soundbeats_highscore` - Highscore tracking for absolute and per-round records
 
 **Note:** The `sensor.soundbeats_current_song` automatically manages all music-related functionality including song metadata (`year` and `url` properties) and the selected media player entity. This sensor serves as the single source of truth for both the currently selected media player and any playing song information. The integration automatically coordinates between this custom sensor (for year, URL, and media player selection) and your selected media player (for title, artist, and artwork) to provide complete song information with zero manual configuration required.
@@ -245,10 +246,7 @@ The Soundbeats card has been enhanced with improved visibility and clarity acros
 
 - **Zero Configuration Required**: All UI improvements are automatically applied with no setup needed - simply install and enjoy the enhanced experience
 
-### Game Features
 
-- **Smart Team Management**: Up to 5 teams with persistent names and scores
-- **Comprehensive Highscore Tracking**: Automatic all-time and per-round record keeping with celebratory notifications
 - **Premium Visual Experience**: Modern, animated header design with zero-setup required
   - **Musical Theme**: Floating notes, sound wave visualizers, and rhythmic animations
   - **Professional Aesthetics**: Deep gradients, dynamic shadows, and premium typography
@@ -290,10 +288,10 @@ The Soundbeats card has been enhanced with improved visibility and clarity acros
 The integration provides comprehensive Home Assistant services for automation and external control:
 
 #### Game Control Services
-- `soundbeats.start_game` - Start a new game session (resets teams, round counter, and stops countdown)
+- `soundbeats.start_game` - Start a new game session (resets teams, round counter, played songs list, and stops countdown)
 - `soundbeats.stop_game` - Stop the current game session  
 - `soundbeats.reset_game` - Reset the game to initial state
-- `soundbeats.next_song` - Skip to the next song and start countdown timer
+- `soundbeats.next_song` - Skip to the next song and start countdown timer (automatically selects only unplayed songs)
 
 #### Team Management Services
 - `soundbeats.update_team_name` - Update a team's name
@@ -376,6 +374,12 @@ The integration works with any Home Assistant media player, including:
 - MPD/Mopidy players
 
 ### Game State Issues
+
+#### Song Repeat System
+- **All Songs Played Warning**: When all available songs have been played, a warning banner will slide in from the right
+- **Dismissing the Warning**: Click the X button on the banner to close it temporarily
+- **Resolving the Issue**: Start a new game to reset the played songs list and continue playing
+- **Checking Song Status**: Use Developer Tools → States to check `sensor.soundbeats_played_songs` for the list of played song IDs
 
 #### Sensor Not Created
 - Ensure the integration is properly installed and configured through Settings → Devices & Services
