@@ -49,6 +49,7 @@ class SoundbeatsCard extends HTMLElement {
           text-align: center;
           position: relative;
           overflow: hidden;
+          margin-bottom: 0;
         }
         
         .title-section::before {
@@ -617,6 +618,7 @@ class SoundbeatsCard extends HTMLElement {
         .song-card {
           text-align: center;
           padding: 16px;
+          position: relative;
         }
         
         .song-image {
@@ -647,6 +649,27 @@ class SoundbeatsCard extends HTMLElement {
           font-weight: bold;
           margin: 8px 0;
           color: var(--primary-color, #03a9f4);
+        }
+
+        .song-next-button {
+          position: absolute;
+          bottom: 8px;
+          left: 8px;
+          background: rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          color: var(--primary-text-color);
+          padding: 6px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.9em;
+          transition: background 0.3s;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .song-next-button:hover {
+          background: rgba(255, 255, 255, 0.3);
         }
 
         .expandable-header {
@@ -844,6 +867,12 @@ class SoundbeatsCard extends HTMLElement {
               <div class="song-name">${this.getCurrentSong().song_name}</div>
               <div class="song-artist">${this.getCurrentSong().artist}</div>
               <div class="song-year">${this.getCurrentSong().year}</div>
+              ${isAdmin ? `
+                <button class="song-next-button" onclick="this.getRootNode().host.nextSong()">
+                  <ha-icon icon="mdi:skip-next" class="icon"></ha-icon>
+                  Next Song
+                </button>
+              ` : ''}
             </div>
           ` : ''}
         </div>
@@ -875,25 +904,6 @@ class SoundbeatsCard extends HTMLElement {
           </div>
         </div>
         
-        <!-- Admin Section - Only visible to admins -->
-        <div class="section admin-section ${isAdmin ? '' : 'hidden'}">
-          <h3>
-            <ha-icon icon="mdi:shield-account" class="icon"></ha-icon>
-            Admin Controls
-          </h3>
-          <p>Administrative controls for managing the Soundbeats game.</p>
-          <div class="admin-controls">
-            <button class="admin-button" onclick="this.getRootNode().host.startNewGame()">
-              <ha-icon icon="mdi:play" class="icon"></ha-icon>
-              Start a new Game
-            </button>
-            <button class="admin-button" onclick="this.getRootNode().host.nextSong()">
-              <ha-icon icon="mdi:skip-next" class="icon"></ha-icon>
-              Next Song
-            </button>
-          </div>
-        </div>
-
         <!-- Game Settings Section - Only visible to admins -->
         <div class="section admin-section ${isAdmin ? '' : 'hidden'}">
           <div class="expandable-header" onclick="this.getRootNode().host.toggleGameSettings()">
@@ -906,6 +916,12 @@ class SoundbeatsCard extends HTMLElement {
           <div class="expandable-content ${this.gameSettingsExpanded ? 'expanded' : 'collapsed'}">
             <p>Configure game settings that persist across resets.</p>
             <div class="game-settings">
+              <div class="setting-item">
+                <button class="admin-button" onclick="this.getRootNode().host.startNewGame()">
+                  <ha-icon icon="mdi:play" class="icon"></ha-icon>
+                  Start a new Game
+                </button>
+              </div>
               <div class="setting-item">
                 <div class="setting-label">
                   <ha-icon icon="mdi:timer-outline" class="icon"></ha-icon>
