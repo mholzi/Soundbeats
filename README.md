@@ -79,12 +79,6 @@ The integration automatically creates the following entities:
 
 The integration automatically provides a comprehensive custom Lovelace card with no additional setup required. The card features role-based sections:
 
-#### User Sections (Visible to All)
-- **Title Section**: Game branding and status
-- **Team Status**: Real-time team standings, points, and participation status. Shows "No Song played yet." when no rounds have been completed
-- **Current Song**: Song information with artwork when playing (shown only after at least one round is completed and during reveal phase). Displays "Unknown Title" and "Unknown Artist" as fallback values if media player information is unavailable
-- **Debug Information**: Troubleshooting data for audio setup
-
 #### Admin Sections (Admin Users Only)
 - **Admin Controls**: Start/stop game, next song controls
 - **Game Settings**: Configure countdown timer duration
