@@ -42,8 +42,9 @@ async def async_setup_entry(
     audio_sensor = SoundbeatsAudioPlayerSensor()
     player_count_sensor = SoundbeatsPlayerCountSensor()
     game_mode_sensor = SoundbeatsGameModeSensor()
+    current_song_sensor = SoundbeatsCurrentSongSensor()
     
-    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, player_count_sensor, game_mode_sensor])
+    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, player_count_sensor, game_mode_sensor, current_song_sensor])
     
     # Store entity references in hass data for service access
     hass.data.setdefault(DOMAIN, {})
@@ -55,6 +56,7 @@ async def async_setup_entry(
         "audio_sensor": audio_sensor,
         "player_count_sensor": player_count_sensor,
         "game_mode_sensor": game_mode_sensor,
+        "current_song_sensor": current_song_sensor,
     }
     
     async_add_entities(entities, True)
@@ -354,3 +356,48 @@ class SoundbeatsGameModeSensor(SensorEntity):
     async def async_update(self) -> None:
         """Update the sensor."""
         _LOGGER.debug("Updating Soundbeats game mode sensor")
+
+
+class SoundbeatsCurrentSongSensor(SensorEntity):
+    """Representation of a Soundbeats current song sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the current song sensor."""
+        self._attr_name = "Soundbeats Current Song"
+        self._attr_unique_id = "soundbeats_current_song"
+        self._attr_icon = "mdi:music-note"
+        self._current_song_data = None
+
+    @property
+    def state(self) -> str:
+        """Return the state of the sensor (media player entity ID or None)."""
+        if self._current_song_data is not None:
+            return self._current_song_data.get("media_player", "None")
+        return "None"
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes."""
+        if self._current_song_data is None:
+            return {}
+        
+        return {
+            "media_player": self._current_song_data.get("media_player"),
+            "song_id": self._current_song_data.get("song_id"),
+            "year": self._current_song_data.get("year"),
+            "url": self._current_song_data.get("url"),
+        }
+
+    def update_current_song(self, song_data: dict) -> None:
+        """Update the current song data."""
+        self._current_song_data = song_data
+        self.async_write_ha_state()
+
+    def clear_current_song(self) -> None:
+        """Clear the current song."""
+        self._current_song_data = None
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats current song sensor")

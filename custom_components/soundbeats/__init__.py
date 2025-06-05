@@ -1,6 +1,8 @@
 """The Soundbeats integration."""
+import json
 import logging
 import os
+import random
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -152,6 +154,68 @@ async def _register_services(hass: HomeAssistant) -> None:
         entities = _get_entities()
         countdown_sensor = entities.get("countdown_sensor")
         countdown_current_sensor = entities.get("countdown_current_sensor")
+        current_song_sensor = entities.get("current_song_sensor")
+        audio_sensor = entities.get("audio_sensor")
+        
+        # Get the selected audio player
+        selected_player = None
+        if audio_sensor and hasattr(audio_sensor, 'state'):
+            selected_player = audio_sensor.state
+        else:
+            audio_entity = hass.states.get("sensor.soundbeats_audio_player")
+            if audio_entity and audio_entity.state != "None":
+                selected_player = audio_entity.state
+        
+        if not selected_player:
+            _LOGGER.warning("No audio player selected. Please select one in the settings.")
+            # Clear the current song sensor
+            if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
+                current_song_sensor.clear_current_song()
+        else:
+            # Randomly select a song from songs.json
+            try:
+                songs_file = os.path.join(os.path.dirname(__file__), "songs.json")
+                with open(songs_file, 'r') as f:
+                    songs = json.load(f)
+                
+                if songs:
+                    selected_song = random.choice(songs)
+                    _LOGGER.info("Selected song with ID %s from year %s", selected_song.get("id"), selected_song.get("year"))
+                    
+                    # Play the song on the selected media player
+                    try:
+                        await hass.services.async_call(
+                            "media_player",
+                            "play_media",
+                            {
+                                "entity_id": selected_player,
+                                "media_content_id": selected_song.get("url"),
+                                "media_content_type": "music"
+                            }
+                        )
+                        _LOGGER.info("Started playing song on %s", selected_player)
+                        
+                        # Update the current song sensor with the media player entity ID and song details
+                        if current_song_sensor and hasattr(current_song_sensor, 'update_current_song'):
+                            current_song_sensor.update_current_song({
+                                "media_player": selected_player,
+                                "song_id": selected_song.get("id"),
+                                "year": selected_song.get("year"),
+                                "url": selected_song.get("url")
+                            })
+                    except Exception as e:
+                        _LOGGER.error("Failed to play song on media player %s: %s", selected_player, e)
+                        # Clear the current song sensor on error
+                        if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
+                            current_song_sensor.clear_current_song()
+                else:
+                    _LOGGER.warning("No songs found in songs.json")
+                    if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
+                        current_song_sensor.clear_current_song()
+            except Exception as e:
+                _LOGGER.error("Failed to select random song: %s", e)
+                if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
+                    current_song_sensor.clear_current_song()
         
         if countdown_sensor and countdown_current_sensor:
             # Get the configured timer length
