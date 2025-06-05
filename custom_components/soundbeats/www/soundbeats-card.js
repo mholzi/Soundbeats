@@ -65,6 +65,140 @@ class SoundbeatsCard extends HTMLElement {
           border-bottom: 3px solid rgba(243, 156, 18, 0.6);
         }
         
+        .qr-code-icon {
+          position: absolute;
+          bottom: 8px;
+          right: 8px;
+          width: 32px;
+          height: 32px;
+          background: rgba(255, 255, 255, 0.9);
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          z-index: 10;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .qr-code-icon:hover {
+          background: rgba(255, 255, 255, 1);
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .qr-code-icon ha-icon {
+          color: #333;
+          --mdc-icon-size: 20px;
+        }
+        
+        .qr-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.8);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease;
+        }
+        
+        .qr-modal.show {
+          opacity: 1;
+          visibility: visible;
+        }
+        
+        .qr-modal-content {
+          background: var(--ha-card-background, white);
+          border-radius: 12px;
+          padding: 24px;
+          max-width: 90vw;
+          max-height: 90vh;
+          position: relative;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+          text-align: center;
+          transform: scale(0.8);
+          transition: transform 0.3s ease;
+        }
+        
+        .qr-modal.show .qr-modal-content {
+          transform: scale(1);
+        }
+        
+        .qr-modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid var(--divider-color, #e0e0e0);
+        }
+        
+        .qr-modal-title {
+          font-size: 1.2em;
+          font-weight: 500;
+          color: var(--primary-text-color);
+          margin: 0;
+        }
+        
+        .qr-modal-close {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 50%;
+          transition: background-color 0.2s ease;
+          color: var(--secondary-text-color);
+        }
+        
+        .qr-modal-close:hover {
+          background: var(--secondary-background-color, #f5f5f5);
+        }
+        
+        .qr-modal-close ha-icon {
+          --mdc-icon-size: 24px;
+        }
+        
+        .qr-code-container {
+          margin: 20px 0;
+          display: flex;
+          justify-content: center;
+        }
+        
+        .qr-code-image {
+          max-width: 256px;
+          width: 100%;
+          height: auto;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 8px;
+        }
+        
+        .qr-modal-description {
+          color: var(--secondary-text-color);
+          font-size: 0.9em;
+          line-height: 1.4;
+          margin-top: 16px;
+        }
+        
+        .qr-url-display {
+          background: var(--secondary-background-color, #f5f5f5);
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 6px;
+          padding: 8px 12px;
+          font-family: monospace;
+          font-size: 0.8em;
+          color: var(--primary-text-color);
+          word-break: break-all;
+          margin-top: 12px;
+        }
+        
         .title-section::before {
           content: '';
           position: absolute;
@@ -1564,6 +1698,9 @@ class SoundbeatsCard extends HTMLElement {
             <div class="wave wave-4"></div>
             <div class="wave wave-5"></div>
           </div>
+          <div class="qr-code-icon" onclick="this.getRootNode().host.showQrModal()">
+            <ha-icon icon="mdi:qrcode"></ha-icon>
+          </div>
         </div>
         
         <!-- Countdown Section - Only visible when timer is running -->
@@ -1714,6 +1851,25 @@ class SoundbeatsCard extends HTMLElement {
               ${this.renderTeamManagement()}
             </div>
           </div>
+        </div>
+      </div>
+      
+      <!-- QR Code Modal -->
+      <div class="qr-modal" id="qr-modal">
+        <div class="qr-modal-content">
+          <div class="qr-modal-header">
+            <h3 class="qr-modal-title">Home Assistant QR Code</h3>
+            <button class="qr-modal-close" onclick="this.getRootNode().host.hideQrModal()">
+              <ha-icon icon="mdi:close"></ha-icon>
+            </button>
+          </div>
+          <div class="qr-code-container">
+            <img class="qr-code-image" id="qr-code-image" alt="QR Code" />
+          </div>
+          <div class="qr-modal-description">
+            Scan this QR code with your mobile device to access Home Assistant from your phone.
+          </div>
+          <div class="qr-url-display" id="qr-url-display"></div>
         </div>
       </div>
     `;
@@ -2886,6 +3042,47 @@ class SoundbeatsCard extends HTMLElement {
 
   get hass() {
     return this._hass;
+  }
+
+  showQrModal() {
+    const modal = this.shadowRoot.querySelector('#qr-modal');
+    const qrImage = this.shadowRoot.querySelector('#qr-code-image');
+    const urlDisplay = this.shadowRoot.querySelector('#qr-url-display');
+    
+    if (modal && qrImage && urlDisplay) {
+      // Get the current Home Assistant URL
+      const baseUrl = window.location.origin;
+      
+      // Generate QR code using qr-server.com API
+      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(baseUrl)}`;
+      
+      // Set the QR code image and URL display
+      qrImage.src = qrCodeUrl;
+      urlDisplay.textContent = baseUrl;
+      
+      // Show the modal
+      modal.classList.add('show');
+      
+      // Add event listener to close modal when clicking outside
+      modal.addEventListener('click', this.handleQrModalOutsideClick.bind(this));
+    }
+  }
+
+  hideQrModal() {
+    const modal = this.shadowRoot.querySelector('#qr-modal');
+    if (modal) {
+      modal.classList.remove('show');
+      
+      // Remove event listener
+      modal.removeEventListener('click', this.handleQrModalOutsideClick.bind(this));
+    }
+  }
+
+  handleQrModalOutsideClick(event) {
+    // Close modal if clicking on the backdrop (not the content)
+    if (event.target.classList.contains('qr-modal')) {
+      this.hideQrModal();
+    }
   }
 
   getCardSize() {
