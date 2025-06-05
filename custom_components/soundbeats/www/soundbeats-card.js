@@ -1003,7 +1003,6 @@ class SoundbeatsCard extends HTMLElement {
             <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.gameSettingsExpanded ? 'expanded' : ''}"></ha-icon>
           </div>
           <div class="expandable-content ${this.gameSettingsExpanded ? 'expanded' : 'collapsed'}">
-            <p>Configure game settings that persist across resets.</p>
             <div class="game-settings">
               <div class="setting-item">
                 <button class="admin-button" onclick="this.getRootNode().host.startNewGame()">
