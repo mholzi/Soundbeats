@@ -162,13 +162,21 @@ async def _register_services(hass: HomeAssistant) -> None:
             with open(songs_file, 'r') as f:
                 songs = json.load(f)
             
-            if songs:
-                selected_song = random.choice(songs)
+            # Filter songs that have complete metadata
+            complete_songs = [
+                song for song in songs 
+                if all(field in song for field in ['song_name', 'artist', 'entity_picture', 'year'])
+            ]
+            
+            if complete_songs:
+                selected_song = random.choice(complete_songs)
                 _LOGGER.info("Selected song: %s by %s", selected_song.get("song_name"), selected_song.get("artist"))
                 
                 # Update the current song sensor
                 if current_song_sensor and hasattr(current_song_sensor, 'update_current_song'):
                     current_song_sensor.update_current_song(selected_song)
+            else:
+                _LOGGER.warning("No complete songs found in songs.json")
         except Exception as e:
             _LOGGER.error("Failed to select random song: %s", e)
         

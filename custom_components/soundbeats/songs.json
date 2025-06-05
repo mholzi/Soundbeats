@@ -82,12 +82,18 @@
   {
     "url": "https://open.spotify.com/track/57TaM8GozkJBz90xvQ1xME?si=AEj4wKoIR5q9DVPg09Np2A",
     "year": 1977,
-    "id": 11
+    "id": 11,
+    "song_name": "Dancing Queen",
+    "artist": "ABBA",
+    "entity_picture": "https://i.scdn.co/image/ab67616d0000b2738e48d43b0d8e1b20bc468dd0"
   },
   {
     "url": "https://open.spotify.com/track/5ubvP9oKmxLUVq506fgLhk?si=0f229fa8f4a34855",
     "year": 1978,
-    "id": 12
+    "id": 12,
+    "song_name": "Le Freak",
+    "artist": "CHIC",
+    "entity_picture": "https://i.scdn.co/image/ab67616d0000b2736a95f2bd03608c1b32b7e4f6"
   },
   {
     "url": "https://open.spotify.com/track/0B9x2BRHqj3Qer7biM3pU3?si=dea798b1e4514a39",
