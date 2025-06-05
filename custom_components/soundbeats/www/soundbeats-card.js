@@ -49,7 +49,8 @@ class SoundbeatsCard extends HTMLElement {
           text-align: center;
           position: relative;
           overflow: hidden;
-          margin-bottom: 0;
+          margin: -16px -16px 24px -16px;
+          padding: 12px 16px;
         }
         
         .title-section::before {
@@ -696,18 +697,18 @@ class SoundbeatsCard extends HTMLElement {
         .song-next-button {
           position: absolute;
           bottom: 8px;
-          left: 8px;
+          right: 8px;
           background: rgba(255, 255, 255, 0.2);
           border: 1px solid rgba(255, 255, 255, 0.3);
           color: var(--primary-text-color);
-          padding: 6px 12px;
+          padding: 4px 8px;
           border-radius: 4px;
           cursor: pointer;
-          font-size: 0.9em;
+          font-size: 0.8em;
           transition: background 0.3s;
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 2px;
         }
 
         .song-next-button:hover {
@@ -802,32 +803,33 @@ class SoundbeatsCard extends HTMLElement {
           max-width: 120px;
           flex-shrink: 0;
           text-align: center;
+          position: relative;
         }
         
         .overview-team-item.rank-1 {
           background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
-          color: #1A1A1A;
+          color: #000;
           border-color: #FFD700;
           box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
         }
         
         .overview-team-item.rank-2 {
-          background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 50%, #808080 100%);
-          color: #1A1A1A;
+          background: linear-gradient(135deg, #E8E8E8 0%, #D0D0D0 50%, #B8B8B8 100%);
+          color: #000;
           border-color: #C0C0C0;
           box-shadow: 0 4px 8px rgba(192, 192, 192, 0.3);
         }
         
         .overview-team-item.rank-3 {
-          background: linear-gradient(135deg, #CD7F32 0%, #B8860B 50%, #A0522D 100%);
-          color: white;
+          background: linear-gradient(135deg, #D2691E 0%, #CD853F 50%, #BC8F8F 100%);
+          color: #000;
           border-color: #CD7F32;
           box-shadow: 0 4px 8px rgba(205, 127, 50, 0.3);
         }
         
         .overview-team-item.rank-other {
-          background: linear-gradient(135deg, #F5F5F5 0%, #E0E0E0 50%, #D0D0D0 100%);
-          color: var(--primary-text-color, #333);
+          background: linear-gradient(135deg, #F8F8F8 0%, #EEEEEE 50%, #E0E0E0 100%);
+          color: #000;
           border-color: #E0E0E0;
         }
         
@@ -870,20 +872,22 @@ class SoundbeatsCard extends HTMLElement {
           flex-direction: column;
           align-items: center;
           gap: 2px;
-          margin-top: 4px;
-          width: 100%;
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          width: auto;
         }
         
         .overview-bet-badge {
           background: var(--warning-color, #ff9800);
           color: white;
-          padding: 2px 6px;
-          border-radius: 8px;
-          font-size: 0.6em;
+          padding: 1px 4px;
+          border-radius: 6px;
+          font-size: 0.55em;
           font-weight: bold;
           display: flex;
           align-items: center;
-          gap: 2px;
+          gap: 1px;
           animation: pulse-bet-overview 2s infinite;
           white-space: nowrap;
         }
@@ -898,11 +902,16 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .overview-guess-info {
-          font-size: 0.6em;
-          color: var(--secondary-text-color, #666);
-          font-style: italic;
+          font-size: 0.7em;
+          color: #000;
+          font-weight: bold;
           text-align: center;
           line-height: 1.1;
+          background: rgba(255, 255, 255, 0.8);
+          padding: 2px 4px;
+          border-radius: 4px;
+          min-width: 20px;
+        }
         }
         
         .overview-empty {
@@ -1069,7 +1078,6 @@ class SoundbeatsCard extends HTMLElement {
             <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.gameSettingsExpanded ? 'expanded' : ''}"></ha-icon>
           </div>
           <div class="expandable-content ${this.gameSettingsExpanded ? 'expanded' : 'collapsed'}">
-            <p>Configure game settings that persist across resets.</p>
             <div class="game-settings">
               <div class="setting-item">
                 <button class="admin-button" onclick="this.getRootNode().host.startNewGame()">

@@ -93,9 +93,10 @@ The integration automatically creates the following entities:
 The integration automatically provides a comprehensive custom Lovelace card with no additional setup required. The card features role-based sections:
 
 #### Admin Sections (Admin Users Only)
-- **Game Settings**: Configure countdown timer duration and start new games (expandable section, collapsed by default)
+- **Game Settings**: Start new games and adjust countdown timer duration (expandable section, collapsed by default)
 - **Audio Player Selection**: Choose from available Home Assistant media players (unavailable players are automatically filtered out)
 - **Team Management**: Edit team names and set participation status (expandable section, collapsed by default)
+
 - **Song Controls**: "Next Song" button appears in the bottom left corner of the song display during active rounds
   - **Smart Audio Player Validation**: If no audio player is selected when clicking "Next Song", an alert notification banner slides in from the right side
   - **User-Friendly Alerts**: The alert banner provides clear guidance and can be dismissed by clicking the close button
@@ -104,9 +105,13 @@ The integration automatically provides a comprehensive custom Lovelace card with
 #### Teams Overview Section
 - **Horizontal Scrollable Leaderboard**: All active teams displayed in a single horizontal row with compact cards that scroll when overflowing
 - **Compact Card Design**: Much smaller team cards (80-120px wide) with points prominently displayed at the top and team names in small font at the bottom
+- **Enhanced Visual Layout**: 
+  - **Header Alignment**: Title section perfectly aligns with card edges for a cleaner look
+  - **Badge Positioning**: Guessed year and bet indicators positioned in the top right corner of each team card
+  - **Improved Contrast**: Enhanced background colors for better text readability across all ranking levels
 - **Context-Aware Display**: 
-  - **During countdown (timer running)**: Shows ranking badge, current points at top, team name at bottom, and compact "BET" indicators for active betting
-  - **When timer is 0 (round over)**: Displays ranking badge, current points at top, team name at bottom, and last round guess year
+  - **During countdown (timer running)**: Shows ranking badge, current points at top, team name at bottom, and compact "BET" indicators in top right corner
+  - **When timer is 0 (round over)**: Displays ranking badge, current points at top, team name at bottom, and last round guess year in top right corner
 - **Visual Hierarchy**: Clear gold/silver/bronze styling for top 3 teams with distinct ranking badges using Material Design Icons (MDI)
 - **Smart Sorting**: Teams automatically sorted by points in descending order
 - **Responsive Design**: Horizontal scrolling ensures all teams remain visible regardless of screen size
@@ -116,28 +121,32 @@ The integration automatically provides a comprehensive custom Lovelace card with
 - **Interactive Controls**: Year guess sliders, betting buttons, and detailed results when timer expires
 - **Personal Team Views**: Separate detailed interface for each team's gameplay experience
 
-**Note**: The Game Settings and Team Management sections feature expandable/collapsible interfaces with chevron icons. Click on the section headers to expand or collapse these sections. The expanded state persists throughout your session but resets when the page is reloaded.
+**Note**: The admin sections feature expandable/collapsible interfaces with chevron icons. Click on the section headers to expand or collapse these sections. The expanded state persists throughout your session but resets when the page is reloaded. The card requires zero manual setup for users.
 
 To use the card, add it to your Lovelace dashboard by selecting **"Custom: Soundbeats Card"** when adding a new card.
 
 ### Game Features
 
 - **Smart Team Management**: Up to 5 teams with persistent names and scores
+- **Enhanced UI Design**: Refined interface with improved visual hierarchy and layout
+  - **Perfect Alignment**: Header sections align seamlessly with card boundaries for a professional look
+  - **Optimized Controls**: Compact, right-aligned controls for better space utilization
+  - **Corner Badge System**: Key indicators (betting status, guess years) positioned in card corners for maximum visibility
 - **Comprehensive Teams Overview**: Horizontal scrollable leaderboard showing all teams in compact cards
-  - **Real-time Leaderboard**: During countdown, shows current standings with compact betting indicators in a single row
-  - **Round Results View**: After timer expires, displays final guesses and updated points in horizontal layout
-  - **Medal-Style Rankings**: Gold/silver/bronze visual hierarchy for top 3 teams with responsive scrolling
+  - **Real-time Leaderboard**: During countdown, shows current standings with compact betting indicators positioned in top right corners
+  - **Round Results View**: After timer expires, displays final guesses and updated points with year indicators in top right corners
+  - **Medal-Style Rankings**: Gold/silver/bronze visual hierarchy for top 3 teams with enhanced contrast for better readability
 - **Dynamic Team Rankings**: Teams are automatically ranked based on points with visual indicators
   - **Ranking Display**: Circular badges showing team position (1st, 2nd, 3rd, etc.) using MDI numeric icons
   - **Round-Aware Color Coding**: 
     - **Round 0**: All teams show neutral gray gradient (no competition yet)
-    - **Round 1+**: Medal-based headers with tie support:
+    - **Round 1+**: Medal-based headers with tie support and improved contrast:
       - **Gold** gradient for all teams with highest points (handles ties)
-      - **Silver** gradient for all teams with next highest points
+      - **Silver** gradient for all teams with next highest points  
       - **Bronze** gradient for all teams with third highest points
       - **Neutral gray** gradient for all remaining teams
   - **Automatic Medal Logic**: No manual setup required - medals assigned based on actual point distribution
-  - **Visual Distinction**: Clear separation between team headers and content areas
+  - **Visual Distinction**: Clear separation between team headers and content areas with enhanced readability
 - **Flexible Audio Integration**: Works with any Home Assistant media player
 - **Configurable Timing**: Adjustable countdown timer (5-300 seconds)
 - **Auto-Scoring**: Automatic point calculation based on guess accuracy
@@ -146,7 +155,7 @@ To use the card, add it to your Lovelace dashboard by selecting **"Custom: Sound
 - **Spotify Integration**: Supports Spotify URLs and other media formats
 - **Debug Tools**: Built-in troubleshooting information for media playback
 - **Robust Display**: Always shows meaningful song information with fallback values for improved user experience
-- **Collapsible Interface**: Admin sections (Game Settings and Team Management) feature expandable/collapsible interfaces for cleaner UI organization
+- **Collapsible Interface**: Admin sections feature expandable/collapsible interfaces for cleaner UI organization
 
 ### Services
 
