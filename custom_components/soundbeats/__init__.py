@@ -155,7 +155,7 @@ async def _register_services(hass: HomeAssistant) -> None:
         
         if countdown_sensor and countdown_current_sensor:
             # Get the configured timer length
-            timer_length = countdown_sensor.state if hasattr(countdown_sensor, 'state') else 30
+            timer_length = int(countdown_sensor.state) if (hasattr(countdown_sensor, 'state') and countdown_sensor.state is not None) else 30
             
             # Start the countdown
             if hasattr(countdown_current_sensor, 'start_countdown'):
@@ -166,8 +166,28 @@ async def _register_services(hass: HomeAssistant) -> None:
         else:
             # Fallback: get timer length from sensor state and start countdown
             timer_entity = hass.states.get("sensor.soundbeats_countdown_timer")
-            timer_length = int(timer_entity.state) if timer_entity else 30
-            hass.states.async_set("sensor.soundbeats_countdown_current", timer_length)
+            timer_length = int(timer_entity.state) if (timer_entity and timer_entity.state is not None) else 30
+            
+            # Try to find the countdown current sensor entity and start countdown
+            countdown_current_sensor = None
+            
+            # Check all config entries for the entity
+            for config_entry_data in hass.data.get(DOMAIN, {}).values():
+                if isinstance(config_entry_data, dict) and "entities" in config_entry_data:
+                    countdown_current_sensor = config_entry_data["entities"].get("countdown_current_sensor")
+                    if countdown_current_sensor:
+                        break
+            
+            # If not found in config entries, check the global entities dict
+            if not countdown_current_sensor:
+                entities = hass.data.get(DOMAIN, {}).get("entities", {})
+                countdown_current_sensor = entities.get("countdown_current_sensor")
+            
+            if countdown_current_sensor and hasattr(countdown_current_sensor, 'start_countdown'):
+                countdown_current_sensor.start_countdown(timer_length)
+            else:
+                # Final fallback: just set the state (countdown won't auto-decrement)
+                hass.states.async_set("sensor.soundbeats_countdown_current", timer_length)
         
         # Keep the game status unchanged but trigger an update
         state_obj = hass.states.get("sensor.soundbeats_game_status")
