@@ -2809,6 +2809,8 @@ class SoundbeatsCard extends HTMLElement {
           teamManagementContainer.innerHTML = this.renderTeamManagement();
         }
       });
+    }
+    
     // Initialize highscore tracking on first load
     if (!this._highscoreTrackingInitialized) {
       this.initializeHighscoreTracking();
