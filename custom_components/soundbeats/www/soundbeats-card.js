@@ -31,7 +31,7 @@ class SoundbeatsCard extends HTMLElement {
           border-radius: var(--ha-card-border-radius, 4px);
           box-shadow: var(--ha-card-box-shadow, 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12));
           padding: 16px;
-          margin: 8px 0;
+          margin: 8px;
         }
         
         .section {
@@ -644,14 +644,16 @@ class SoundbeatsCard extends HTMLElement {
           teams[teamKey] = {
             name: entity.state,
             points: entity.attributes && entity.attributes.points !== undefined ? entity.attributes.points : 0,
-            participating: entity.attributes && entity.attributes.participating !== undefined ? entity.attributes.participating : true
+            participating: entity.attributes && entity.attributes.participating !== undefined ? entity.attributes.participating : true,
+            year_guess: entity.attributes && entity.attributes.year_guess !== undefined ? entity.attributes.year_guess : 1990
           };
         } else {
           // Fallback to default if entity doesn't exist yet
           teams[teamKey] = {
             name: `Team ${i}`,
             points: 0,
-            participating: true
+            participating: true,
+            year_guess: 1990
           };
         }
       }
@@ -664,7 +666,8 @@ class SoundbeatsCard extends HTMLElement {
       defaultTeams[teamKey] = {
         name: `Team ${i}`,
         points: 0,
-        participating: true
+        participating: true,
+        year_guess: 1990
       };
     }
     return defaultTeams;
@@ -693,7 +696,7 @@ class SoundbeatsCard extends HTMLElement {
 
   renderTeams() {
     const teams = this.getTeams();
-    const isCountdownZero = this.getCountdownCurrent() === 0;
+    const isCountdownRunning = this.getCountdownCurrent() > 0;
     const currentYear = new Date().getFullYear();
     
     return Object.entries(teams)
@@ -705,13 +708,13 @@ class SoundbeatsCard extends HTMLElement {
           <span class="team-points">${team.points} pts</span>
         </div>
         <div class="team-content">
-          ${isCountdownZero ? `
+          ${isCountdownRunning ? `
             <div class="year-guess-section">
               <label class="year-guess-label">Guess the year this song was published:</label>
               <div class="year-guess-control">
-                <input type="range" class="year-slider" min="1950" max="${currentYear}" value="1990" 
-                       oninput="this.nextElementSibling.textContent = this.value">
-                <span class="year-value">1990</span>
+                <input type="range" class="year-slider" min="1950" max="${currentYear}" value="${team.year_guess}" 
+                       oninput="this.nextElementSibling.textContent = this.value; this.getRootNode().host.updateTeamYearGuess('${teamId}', this.value)">
+                <span class="year-value">${team.year_guess}</span>
               </div>
             </div>
           ` : ''}
@@ -746,6 +749,21 @@ class SoundbeatsCard extends HTMLElement {
       this.hass.callService('soundbeats', 'update_team_participating', {
         team_id: teamId,
         participating: participating
+      });
+      
+      // Trigger immediate UI refresh to hide/show team cards
+      setTimeout(() => {
+        this.recreateTeamsSection();
+      }, 100);
+    }
+  }
+
+  updateTeamYearGuess(teamId, yearGuess) {
+    // Call service to update team year guess
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'update_team_year_guess', {
+        team_id: teamId,
+        year_guess: parseInt(yearGuess, 10)
       });
     }
   }
