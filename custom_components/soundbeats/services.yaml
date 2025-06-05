@@ -104,24 +104,3 @@ update_audio_player:
       selector:
         entity:
           domain: media_player
-
-submit_team_guess:
-  name: Submit Team Guess
-  description: Submit a team's year guess for the current song
-  fields:
-    team_id:
-      name: Team ID
-      description: The team identifier (team_1, team_2, team_3, team_4, or team_5)
-      required: true
-      example: "team_1"
-      selector:
-        text:
-    guessed_year:
-      name: Guessed Year
-      description: The year the team guesses for the current song
-      required: true
-      example: 1995
-      selector:
-        number:
-          min: 1950
-          max: 2030
