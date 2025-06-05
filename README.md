@@ -217,6 +217,29 @@ The Soundbeats card features a visually stunning, **zero-setup** header that bri
 
 **Zero-Setup Philosophy**: The enhanced header design works immediately upon installation with no configuration required. All animations, colors, and effects are automatically applied to create an engaging, party-ready interface that matches the excitement of the game itself.
 
+### UI Improvements & Accessibility
+
+The Soundbeats card has been enhanced with improved visibility and clarity across all interface areas, maintaining the zero-setup philosophy:
+
+- **Enhanced Team Overview Visibility**:
+  - **Improved Typography**: Team names increased from 0.7em to 0.8em with enhanced font weight (600) for better readability
+  - **Larger Point Display**: Team points increased from 0.9em to 1.0em with enhanced contrast through text shadows
+  - **Better Visual Hierarchy**: Rank badges increased from 1.2em to 1.3em with drop-shadow effects for improved visibility
+  - **Enhanced Contrast**: All ranking colors now feature stronger shadows and better text contrast
+
+- **Refined Team Cards**:
+  - **Improved Spacing**: Increased padding from 8px to 10px with larger corner radius (10px) for a more premium feel
+  - **Enhanced Visual Appeal**: Increased card width (85-130px) and added subtle box shadows for better depth
+  - **Stronger Medal Colors**: Gold, silver, and bronze rankings now have enhanced shadows and improved font weights
+  - **Better Badge Styling**: Betting badges feature improved padding, shadows, and contrast for maximum visibility
+
+- **Streamlined Betting Interface**:
+  - **Cleaner Button Design**: Removed diamond icons from betting buttons and overview badges for a cleaner, more focused appearance
+  - **Better Focus on State**: Betting state clearly indicated through color changes and animations without visual clutter
+  - **Consistent Styling**: All betting indicators maintain the same high-contrast orange theme for instant recognition
+
+- **Zero Configuration Required**: All UI improvements are automatically applied with no setup needed - simply install and enjoy the enhanced experience
+
 ### Game Features
 
 - **Smart Team Management**: Up to 5 teams with persistent names and scores

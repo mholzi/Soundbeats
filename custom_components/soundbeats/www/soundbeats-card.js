@@ -1070,51 +1070,58 @@ class SoundbeatsCard extends HTMLElement {
           display: flex;
           flex-direction: column;
           align-items: center;
-          padding: 8px;
-          border-radius: 8px;
+          padding: 10px 8px;
+          border-radius: 10px;
           background: var(--card-background-color, white);
           border: 2px solid transparent;
           transition: all 0.3s ease;
-          min-width: 80px;
-          max-width: 120px;
+          min-width: 85px;
+          max-width: 130px;
           flex-shrink: 0;
           text-align: center;
           position: relative;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .overview-team-item.rank-1 {
           background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
           color: #000;
           border-color: #FFD700;
-          box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+          box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+          font-weight: 600;
         }
         
         .overview-team-item.rank-2 {
           background: linear-gradient(135deg, #E8E8E8 0%, #D0D0D0 50%, #B8B8B8 100%);
           color: #000;
           border-color: #C0C0C0;
-          box-shadow: 0 4px 8px rgba(192, 192, 192, 0.3);
+          box-shadow: 0 4px 12px rgba(192, 192, 192, 0.4);
+          font-weight: 600;
         }
         
         .overview-team-item.rank-3 {
           background: linear-gradient(135deg, #D2691E 0%, #CD853F 50%, #BC8F8F 100%);
           color: #000;
           border-color: #CD7F32;
-          box-shadow: 0 4px 8px rgba(205, 127, 50, 0.3);
+          box-shadow: 0 4px 12px rgba(205, 127, 50, 0.4);
+          font-weight: 600;
         }
         
         .overview-team-item.rank-other {
           background: linear-gradient(135deg, #6c757d 0%, #5a6268 50%, #495057 100%);
           color: #fff;
           border-color: #495057;
+          box-shadow: 0 4px 8px rgba(73, 80, 87, 0.3);
+          font-weight: 500;
         }
         
         .overview-rank-badge {
           margin-bottom: 4px;
-          font-size: 1.2em;
+          font-size: 1.3em;
           display: flex;
           align-items: center;
           justify-content: center;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
         
         .overview-team-info {
@@ -1128,19 +1135,21 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .overview-team-name {
-          font-weight: 500;
-          font-size: 0.7em;
-          line-height: 1.1;
+          font-weight: 600;
+          font-size: 0.8em;
+          line-height: 1.2;
           word-break: break-word;
           hyphens: auto;
           max-width: 100%;
           order: 2;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
         
         .overview-team-points {
           font-weight: bold;
-          font-size: 0.9em;
+          font-size: 1.0em;
           order: 1;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
         }
         
         .overview-team-badges {
@@ -1157,14 +1166,16 @@ class SoundbeatsCard extends HTMLElement {
         .overview-bet-badge {
           background: var(--warning-color, #ff9800);
           color: white;
-          padding: 1px 4px;
-          border-radius: 6px;
-          font-size: 0.55em;
+          padding: 2px 6px;
+          border-radius: 8px;
+          font-size: 0.6em;
           font-weight: bold;
           display: flex;
           align-items: center;
           gap: 1px;
           animation: pulse-bet-overview 2s infinite;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);
           white-space: nowrap;
         }
         
@@ -1811,7 +1822,6 @@ class SoundbeatsCard extends HTMLElement {
                 <button class="bet-button ${team.betting ? 'betting-active' : ''}" 
                         onclick="this.getRootNode().host.toggleTeamBetting('${teamId}', ${!team.betting})"
                         aria-label="${team.betting ? 'Cancel bet' : 'Place bet for ' + team.name}">
-                  <ha-icon icon="mdi:${team.betting ? 'cards-diamond' : 'cards-diamond-outline'}" class="icon"></ha-icon>
                   ${team.betting ? 'BETTING!' : 'Place Bet'}
                 </button>
                 ${team.betting ? '<div class="betting-info">Win: 20pts | Lose: 0pts</div>' : ''}
@@ -1996,7 +2006,6 @@ class SoundbeatsCard extends HTMLElement {
           <div class="overview-team-badges">
             ${isCountdownRunning && team.betting ? `
               <div class="overview-bet-badge">
-                <ha-icon icon="mdi:cards-diamond"></ha-icon>
                 <span>BET</span>
               </div>
             ` : ''}
