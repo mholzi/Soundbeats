@@ -88,15 +88,6 @@ class SoundbeatsCard extends HTMLElement {
           line-height: 1.5;
         }
         
-        .game-status {
-          font-weight: bold;
-          padding: 4px 8px;
-          border-radius: 4px;
-          background: var(--success-color, #4caf50);
-          color: white;
-          display: inline-block;
-        }
-        
         .admin-controls {
           margin-top: 12px;
         }
@@ -637,7 +628,6 @@ class SoundbeatsCard extends HTMLElement {
             <ha-icon icon="mdi:account-group" class="icon"></ha-icon>
             Team Status
           </h3>
-          <p>Current game status: <span class="game-status">${this.getGameStatus()}</span></p>
           <p>Game mode: ${this.getGameMode()}</p>
           
           <div class="teams-container">
@@ -1167,14 +1157,8 @@ class SoundbeatsCard extends HTMLElement {
   updateDisplayValues() {
     // Update only display elements, not input fields to preserve user editing state
     
-    // Update game status display
-    const gameStatusEl = this.shadowRoot.querySelector('.game-status');
-    if (gameStatusEl) {
-      gameStatusEl.textContent = this.getGameStatus();
-    }
-    
     // Update game mode
-    const gameModeText = this.shadowRoot.querySelector('.team-section p:nth-of-type(2)');
+    const gameModeText = this.shadowRoot.querySelector('.team-section p:nth-of-type(1)');
     if (gameModeText) {
       gameModeText.textContent = `Game mode: ${this.getGameMode()}`;
     }
