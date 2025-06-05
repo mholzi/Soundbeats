@@ -131,14 +131,36 @@ class SoundbeatsCard extends HTMLElement {
         .team-item {
           background: var(--card-background-color, white);
           border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: 4px;
-          padding: 12px;
-          margin-bottom: 8px;
+          border-radius: 8px;
+          margin-bottom: 12px;
+          overflow: hidden;
+        }
+        
+        .team-header {
+          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, rgba(3, 169, 244, 0.8) 50%, var(--accent-color, #ff5722) 100%);
+          color: var(--text-primary-color, white);
+          padding: 12px 16px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 8px;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .team-header::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+          pointer-events: none;
+        }
+        
+        .team-content {
+          padding: 12px 16px;
         }
         
         .team-info {
@@ -151,16 +173,21 @@ class SoundbeatsCard extends HTMLElement {
         
         .team-name {
           font-weight: 500;
-          color: var(--primary-text-color);
+          color: var(--text-primary-color, white);
+          position: relative;
+          z-index: 1;
         }
         
         .team-points {
-          background: var(--primary-color, #03a9f4);
-          color: white;
-          padding: 4px 8px;
-          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.2);
+          color: var(--text-primary-color, white);
+          padding: 6px 12px;
+          border-radius: 16px;
           font-size: 0.9em;
           font-weight: 500;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          position: relative;
+          z-index: 1;
         }
         
         .team-participating {
@@ -169,6 +196,61 @@ class SoundbeatsCard extends HTMLElement {
           gap: 4px;
           font-size: 0.9em;
           color: var(--secondary-text-color);
+        }
+        
+        .year-guess-section {
+          margin-top: 8px;
+        }
+        
+        .year-guess-label {
+          display: block;
+          font-weight: 500;
+          color: var(--primary-text-color);
+          margin-bottom: 8px;
+          font-size: 0.9em;
+        }
+        
+        .year-guess-control {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
+        .year-slider {
+          flex: 1;
+          height: 6px;
+          background: var(--divider-color, #e0e0e0);
+          border-radius: 3px;
+          outline: none;
+          -webkit-appearance: none;
+          appearance: none;
+        }
+        
+        .year-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 18px;
+          height: 18px;
+          background: var(--primary-color, #03a9f4);
+          border-radius: 50%;
+          cursor: pointer;
+        }
+        
+        .year-slider::-moz-range-thumb {
+          width: 18px;
+          height: 18px;
+          background: var(--primary-color, #03a9f4);
+          border-radius: 50%;
+          cursor: pointer;
+          border: none;
+        }
+        
+        .year-value {
+          min-width: 50px;
+          text-align: center;
+          font-weight: 500;
+          color: var(--primary-color, #03a9f4);
+          font-size: 0.9em;
         }
         
         .team-controls {
@@ -555,16 +637,25 @@ class SoundbeatsCard extends HTMLElement {
 
   renderTeams() {
     const teams = this.getTeams();
+    const isCountdownZero = this.getCountdownCurrent() === 0;
     
     return Object.entries(teams).map(([teamId, team]) => `
       <div class="team-item" data-team="${teamId}">
-        <div class="team-info">
+        <div class="team-header">
           <span class="team-name">${team.name}</span>
           <span class="team-points">${team.points} pts</span>
-          <span class="team-participating">
-            <ha-icon icon="${team.participating ? 'mdi:check-circle' : 'mdi:circle-outline'}"></ha-icon>
-            ${team.participating ? 'Active' : 'Inactive'}
-          </span>
+        </div>
+        <div class="team-content">
+          ${isCountdownZero ? `
+            <div class="year-guess-section">
+              <label class="year-guess-label">Guess the year this song was published:</label>
+              <div class="year-guess-control">
+                <input type="range" class="year-slider" min="1950" max="2024" value="1990" 
+                       oninput="this.nextElementSibling.textContent = this.value">
+                <span class="year-value">1990</span>
+              </div>
+            </div>
+          ` : ''}
         </div>
       </div>
     `).join('');
@@ -732,6 +823,13 @@ class SoundbeatsCard extends HTMLElement {
     const currentCountdown = this.getCountdownCurrent();
     const isRunning = currentCountdown > 0;
     
+    // Check if countdown state changed (0 to non-zero or vice versa)
+    // This affects whether year sliders should be shown
+    if (this._lastCountdownState !== isRunning) {
+      this._lastCountdownState = isRunning;
+      this.recreateTeamsSection();
+    }
+    
     // Show/hide countdown section based on whether timer is running
     if (countdownSection) {
       if (isRunning) {
@@ -771,16 +869,9 @@ class SoundbeatsCard extends HTMLElement {
       // Update display values only
       const nameDisplay = teamItem.querySelector('.team-name');
       const pointsDisplay = teamItem.querySelector('.team-points');
-      const participatingDisplay = teamItem.querySelector('.team-participating');
       
       if (nameDisplay) nameDisplay.textContent = team.name;
       if (pointsDisplay) pointsDisplay.textContent = `${team.points} pts`;
-      if (participatingDisplay) {
-        participatingDisplay.innerHTML = `
-          <ha-icon icon="${team.participating ? 'mdi:check-circle' : 'mdi:circle-outline'}"></ha-icon>
-          ${team.participating ? 'Active' : 'Inactive'}
-        `;
-      }
       
       // Update input values in team management section only if they're not focused (being edited)
       if (teamManagementContainer) {
