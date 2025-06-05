@@ -313,6 +313,34 @@ class SoundbeatsCard extends HTMLElement {
           color: var(--primary-text-color);
           font-size: 14px;
         }
+        
+        .countdown-section {
+          background: var(--warning-color, #ff9800);
+          color: var(--text-primary-color, white);
+          text-align: center;
+          position: relative;
+        }
+        
+        .countdown-timer {
+          font-size: 2em;
+          font-weight: bold;
+          margin: 8px 0;
+        }
+        
+        .countdown-progress {
+          width: 100%;
+          height: 8px;
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+          overflow: hidden;
+          margin: 8px 0;
+        }
+        
+        .countdown-progress-bar {
+          height: 100%;
+          background: var(--text-primary-color, white);
+          transition: width 1s linear;
+        }
       </style>
       
       <div class="soundbeats-card">
@@ -323,6 +351,18 @@ class SoundbeatsCard extends HTMLElement {
             Soundbeats Party Game
           </h2>
           <p>The ultimate Home Assistant party game experience!</p>
+        </div>
+        
+        <!-- Countdown Section - Only visible when timer is running -->
+        <div class="section countdown-section ${this.getCountdownCurrent() > 0 ? '' : 'hidden'}">
+          <h3>
+            <ha-icon icon="mdi:timer-sand" class="icon"></ha-icon>
+            Song Timer
+          </h3>
+          <div class="countdown-timer">${this.getCountdownCurrent()}s</div>
+          <div class="countdown-progress">
+            <div class="countdown-progress-bar" style="width: ${this.getCountdownProgressPercent()}%"></div>
+          </div>
         </div>
         
         <!-- Team Section - Always visible -->
@@ -585,6 +625,25 @@ class SoundbeatsCard extends HTMLElement {
     return 30; // Default value
   }
 
+  getCountdownCurrent() {
+    // Get current countdown value from the dedicated sensor entity
+    if (this.hass && this.hass.states) {
+      const entity = this.hass.states['sensor.soundbeats_countdown_current'];
+      if (entity && entity.state !== undefined) {
+        return parseInt(entity.state, 10);
+      }
+    }
+    return 0; // Default value
+  }
+
+  getCountdownProgressPercent() {
+    // Calculate countdown progress as percentage
+    const current = this.getCountdownCurrent();
+    const total = this.getCountdownTimerLength();
+    if (total <= 0) return 0;
+    return Math.round((current / total) * 100);
+  }
+
   getSelectedAudioPlayer() {
     // Get selected audio player from the dedicated sensor entity
     if (this.hass && this.hass.states) {
@@ -652,6 +711,9 @@ class SoundbeatsCard extends HTMLElement {
       gameModeText.textContent = `Game mode: ${this.getGameMode()}`;
     }
     
+    // Update countdown display
+    this.updateCountdownDisplay();
+    
     // Update team display values (but not input fields)
     this.updateTeamDisplayValues();
     
@@ -660,6 +722,35 @@ class SoundbeatsCard extends HTMLElement {
     
     // Update dropdown options without changing selected value if not focused
     this.updateAudioPlayerOptions();
+  }
+
+  updateCountdownDisplay() {
+    const countdownSection = this.shadowRoot.querySelector('.countdown-section');
+    const countdownTimer = this.shadowRoot.querySelector('.countdown-timer');
+    const countdownProgressBar = this.shadowRoot.querySelector('.countdown-progress-bar');
+    
+    const currentCountdown = this.getCountdownCurrent();
+    const isRunning = currentCountdown > 0;
+    
+    // Show/hide countdown section based on whether timer is running
+    if (countdownSection) {
+      if (isRunning) {
+        countdownSection.classList.remove('hidden');
+      } else {
+        countdownSection.classList.add('hidden');
+      }
+    }
+    
+    // Update countdown timer display
+    if (countdownTimer) {
+      countdownTimer.textContent = `${currentCountdown}s`;
+    }
+    
+    // Update progress bar
+    if (countdownProgressBar) {
+      const progressPercent = this.getCountdownProgressPercent();
+      countdownProgressBar.style.width = `${progressPercent}%`;
+    }
   }
 
   updateTeamDisplayValues() {

@@ -1,6 +1,6 @@
 start_game:
   name: Start Game
-  description: Start a new Soundbeats game session
+  description: Start a new Soundbeats game session - resets teams and stops any countdown timer
   fields: {}
 
 stop_game:
@@ -15,7 +15,7 @@ reset_game:
 
 next_song:
   name: Next Song
-  description: Skip to the next song in the Soundbeats game
+  description: Skip to the next song and start the countdown timer
   fields: {}
 
 update_team_name:

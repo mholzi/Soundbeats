@@ -38,11 +38,12 @@ async def async_setup_entry(
     
     # Individual game settings sensors
     countdown_sensor = SoundbeatsCountdownTimerSensor()
+    countdown_current_sensor = SoundbeatsCountdownCurrentSensor()
     audio_sensor = SoundbeatsAudioPlayerSensor()
     player_count_sensor = SoundbeatsPlayerCountSensor()
     game_mode_sensor = SoundbeatsGameModeSensor()
     
-    entities.extend([countdown_sensor, audio_sensor, player_count_sensor, game_mode_sensor])
+    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, player_count_sensor, game_mode_sensor])
     
     # Store entity references in hass data for service access
     hass.data.setdefault(DOMAIN, {})
@@ -50,6 +51,7 @@ async def async_setup_entry(
         "main_sensor": main_sensor,
         "team_sensors": team_sensors,
         "countdown_sensor": countdown_sensor,
+        "countdown_current_sensor": countdown_current_sensor,
         "audio_sensor": audio_sensor,
         "player_count_sensor": player_count_sensor,
         "game_mode_sensor": game_mode_sensor,
@@ -177,6 +179,67 @@ class SoundbeatsCountdownTimerSensor(SensorEntity, RestoreEntity):
     async def async_update(self) -> None:
         """Update the sensor."""
         _LOGGER.debug("Updating Soundbeats countdown timer sensor")
+
+
+class SoundbeatsCountdownCurrentSensor(SensorEntity):
+    """Representation of a Soundbeats countdown current value sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the countdown current sensor."""
+        self._attr_name = "Soundbeats Countdown Current"
+        self._attr_unique_id = "soundbeats_countdown_current"
+        self._attr_icon = "mdi:timer-sand"
+        self._attr_unit_of_measurement = "s"
+        self._current_countdown = 0
+        self._countdown_task = None
+
+    async def async_added_to_hass(self) -> None:
+        """Called when entity is added to hass."""
+        await super().async_added_to_hass()
+        _LOGGER.debug("Countdown current sensor added to hass")
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor (current countdown in seconds)."""
+        return self._current_countdown
+
+    def start_countdown(self, duration: int) -> None:
+        """Start a countdown from the given duration."""
+        self.stop_countdown()  # Stop any existing countdown
+        self._current_countdown = duration
+        self.async_write_ha_state()
+        
+        # Schedule countdown decrement
+        if duration > 0:
+            self._countdown_task = self.hass.helpers.event.async_call_later(
+                1, self._decrement_countdown
+            )
+
+    def stop_countdown(self) -> None:
+        """Stop the countdown timer."""
+        if self._countdown_task:
+            self._countdown_task()  # Cancel the scheduled task
+            self._countdown_task = None
+        self._current_countdown = 0
+        self.async_write_ha_state()
+
+    async def _decrement_countdown(self, _) -> None:
+        """Decrement the countdown by 1 second."""
+        if self._current_countdown > 0:
+            self._current_countdown -= 1
+            self.async_write_ha_state()
+            
+            # Schedule next decrement if countdown is still running
+            if self._current_countdown > 0:
+                self._countdown_task = self.hass.helpers.event.async_call_later(
+                    1, self._decrement_countdown
+                )
+            else:
+                self._countdown_task = None
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats countdown current sensor")
 
 
 class SoundbeatsAudioPlayerSensor(SensorEntity, RestoreEntity):

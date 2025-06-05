@@ -74,11 +74,38 @@ async def _register_services(hass: HomeAssistant) -> None:
     async def start_game(call):
         _LOGGER.info("Starting Soundbeats game")
         entities = _get_entities()
+        
+        # Set game status to playing
         main_sensor = entities.get("main_sensor")
         if main_sensor and hasattr(main_sensor, 'set_state'):
             main_sensor.set_state("playing")
         else:
             hass.states.async_set("sensor.soundbeats_game_status", "playing")
+        
+        # Stop any countdown timer
+        countdown_current_sensor = entities.get("countdown_current_sensor")
+        if countdown_current_sensor and hasattr(countdown_current_sensor, 'stop_countdown'):
+            countdown_current_sensor.stop_countdown()
+        else:
+            hass.states.async_set("sensor.soundbeats_countdown_current", 0)
+        
+        # Reset all teams to default names and 0 points
+        team_sensors = entities.get("team_sensors", {})
+        for i in range(1, 6):
+            team_key = f"soundbeats_team_{i}"
+            team_sensor = team_sensors.get(team_key)
+            if team_sensor:
+                team_sensor.update_team_name(f"Team {i}")
+                team_sensor.update_team_points(0)
+                team_sensor.update_team_participating(True)
+            else:
+                # Fallback to direct state setting
+                team_entity_id = f"sensor.soundbeats_team_{i}"
+                hass.states.async_set(team_entity_id, f"Team {i}", {
+                    "points": 0,
+                    "participating": True,
+                    "team_number": i
+                })
 
     async def stop_game(call):
         _LOGGER.info("Stopping Soundbeats game")
@@ -120,6 +147,28 @@ async def _register_services(hass: HomeAssistant) -> None:
 
     async def next_song(call):
         _LOGGER.info("Skipping to next song")
+        
+        # Start countdown timer from configured timer length
+        entities = _get_entities()
+        countdown_sensor = entities.get("countdown_sensor")
+        countdown_current_sensor = entities.get("countdown_current_sensor")
+        
+        if countdown_sensor and countdown_current_sensor:
+            # Get the configured timer length
+            timer_length = countdown_sensor.state if hasattr(countdown_sensor, 'state') else 30
+            
+            # Start the countdown
+            if hasattr(countdown_current_sensor, 'start_countdown'):
+                countdown_current_sensor.start_countdown(timer_length)
+            else:
+                # Fallback to direct state setting
+                hass.states.async_set("sensor.soundbeats_countdown_current", timer_length)
+        else:
+            # Fallback: get timer length from sensor state and start countdown
+            timer_entity = hass.states.get("sensor.soundbeats_countdown_timer")
+            timer_length = int(timer_entity.state) if timer_entity else 30
+            hass.states.async_set("sensor.soundbeats_countdown_current", timer_length)
+        
         # Keep the game status unchanged but trigger an update
         state_obj = hass.states.get("sensor.soundbeats_game_status")
         if state_obj:
