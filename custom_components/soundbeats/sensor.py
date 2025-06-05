@@ -398,10 +398,12 @@ class SoundbeatsCurrentSongSensor(SensorEntity):
             "song_id": self._current_song_data.get("song_id"),
             "year": self._current_song_data.get("year"),
             "url": self._current_song_data.get("url"),
+            "media_content_type": self._current_song_data.get("media_content_type"),
         }
 
     def update_current_song(self, song_data: dict) -> None:
         """Update the current song data."""
+        _LOGGER.debug("Updating current song sensor with data: %s", song_data)
         self._current_song_data = song_data
         self.async_write_ha_state()
 

@@ -80,6 +80,19 @@ The integration provides the following Home Assistant services for automation an
 - Clear your browser cache and refresh the page
 - Check that you're selecting "Custom: Soundbeats Card" when adding a new card
 
+### Next Song Function Issues
+If the next song function triggers the timer but doesn't start playing music, check the debug section at the bottom of the Soundbeats card which shows:
+
+- **Selected Audio Player**: The media player entity currently selected for playback
+- **Current Song URL**: The URL from songs.json that was selected
+- **Media Content Type**: Whether the system detected it as a Spotify URL or regular music
+- **Media Player Assignment**: Which media player entity is assigned to play the song
+
+**Common Issues:**
+- **Spotify URLs**: If you see Spotify URLs in the debug section, ensure your selected media player supports Spotify playback (e.g., a configured Spotify media player)
+- **No Audio Player Selected**: Make sure you select an audio player in the admin settings
+- **Media Player Compatibility**: Not all media players support all URL types - try different media players if one doesn't work
+
 ### Sensor Not Created
 - Ensure the integration is properly installed and configured through Settings → Devices & Services
 - Check Home Assistant logs for any error messages
