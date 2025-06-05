@@ -7,6 +7,9 @@ class SoundbeatsCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+    this._clientCountdownTimer = null;
+    this._lastServerCountdown = 0;
+    this._lastServerUpdate = 0;
   }
 
   setConfig(config) {
@@ -636,12 +639,68 @@ class SoundbeatsCard extends HTMLElement {
     return 0; // Default value
   }
 
-  getCountdownProgressPercent() {
+  getCountdownProgressPercent(currentCountdown = null) {
     // Calculate countdown progress as percentage
-    const current = this.getCountdownCurrent();
+    const current = currentCountdown !== null ? currentCountdown : this.getCurrentCountdownValue();
     const total = this.getCountdownTimerLength();
     if (total <= 0) return 0;
     return Math.round((current / total) * 100);
+  }
+
+  getCurrentCountdownValue() {
+    // Get the current countdown value, accounting for client-side timer
+    const serverCountdown = this.getCountdownCurrent();
+    
+    if (serverCountdown <= 0) {
+      return 0;
+    }
+    
+    // Calculate client-side countdown based on time elapsed since last server update
+    const elapsed = Math.floor((Date.now() - this._lastServerUpdate) / 1000);
+    const clientCountdown = Math.max(0, this._lastServerCountdown - elapsed);
+    
+    return clientCountdown;
+  }
+
+  startClientCountdownTimer() {
+    if (this._clientCountdownTimer) {
+      return; // Already running
+    }
+    
+    this._clientCountdownTimer = setInterval(() => {
+      const currentCountdown = this.getCurrentCountdownValue();
+      
+      // Update display
+      const countdownTimer = this.shadowRoot.querySelector('.countdown-timer');
+      const countdownProgressBar = this.shadowRoot.querySelector('.countdown-progress-bar');
+      
+      if (countdownTimer) {
+        countdownTimer.textContent = `${currentCountdown}s`;
+      }
+      
+      if (countdownProgressBar) {
+        const progressPercent = this.getCountdownProgressPercent(currentCountdown);
+        countdownProgressBar.style.width = `${progressPercent}%`;
+      }
+      
+      // Stop timer if countdown reaches zero
+      if (currentCountdown <= 0) {
+        this.stopClientCountdownTimer();
+        
+        // Hide countdown section
+        const countdownSection = this.shadowRoot.querySelector('.countdown-section');
+        if (countdownSection) {
+          countdownSection.classList.add('hidden');
+        }
+      }
+    }, 100); // Update every 100ms for smooth animation
+  }
+
+  stopClientCountdownTimer() {
+    if (this._clientCountdownTimer) {
+      clearInterval(this._clientCountdownTimer);
+      this._clientCountdownTimer = null;
+    }
   }
 
   getSelectedAudioPlayer() {
@@ -729,8 +788,14 @@ class SoundbeatsCard extends HTMLElement {
     const countdownTimer = this.shadowRoot.querySelector('.countdown-timer');
     const countdownProgressBar = this.shadowRoot.querySelector('.countdown-progress-bar');
     
-    const currentCountdown = this.getCountdownCurrent();
-    const isRunning = currentCountdown > 0;
+    const serverCountdown = this.getCountdownCurrent();
+    const isRunning = serverCountdown > 0;
+    
+    // Update server state tracking
+    if (serverCountdown !== this._lastServerCountdown) {
+      this._lastServerCountdown = serverCountdown;
+      this._lastServerUpdate = Date.now();
+    }
     
     // Show/hide countdown section based on whether timer is running
     if (countdownSection) {
@@ -741,14 +806,22 @@ class SoundbeatsCard extends HTMLElement {
       }
     }
     
-    // Update countdown timer display
+    // Start or stop client-side timer based on countdown state
+    if (isRunning && !this._clientCountdownTimer) {
+      this.startClientCountdownTimer();
+    } else if (!isRunning && this._clientCountdownTimer) {
+      this.stopClientCountdownTimer();
+    }
+    
+    // Update countdown timer display with current calculated value
+    const currentCountdown = this.getCurrentCountdownValue();
     if (countdownTimer) {
       countdownTimer.textContent = `${currentCountdown}s`;
     }
     
     // Update progress bar
     if (countdownProgressBar) {
-      const progressPercent = this.getCountdownProgressPercent();
+      const progressPercent = this.getCountdownProgressPercent(currentCountdown);
       countdownProgressBar.style.width = `${progressPercent}%`;
     }
   }
@@ -884,6 +957,11 @@ class SoundbeatsCard extends HTMLElement {
         }
       }
     }
+  }
+
+  disconnectedCallback() {
+    // Clean up timer when element is removed
+    this.stopClientCountdownTimer();
   }
 
   set hass(hass) {
