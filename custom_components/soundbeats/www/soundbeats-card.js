@@ -2016,7 +2016,9 @@ class SoundbeatsCard extends HTMLElement {
             title="Assign user to team"
           >
             <option value="">Select user...</option>
-            ${this.homeAssistantUsers.map(user => 
+            ${this.homeAssistantUsers
+              .filter(user => !user.name.startsWith('Home Assistant'))
+              .map(user => 
               `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
                 ${user.name}
               </option>`
