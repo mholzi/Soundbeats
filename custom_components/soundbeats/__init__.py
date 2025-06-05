@@ -165,20 +165,22 @@ async def _register_services(hass: HomeAssistant) -> None:
         countdown_sensor = entities.get("countdown_sensor")
         countdown_current_sensor = entities.get("countdown_current_sensor")
         current_song_sensor = entities.get("current_song_sensor")
-        audio_sensor = entities.get("audio_sensor")
         
-        # Get the selected audio player
+        # Get the selected audio player from current song sensor
         selected_player = None
-        if audio_sensor and hasattr(audio_sensor, 'state'):
-            selected_player = audio_sensor.state
-            _LOGGER.debug("Got selected player from audio_sensor: %s", selected_player)
+        if current_song_sensor and hasattr(current_song_sensor, 'state'):
+            selected_player = current_song_sensor.state
+            if selected_player == "None":
+                selected_player = None
+            _LOGGER.debug("Got selected player from current_song_sensor: %s", selected_player)
         else:
-            audio_entity = hass.states.get("sensor.soundbeats_audio_player")
-            if audio_entity and audio_entity.state != "None":
-                selected_player = audio_entity.state
-                _LOGGER.debug("Got selected player from state: %s", selected_player)
+            # Fallback to reading from current song sensor state directly
+            current_song_entity = hass.states.get("sensor.soundbeats_current_song")
+            if current_song_entity and current_song_entity.state != "None":
+                selected_player = current_song_entity.state
+                _LOGGER.debug("Got selected player from current song entity state: %s", selected_player)
             else:
-                _LOGGER.debug("No audio entity found or state is None. Entity: %s", audio_entity)
+                _LOGGER.debug("No current song entity found or state is None. Entity: %s", current_song_entity)
         
         if not selected_player:
             _LOGGER.warning("No audio player selected. Please select one in the settings.")
@@ -392,11 +394,12 @@ async def _register_services(hass: HomeAssistant) -> None:
             return
         
         entities = _get_entities()
-        audio_sensor = entities.get("audio_sensor")
-        if audio_sensor and hasattr(audio_sensor, 'update_audio_player'):
-            audio_sensor.update_audio_player(player)
+        current_song_sensor = entities.get("current_song_sensor")
+        if current_song_sensor and hasattr(current_song_sensor, 'update_selected_media_player'):
+            current_song_sensor.update_selected_media_player(player)
         else:
-            hass.states.async_set("sensor.soundbeats_audio_player", player)
+            # Fallback to direct state setting
+            hass.states.async_set("sensor.soundbeats_current_song", player)
 
     async def update_team_year_guess(call):
         team_id = call.data.get("team_id")

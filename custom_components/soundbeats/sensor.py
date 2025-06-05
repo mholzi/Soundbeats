@@ -487,36 +487,53 @@ class SoundbeatsCurrentSongSensor(SensorEntity):
         self._attr_unique_id = "soundbeats_current_song"
         self._attr_icon = "mdi:music-note"
         self._current_song_data = None
+        self._selected_media_player = None
 
     @property
     def state(self) -> str:
-        """Return the state of the sensor (media player entity ID or None)."""
+        """Return the state of the sensor (selected media player entity ID)."""
+        # Always return the selected media player, even when no song is playing
         if self._current_song_data is not None:
             return self._current_song_data.get("media_player", "None")
-        return "None"
+        return self._selected_media_player or "None"
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
-        if self._current_song_data is None:
-            return {}
-        
-        return {
-            "media_player": self._current_song_data.get("media_player"),
-            "song_id": self._current_song_data.get("song_id"),
-            "year": self._current_song_data.get("year"),
-            "url": self._current_song_data.get("url"),
-            "media_content_type": self._current_song_data.get("media_content_type"),
+        attributes = {
+            "selected_media_player": self._selected_media_player or "None"
         }
+        
+        if self._current_song_data is not None:
+            attributes.update({
+                "media_player": self._current_song_data.get("media_player"),
+                "song_id": self._current_song_data.get("song_id"),
+                "year": self._current_song_data.get("year"),
+                "url": self._current_song_data.get("url"),
+                "media_content_type": self._current_song_data.get("media_content_type"),
+            })
+        
+        return attributes
 
     def update_current_song(self, song_data: dict) -> None:
         """Update the current song data."""
         _LOGGER.debug("Updating current song sensor with data: %s", song_data)
         self._current_song_data = song_data
+        # Also update the selected media player
+        if "media_player" in song_data:
+            self._selected_media_player = song_data["media_player"]
+        self.async_write_ha_state()
+
+    def update_selected_media_player(self, media_player: str) -> None:
+        """Update the selected media player without song data."""
+        _LOGGER.debug("Updating selected media player to: %s", media_player)
+        self._selected_media_player = media_player
+        # Clear current song data when explicitly changing media player
+        self._current_song_data = None
         self.async_write_ha_state()
 
     def clear_current_song(self) -> None:
-        """Clear the current song."""
+        """Clear the current song but keep the selected media player."""
         self._current_song_data = None
         self.async_write_ha_state()
 
