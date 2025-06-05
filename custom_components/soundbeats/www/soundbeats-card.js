@@ -850,7 +850,7 @@ class SoundbeatsCard extends HTMLElement {
         </div>
         <div class="team-management-controls">
           <input type="text" class="team-input" placeholder="Team Name" value="${team.name}" 
-                 onchange="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+                 oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
           <label class="participation-control">
             <input type="checkbox" class="participating-checkbox" ${team.participating ? 'checked' : ''} 
                    onchange="this.getRootNode().host.updateTeamParticipating('${teamId}', this.checked)">
