@@ -175,8 +175,12 @@ async def _register_services(hass: HomeAssistant) -> None:
             # Randomly select a song from songs.json
             try:
                 songs_file = os.path.join(os.path.dirname(__file__), "songs.json")
-                with open(songs_file, 'r') as f:
-                    songs = json.load(f)
+                
+                def _load_songs_file():
+                    with open(songs_file, 'r') as f:
+                        return json.load(f)
+                
+                songs = await hass.async_add_executor_job(_load_songs_file)
                 
                 if songs:
                     selected_song = random.choice(songs)
