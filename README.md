@@ -93,10 +93,10 @@ The integration automatically creates the following entities:
 The integration automatically provides a comprehensive custom Lovelace card with no additional setup required. The card features role-based sections:
 
 #### Admin Sections (Admin Users Only)
-- **Admin Controls**: Start/stop game, next song controls
-- **Game Settings**: Configure countdown timer duration (expandable section, collapsed by default)
+- **Game Settings**: Configure countdown timer duration and start new games (expandable section, collapsed by default)
 - **Audio Player Selection**: Choose from available Home Assistant media players (unavailable players are automatically filtered out)
 - **Team Management**: Edit team names and set participation status (expandable section, collapsed by default)
+- **Song Controls**: "Next Song" button appears in the bottom left corner of the song display during active rounds
 
 #### Teams Overview Section
 - **Dedicated Leaderboard**: A comprehensive overview showing all active teams in a single, easy-to-read leaderboard format
