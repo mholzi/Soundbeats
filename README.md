@@ -43,13 +43,17 @@ Soundbeats is a competitive music guessing game where teams compete to identify 
    - **0 points** for guesses more than 5 years off
 6. **Auto-Evaluation**: Points are automatically calculated and awarded when the timer expires
 7. **Team Rankings**: Teams are dynamically ranked based on their total points among active participants
+   - **Round-Based Color Logic**: Team header colors change based on the current round:
+     - **Round 0**: All teams display neutral gray gradient (no rankings shown initially)
+     - **Round 1+**: Medal-based color assignment based on points
    - **Visual Ranking Indicators**: Each team displays a circular badge with their current position (1st, 2nd, 3rd, etc.)
-   - **Color-Coded Leaderboard**: Team headers change color based on ranking:
-     - **Gold gradient** for 1st place
-     - **Silver gradient** for 2nd place
-     - **Bronze gradient** for 3rd place
+   - **Medal-Based Color Assignment**: Team headers change color based on points with tie support:
+     - **Gold gradient** for teams with the highest points (all tied teams get gold)
+     - **Silver gradient** for teams with the next highest points (ties for 2nd place)
+     - **Bronze gradient** for teams with the third highest points (no skipping medal levels)
      - **Neutral gray gradient** for all other positions
    - **Real-Time Updates**: Rankings and colors update immediately as points change during gameplay
+   - **No Manual Setup**: All ranking logic is automatically handled by the integration
 
 
 ## Configuration
@@ -120,11 +124,14 @@ To use the card, add it to your Lovelace dashboard by selecting **"Custom: Sound
   - **Medal-Style Rankings**: Gold/silver/bronze visual hierarchy for top 3 teams
 - **Dynamic Team Rankings**: Teams are automatically ranked based on points with visual indicators
   - **Ranking Display**: Circular badges showing team position (1st, 2nd, 3rd, etc.) using MDI numeric icons
-  - **Color-Coded Headers**: 
-    - **Gold** gradient for 1st place teams
-    - **Silver** gradient for 2nd place teams  
-    - **Bronze** gradient for 3rd place teams
-    - **Neutral gray** gradient for all other positions
+  - **Round-Aware Color Coding**: 
+    - **Round 0**: All teams show neutral gray gradient (no competition yet)
+    - **Round 1+**: Medal-based headers with tie support:
+      - **Gold** gradient for all teams with highest points (handles ties)
+      - **Silver** gradient for all teams with next highest points
+      - **Bronze** gradient for all teams with third highest points
+      - **Neutral gray** gradient for all remaining teams
+  - **Automatic Medal Logic**: No manual setup required - medals assigned based on actual point distribution
   - **Visual Distinction**: Clear separation between team headers and content areas
 - **Flexible Audio Integration**: Works with any Home Assistant media player
 - **Configurable Timing**: Adjustable countdown timer (5-300 seconds)
