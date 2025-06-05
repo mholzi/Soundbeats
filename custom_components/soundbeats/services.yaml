@@ -104,3 +104,43 @@ update_audio_player:
       selector:
         entity:
           domain: media_player
+
+update_team_year_guess:
+  name: Update Team Year Guess
+  description: Update the year guess of a team
+  fields:
+    team_id:
+      name: Team ID
+      description: The team identifier (team_1, team_2, team_3, team_4, or team_5)
+      required: true
+      example: "team_1"
+      selector:
+        text:
+    year_guess:
+      name: Year Guess
+      description: The year guess for the song
+      required: true
+      example: 1985
+      selector:
+        number:
+          min: 1950
+          max: 2030
+
+update_team_betting:
+  name: Update Team Betting
+  description: Update whether a team is betting on their guess
+  fields:
+    team_id:
+      name: Team ID
+      description: The team identifier (team_1, team_2, team_3, team_4, or team_5)
+      required: true
+      example: "team_1"
+      selector:
+        text:
+    betting:
+      name: Betting
+      description: Whether the team is betting on their guess
+      required: true
+      example: true
+      selector:
+        boolean:
