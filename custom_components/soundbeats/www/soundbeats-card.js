@@ -134,13 +134,13 @@ class SoundbeatsCard extends HTMLElement {
         .team-header {
           background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, rgba(3, 169, 244, 0.8) 50%, var(--accent-color, #ff5722) 100%);
           color: var(--text-primary-color, white);
-          padding: 12px 16px;
+          padding: 10px 16px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           position: relative;
           overflow: hidden;
-          min-height: 48px;
+          min-height: 38px;
         }
         
         /* Ranking-based header colors */
@@ -921,8 +921,18 @@ class SoundbeatsCard extends HTMLElement {
       .sort((a, b) => b.points - a.points); // Sort by points descending
     
     const rankings = {};
-    participatingTeams.forEach((team, index) => {
-      rankings[team.teamId] = index + 1; // Rank starts from 1
+    let medalRank = 1; // Tracks current medal level (1=gold, 2=silver, 3=bronze)
+    let lastPoints = null;
+    
+    participatingTeams.forEach((team) => {
+      // If points changed, advance to next medal level
+      if (lastPoints !== null && team.points !== lastPoints) {
+        medalRank++;
+      }
+      
+      // Cap medal rank at 3 (bronze), everything else gets rank 4+ for 'rank-other'
+      rankings[team.teamId] = medalRank <= 3 ? medalRank : 4;
+      lastPoints = team.points;
     });
     
     return rankings;
@@ -954,12 +964,15 @@ class SoundbeatsCard extends HTMLElement {
     const rankings = this.getTeamRankings();
     const isCountdownRunning = this.getCountdownCurrent() > 0;
     const currentYear = new Date().getFullYear();
+    const currentRound = this.getRoundCounter();
     
     return Object.entries(teams)
       .filter(([teamId, team]) => team.participating)
       .map(([teamId, team]) => {
         const rank = rankings[teamId] || 0;
-        const rankClass = rank === 1 ? 'rank-1' : 
+        // If round counter is 0, all teams use rank-other background
+        const rankClass = currentRound === 0 ? 'rank-other' :
+                         rank === 1 ? 'rank-1' : 
                          rank === 2 ? 'rank-2' : 
                          rank === 3 ? 'rank-3' : 'rank-other';
         const rankIcon = `mdi:numeric-${rank}-circle`;
