@@ -338,6 +338,12 @@ class SoundbeatsCard extends HTMLElement {
           gap: 6px;
         }
         
+        /* 
+         * Betting Button Styles
+         * Handles both desktop hover and mobile touch states properly
+         * Issue: On mobile, tap triggers hover state which conflicts with betting-active
+         * Solution: Use media queries to disable hover on touch devices
+         */
         .bet-button {
           background: var(--primary-color, #03a9f4);
           color: white;
@@ -352,22 +358,52 @@ class SoundbeatsCard extends HTMLElement {
           gap: 6px;
           transition: all 0.3s ease;
           text-transform: uppercase;
+          /* Prevent outline on focus for better mobile experience */
+          outline: none;
         }
         
-        .bet-button:hover {
-          background: var(--primary-color-dark, #0288d1);
-          transform: translateY(-1px);
+        /* 
+         * Hover effects only on devices that support hover (desktop)
+         * This prevents mobile tap from triggering blue hover state
+         */
+        @media (hover: hover) and (pointer: fine) {
+          .bet-button:hover:not(.betting-active) {
+            background: var(--primary-color-dark, #0288d1);
+            transform: translateY(-1px);
+          }
+          
+          .bet-button.betting-active:hover {
+            background: var(--warning-color-dark, #f57c00);
+          }
         }
         
+        /* 
+         * Betting active state - shows when team.betting is true
+         * This is the primary visual indicator that betting is active
+         */
         .bet-button.betting-active {
           background: var(--warning-color, #ff9800);
           animation: pulse-betting 2s infinite;
+          /* Ensure betting-active state takes precedence on mobile */
+          transition: background-color 0.1s ease;
         }
         
-        .bet-button.betting-active:hover {
-          background: var(--warning-color-dark, #f57c00);
+        /* 
+         * Focus state for accessibility (keyboard navigation)
+         * Provides visual feedback without conflicting with betting state
+         */
+        .bet-button:focus {
+          box-shadow: 0 0 0 2px var(--primary-color, #03a9f4);
         }
         
+        .bet-button.betting-active:focus {
+          box-shadow: 0 0 0 2px var(--warning-color, #ff9800);
+        }
+        
+        /* 
+         * Betting pulse animation - visual indicator when betting is active
+         * Creates a glowing effect to draw attention to active bets
+         */
         @keyframes pulse-betting {
           0%, 100% { 
             box-shadow: 0 0 5px var(--warning-color, #ff9800);
@@ -377,10 +413,16 @@ class SoundbeatsCard extends HTMLElement {
           }
         }
         
+        /* 
+         * Betting info display - shows potential points when betting is active
+         * Only visible when team.betting is true
+         */
         .betting-info {
           font-size: 0.8em;
           color: var(--warning-color, #ff9800);
           font-weight: bold;
+          margin-top: 4px;
+          text-align: center;
         }
         
         .bet-result-section {
@@ -1132,12 +1174,19 @@ class SoundbeatsCard extends HTMLElement {
                 <span class="year-value">${team.year_guess}</span>
               </div>
               <div class="betting-section">
+                <!-- 
+                  Betting button: Visual state controlled by team.betting from backend
+                  - Default state: blue button with "Place Bet" text
+                  - Active state: orange button with "BETTING!" text + pulse animation
+                  - Bonus info only shows when team.betting is true
+                -->
                 <button class="bet-button ${team.betting ? 'betting-active' : ''}" 
-                        onclick="this.getRootNode().host.toggleTeamBetting('${teamId}', ${!team.betting})">
+                        onclick="this.getRootNode().host.toggleTeamBetting('${teamId}', ${!team.betting})"
+                        aria-label="${team.betting ? 'Cancel bet' : 'Place bet for ' + team.name}">
                   <ha-icon icon="mdi:${team.betting ? 'cards-diamond' : 'cards-diamond-outline'}" class="icon"></ha-icon>
                   ${team.betting ? 'BETTING!' : 'Place Bet'}
                 </button>
-                ${team.betting ? '<span class="betting-info">Win: 20pts | Lose: 0pts</span>' : ''}
+                ${team.betting ? '<div class="betting-info">Win: 20pts | Lose: 0pts</div>' : ''}
               </div>
             </div>
           ` : this.getRoundCounter() === 0 ? `
@@ -1199,13 +1248,17 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   toggleTeamBetting(teamId, betting) {
-    // Call service to toggle team betting
+    // Toggle team betting state through Home Assistant service
+    // This calls the backend to update the team.betting property
+    // The UI will reflect the change when the state updates from HA
     if (this.hass) {
       this.hass.callService('soundbeats', 'update_team_betting', {
         team_id: teamId,
         betting: betting
       });
     }
+    // Note: The betting-active CSS class and bonus info are controlled by
+    // the team.betting property from the backend, ensuring UI reflects true state
   }
 
   renderBetResult(teamId, team) {
