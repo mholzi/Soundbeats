@@ -56,6 +56,65 @@ Soundbeats is a competitive music guessing game where teams compete to identify 
    - **No Manual Setup**: All ranking logic is automatically handled by the integration
 
 
+## Highscore System
+
+Soundbeats features a comprehensive highscore tracking system that automatically monitors and celebrates team achievements with **zero configuration required**.
+
+### Automatic Highscore Tracking
+
+The integration continuously tracks two types of records:
+
+- **All-Time Absolute Highscore**: The highest total score ever achieved by any team across all games and rounds
+- **Per-Round Highscores**: The highest score achieved during each specific round number (Round 1, Round 2, etc.)
+
+### Visual Highscore Display
+
+#### Dedicated Highscore Section
+The Lovelace card includes a dedicated **"Highscores"** section that displays:
+
+- **🏆 All-Time Record**: Shows the absolute highest score with crown icon and golden styling
+- **📋 Round Records**: Lists the highest score achieved for each round number played
+- **Elegant Design**: Features golden gradient backgrounds and trophy-themed styling
+- **Real-Time Updates**: Displays update immediately when new records are set
+
+#### New Record Banner Notifications
+
+When teams break highscore records, **celebratory banner notifications** automatically appear:
+
+- **Prominent Display**: Golden animated banners slide in from the right side of the screen
+- **Record-Specific Messages**: 
+  - "New all-time record: X points! 🏆" for absolute highscore
+  - "New Round X record: Y points! 🎯" for round-specific records
+- **Eye-Catching Animation**: Features glowing effects, crown animations, and pulsing borders
+- **Auto-Dismiss**: Banners automatically disappear after 8 seconds or can be manually closed
+- **Smart Detection**: Only triggers for genuine new records, not initial setup
+
+### Highscore Persistence
+
+- **Permanent Storage**: All highscore data persists across Home Assistant restarts and integration updates
+- **RestoreEntity Integration**: Built on Home Assistant's reliable state restoration system
+- **Zero Data Loss**: Records are safely maintained even during system maintenance
+
+### Integration Features
+
+- **Automatic Detection**: The system automatically compares current team scores against existing records after each round
+- **Immediate Recognition**: New records are detected and celebrated within seconds of being achieved
+- **Multi-Record Support**: Teams can break both absolute and round records in the same round
+- **No False Positives**: Smart initialization prevents triggering notifications on first load
+
+### Technical Details
+
+The highscore system integrates seamlessly with the existing game flow:
+
+1. **Round Evaluation**: After each countdown timer expires and points are awarded
+2. **Record Checking**: The system compares new team scores against existing records
+3. **Record Updates**: New records are immediately stored in the highscore sensor
+4. **UI Notification**: Banner notifications trigger for any broken records
+5. **Display Updates**: The highscore section refreshes to show new records
+
+**Zero Setup Required**: The entire highscore system works automatically upon installation with no configuration, manual setup, or additional steps needed.
+
+
 ## Configuration
 
 No manual configuration is required! The integration will be automatically available in your Home Assistant interface after installation.
@@ -87,6 +146,7 @@ The integration automatically creates the following entities:
 - `sensor.soundbeats_round_counter` - Current round number (increments after each round evaluation)
 - `sensor.soundbeats_game_mode` - Current game mode (default: Classic)
 - `sensor.soundbeats_current_song` - Currently playing song information and selected media player
+- `sensor.soundbeats_highscore` - Highscore tracking for absolute and per-round records
 
 **Note:** The `sensor.soundbeats_current_song` automatically manages all music-related functionality including song metadata (`year` and `url` properties) and the selected media player entity. This sensor serves as the single source of truth for both the currently selected media player and any playing song information. The integration automatically coordinates between this custom sensor (for year, URL, and media player selection) and your selected media player (for title, artist, and artwork) to provide complete song information with zero manual configuration required.
 
@@ -160,6 +220,7 @@ The Soundbeats card features a visually stunning, **zero-setup** header that bri
 ### Game Features
 
 - **Smart Team Management**: Up to 5 teams with persistent names and scores
+- **Comprehensive Highscore Tracking**: Automatic all-time and per-round record keeping with celebratory notifications
 - **Premium Visual Experience**: Modern, animated header design with zero-setup required
   - **Musical Theme**: Floating notes, sound wave visualizers, and rhythmic animations
   - **Professional Aesthetics**: Deep gradients, dynamic shadows, and premium typography
@@ -194,6 +255,7 @@ The Soundbeats card features a visually stunning, **zero-setup** header that bri
 - **Debug Tools**: Built-in troubleshooting information for media playback
 - **Robust Display**: Always shows meaningful song information with fallback values for improved user experience
 - **Collapsible Interface**: Admin sections feature expandable/collapsible interfaces for cleaner UI organization
+- **Advanced Highscore System**: Automatic tracking of all-time and per-round records with animated celebration banners
 
 ### Services
 

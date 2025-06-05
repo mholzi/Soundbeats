@@ -10,6 +10,10 @@ class SoundbeatsCard extends HTMLElement {
     // Initialize expander state - both sections collapsed by default
     this.gameSettingsExpanded = false;
     this.teamManagementExpanded = false;
+    // Track previous highscore states for banner notifications
+    this._lastAbsoluteHighscore = null;
+    this._lastRoundHighscores = {};
+    this._activeBanners = [];
   }
 
   setConfig(config) {
@@ -1255,6 +1259,189 @@ class SoundbeatsCard extends HTMLElement {
           opacity: 1;
           background: rgba(255, 255, 255, 0.1);
         }
+        
+        /* Highscore Record Banner Styles */
+        .highscore-banner {
+          position: fixed;
+          top: 20px;
+          right: -400px;
+          width: 350px;
+          background: linear-gradient(135deg, #ff6b35 0%, #f39c12 50%, #ffd700 100%);
+          color: #fff;
+          padding: 16px;
+          border-radius: 8px;
+          box-shadow: 
+            0px 4px 12px rgba(0, 0, 0, 0.3),
+            0px 0px 20px rgba(255, 215, 0, 0.4);
+          z-index: 1001;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          border: 2px solid rgba(255, 215, 0, 0.6);
+          animation: bannerGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .highscore-banner.show {
+          right: 20px;
+        }
+        
+        @keyframes bannerGlow {
+          0% {
+            box-shadow: 
+              0px 4px 12px rgba(0, 0, 0, 0.3),
+              0px 0px 20px rgba(255, 215, 0, 0.4);
+          }
+          100% {
+            box-shadow: 
+              0px 4px 12px rgba(0, 0, 0, 0.3),
+              0px 0px 30px rgba(255, 215, 0, 0.6);
+          }
+        }
+        
+        .highscore-banner .banner-icon {
+          font-size: 1.8em;
+          color: #ffd700;
+          flex-shrink: 0;
+          animation: crownBounce 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes crownBounce {
+          0%, 100% {
+            transform: rotate(0deg) scale(1);
+          }
+          50% {
+            transform: rotate(-5deg) scale(1.1);
+          }
+        }
+        
+        .highscore-banner .banner-content {
+          flex: 1;
+        }
+        
+        .highscore-banner .banner-title {
+          font-weight: 700;
+          font-size: 1.2em;
+          margin: 0 0 4px 0;
+          text-shadow: 
+            0 1px 2px rgba(0, 0, 0, 0.3),
+            0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .highscore-banner .banner-message {
+          font-size: 0.95em;
+          margin: 0;
+          line-height: 1.3;
+          text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+        }
+        
+        .highscore-banner .banner-dismiss {
+          background: none;
+          border: none;
+          color: #fff;
+          font-size: 1.2em;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          opacity: 0.8;
+          transition: opacity 0.2s ease, background 0.2s ease;
+          flex-shrink: 0;
+        }
+        
+        .highscore-banner .banner-dismiss:hover {
+          opacity: 1;
+          background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Highscore Section Styles */
+        .highscore-section {
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
+          border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .highscore-display {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        
+        .absolute-highscore {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%);
+          border-radius: 8px;
+          border: 2px solid rgba(255, 215, 0, 0.4);
+        }
+        
+        .crown-icon {
+          color: #ffd700;
+          font-size: 1.5em;
+        }
+        
+        .highscore-label {
+          font-weight: bold;
+          color: var(--primary-text-color, #333);
+        }
+        
+        .highscore-value {
+          font-size: 1.4em;
+          font-weight: bold;
+          color: #ff8c00;
+        }
+        
+        .round-highscores {
+          padding: 12px;
+          background: rgba(255, 255, 255, 0.5);
+          border-radius: 6px;
+          border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        .round-highscores-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 12px;
+          font-weight: bold;
+          color: var(--primary-text-color, #333);
+        }
+        
+        .round-highscores-list {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+          gap: 8px;
+        }
+        
+        .round-highscore-item {
+          display: flex;
+          flex-direction: column;
+          padding: 8px;
+          background: rgba(255, 215, 0, 0.1);
+          border-radius: 4px;
+          border: 1px solid rgba(255, 215, 0, 0.2);
+          text-align: center;
+        }
+        
+        .round-number {
+          font-size: 0.85em;
+          font-weight: bold;
+          color: var(--secondary-text-color, #666);
+          margin-bottom: 4px;
+        }
+        
+        .round-score {
+          font-size: 1.1em;
+          font-weight: bold;
+          color: #ff8c00;
+        }
+        
+        .highscore-empty {
+          text-align: center;
+          color: var(--secondary-text-color, #666);
+          font-style: italic;
+          padding: 16px;
+        }
       </style>
       
       <!-- Alert Banner for No Audio Player Selected -->
@@ -1265,6 +1452,18 @@ class SoundbeatsCard extends HTMLElement {
           <div class="alert-message">Please select an audio player in the admin settings before starting the next song.</div>
         </div>
         <button class="alert-dismiss" onclick="this.getRootNode().host.hideAlertBanner()">
+          <ha-icon icon="mdi:close"></ha-icon>
+        </button>
+      </div>
+      
+      <!-- Highscore Record Banner -->
+      <div class="highscore-banner" id="highscore-record-banner">
+        <ha-icon icon="mdi:crown" class="banner-icon"></ha-icon>
+        <div class="banner-content">
+          <div class="banner-title">🎉 NEW RECORD! 🎉</div>
+          <div class="banner-message" id="highscore-banner-message">Congratulations on the new highscore!</div>
+        </div>
+        <button class="banner-dismiss" onclick="this.getRootNode().host.hideHighscoreBanner()">
           <ha-icon icon="mdi:close"></ha-icon>
         </button>
       </div>
@@ -1337,6 +1536,15 @@ class SoundbeatsCard extends HTMLElement {
           <div class="teams-overview-container">
             ${this.renderOtherTeamsOverview()}
           </div>
+        </div>
+        
+        <!-- Highscore Section - Always visible -->
+        <div class="section highscore-section">
+          <h3>
+            <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
+            Highscores
+          </h3>
+          ${this.renderHighscores()}
         </div>
         
         <!-- Team Section - Always visible -->
@@ -1803,6 +2011,55 @@ class SoundbeatsCard extends HTMLElement {
     }).join('');
   }
 
+  renderHighscores() {
+    const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
+    
+    if (!highscoreEntity) {
+      return '<div class="highscore-empty">Highscore data not available</div>';
+    }
+    
+    const absoluteHighscore = highscoreEntity.state;
+    const attributes = highscoreEntity.attributes || {};
+    
+    // Extract round highscores and sort them by round number
+    const roundHighscores = Object.entries(attributes)
+      .filter(([key, value]) => key.startsWith('round_') && typeof value === 'number')
+      .sort(([a], [b]) => {
+        const roundA = parseInt(a.replace('round_', ''));
+        const roundB = parseInt(b.replace('round_', ''));
+        return roundA - roundB;
+      });
+    
+    return `
+      <div class="highscore-display">
+        <div class="absolute-highscore">
+          <ha-icon icon="mdi:crown" class="icon crown-icon"></ha-icon>
+          <span class="highscore-label">All-Time Record:</span>
+          <span class="highscore-value">${absoluteHighscore} pts</span>
+        </div>
+        ${roundHighscores.length > 0 ? `
+          <div class="round-highscores">
+            <div class="round-highscores-header">
+              <ha-icon icon="mdi:format-list-numbered" class="icon"></ha-icon>
+              Round Records:
+            </div>
+            <div class="round-highscores-list">
+              ${roundHighscores.map(([roundKey, score]) => {
+                const roundNumber = roundKey.replace('round_', '');
+                return `
+                  <div class="round-highscore-item">
+                    <span class="round-number">Round ${roundNumber}:</span>
+                    <span class="round-score">${score} pts</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
   startNewGame() {
     // Call service to start a new game
     if (this.hass) {
@@ -1838,6 +2095,68 @@ class SoundbeatsCard extends HTMLElement {
     if (alertBanner) {
       alertBanner.classList.remove('show');
     }
+  }
+
+  showHighscoreBanner(message) {
+    const highscoreBanner = this.shadowRoot.querySelector('#highscore-record-banner');
+    const messageElement = this.shadowRoot.querySelector('#highscore-banner-message');
+    if (highscoreBanner && messageElement) {
+      messageElement.textContent = message;
+      highscoreBanner.classList.add('show');
+      
+      // Auto-hide after 8 seconds
+      setTimeout(() => {
+        this.hideHighscoreBanner();
+      }, 8000);
+    }
+  }
+
+  hideHighscoreBanner() {
+    const highscoreBanner = this.shadowRoot.querySelector('#highscore-record-banner');
+    if (highscoreBanner) {
+      highscoreBanner.classList.remove('show');
+    }
+  }
+
+  checkForNewHighscoreRecords() {
+    const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
+    if (!highscoreEntity) {
+      return;
+    }
+    
+    const currentAbsolute = parseInt(highscoreEntity.state, 10) || 0;
+    const currentAttributes = highscoreEntity.attributes || {};
+    
+    // Check for new absolute highscore
+    if (this._lastAbsoluteHighscore !== null && currentAbsolute > this._lastAbsoluteHighscore && currentAbsolute > 0) {
+      this.showHighscoreBanner(`New all-time record: ${currentAbsolute} points! 🏆`);
+    }
+    
+    // Check for new round highscores
+    Object.entries(currentAttributes).forEach(([key, value]) => {
+      if (key.startsWith('round_') && typeof value === 'number') {
+        const lastValue = this._lastRoundHighscores[key];
+        if (lastValue !== undefined && value > lastValue && value > 0) {
+          const roundNumber = key.replace('round_', '');
+          this.showHighscoreBanner(`New Round ${roundNumber} record: ${value} points! 🎯`);
+        }
+      }
+    });
+    
+    // Update tracking values
+    this._lastAbsoluteHighscore = currentAbsolute;
+    this._lastRoundHighscores = { ...currentAttributes };
+  }
+
+  initializeHighscoreTracking() {
+    const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
+    if (!highscoreEntity) {
+      return;
+    }
+    
+    // Initialize with current values to prevent false positives on first load
+    this._lastAbsoluteHighscore = parseInt(highscoreEntity.state, 10) || 0;
+    this._lastRoundHighscores = { ...highscoreEntity.attributes } || {};
   }
 
   getCountdownTimerLength() {
@@ -2079,6 +2398,9 @@ class SoundbeatsCard extends HTMLElement {
     
     // Update dropdown options without changing selected value if not focused
     this.updateAudioPlayerOptions();
+    
+    // Check for new highscore records and show banner if needed
+    this.checkForNewHighscoreRecords();
   }
 
   updateCountdownDisplay() {
@@ -2314,6 +2636,13 @@ class SoundbeatsCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    
+    // Initialize highscore tracking on first load
+    if (!this._highscoreTrackingInitialized) {
+      this.initializeHighscoreTracking();
+      this._highscoreTrackingInitialized = true;
+    }
+    
     // Only update dynamic content without full re-render to preserve input states
     if (this.shadowRoot.innerHTML) {
       this.updateDisplayValues();
