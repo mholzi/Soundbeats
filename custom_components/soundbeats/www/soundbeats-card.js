@@ -703,18 +703,40 @@ class SoundbeatsCard extends HTMLElement {
         
         .teams-overview-container {
           display: flex;
-          flex-direction: column;
-          gap: 8px;
+          flex-direction: row;
+          gap: 12px;
+          overflow-x: auto;
+          padding: 8px 0;
+          scroll-behavior: smooth;
+        }
+        
+        .teams-overview-container::-webkit-scrollbar {
+          height: 6px;
+        }
+        
+        .teams-overview-container::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.1);
+          border-radius: 3px;
+        }
+        
+        .teams-overview-container::-webkit-scrollbar-thumb {
+          background: var(--primary-color, #03a9f4);
+          border-radius: 3px;
         }
         
         .overview-team-item {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          padding: 12px;
+          padding: 8px;
           border-radius: 8px;
           background: var(--card-background-color, white);
           border: 2px solid transparent;
           transition: all 0.3s ease;
+          min-width: 80px;
+          max-width: 120px;
+          flex-shrink: 0;
+          text-align: center;
         }
         
         .overview-team-item.rank-1 {
@@ -745,46 +767,60 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .overview-rank-badge {
-          margin-right: 12px;
-          font-size: 1.5em;
+          margin-bottom: 4px;
+          font-size: 1.2em;
           display: flex;
           align-items: center;
+          justify-content: center;
         }
         
         .overview-team-info {
           flex: 1;
           display: flex;
-          justify-content: space-between;
+          flex-direction: column;
           align-items: center;
+          justify-content: center;
+          gap: 4px;
+          width: 100%;
         }
         
         .overview-team-name {
-          font-weight: bold;
-          font-size: 1.1em;
+          font-weight: 500;
+          font-size: 0.7em;
+          line-height: 1.1;
+          word-break: break-word;
+          hyphens: auto;
+          max-width: 100%;
+          order: 2;
         }
         
         .overview-team-points {
           font-weight: bold;
-          font-size: 1em;
+          font-size: 0.9em;
+          order: 1;
         }
         
         .overview-team-badges {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          gap: 8px;
+          gap: 2px;
+          margin-top: 4px;
+          width: 100%;
         }
         
         .overview-bet-badge {
           background: var(--warning-color, #ff9800);
           color: white;
-          padding: 4px 8px;
-          border-radius: 12px;
-          font-size: 0.8em;
+          padding: 2px 6px;
+          border-radius: 8px;
+          font-size: 0.6em;
           font-weight: bold;
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 2px;
           animation: pulse-bet-overview 2s infinite;
+          white-space: nowrap;
         }
         
         @keyframes pulse-bet-overview {
@@ -797,9 +833,11 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .overview-guess-info {
-          font-size: 0.9em;
+          font-size: 0.6em;
           color: var(--secondary-text-color, #666);
           font-style: italic;
+          text-align: center;
+          line-height: 1.1;
         }
         
         .overview-empty {
@@ -1268,19 +1306,19 @@ class SoundbeatsCard extends HTMLElement {
             <ha-icon icon="${rankIcon}"></ha-icon>
           </div>
           <div class="overview-team-info">
-            <span class="overview-team-name">${team.name}</span>
             <span class="overview-team-points">${team.points} pts</span>
+            <span class="overview-team-name">${team.name}</span>
           </div>
           <div class="overview-team-badges">
             ${isCountdownRunning && team.betting ? `
               <div class="overview-bet-badge">
                 <ha-icon icon="mdi:cards-diamond"></ha-icon>
-                <span>BETTING</span>
+                <span>BET</span>
               </div>
             ` : ''}
             ${!isCountdownRunning && currentRound > 0 ? `
               <div class="overview-guess-info">
-                Guess: ${team.year_guess}
+                ${team.year_guess}
               </div>
             ` : ''}
           </div>
