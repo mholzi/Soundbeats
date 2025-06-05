@@ -50,7 +50,7 @@ Welcome to the **Soundbeats** Home Assistant party game! This repository contain
 
 - [ ] All new features are plug-and-play and require no manual setup.
 - [ ] Lovelace card is bundled and auto-registered.
-- [ ] `README.md` is updated with any changes (required for all PRs).
+- [ ] `README.md` is updated with major changes to the design or functionality. Please make it salesy (required for all PRs).
 - [ ] Integration and UI are fully documented.
 - [ ] No manual configuration (YAML or file edits) is required for users.
 - [ ] Tests are updated and passing.

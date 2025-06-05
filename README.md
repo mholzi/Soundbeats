@@ -78,12 +78,6 @@ The integration automatically creates the following entities:
 
 The integration automatically provides a comprehensive custom Lovelace card with no additional setup required. The card features role-based sections:
 
-#### User Sections (Visible to All)
-- **Title Section**: Game branding
-- **Team Status**: Real-time team standings, points, and participation status (game status and mode are available in debug section)
-- **Current Song**: Song information with artwork when playing (shown only during reveal phase)
-- **Debug Information**: Troubleshooting data for audio setup including current game status and mode
-
 #### Admin Sections (Admin Users Only)
 - **Admin Controls**: Start/stop game, next song controls
 - **Game Settings**: Configure countdown timer duration
@@ -102,6 +96,7 @@ To use the card, add it to your Lovelace dashboard by selecting **"Custom: Sound
 - **Real-time Updates**: Live score updates and countdown display
 - **Spotify Integration**: Supports Spotify URLs and other media formats
 - **Debug Tools**: Built-in troubleshooting information for media playback
+- **Robust Display**: Always shows meaningful song information with fallback values for improved user experience
 
 ### Services
 
