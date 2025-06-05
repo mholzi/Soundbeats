@@ -81,7 +81,7 @@ The integration automatically provides a comprehensive custom Lovelace card with
 #### User Sections (Visible to All)
 - **Title Section**: Game branding and status
 - **Team Status**: Real-time team standings, points, and participation status
-- **Current Song**: Song information with artwork when playing (shown only during reveal phase)
+- **Current Song**: Song information with artwork when playing (always visible when song data is available)
 - **Debug Information**: Troubleshooting data for audio setup
 
 #### Admin Sections (Admin Users Only)
@@ -102,6 +102,7 @@ To use the card, add it to your Lovelace dashboard by selecting **"Custom: Sound
 - **Real-time Updates**: Live score updates and countdown display
 - **Spotify Integration**: Supports Spotify URLs and other media formats
 - **Debug Tools**: Built-in troubleshooting information for media playback
+- **Debug Logging**: Console logging for key functions (getCurrentSong, render, updateSongDisplay) to assist with frontend/backend data troubleshooting
 
 ### Services
 
@@ -178,6 +179,8 @@ If the next song function triggers the timer but doesn't start playing music, ch
 - **Current Song URL**: The URL from songs.json that was selected  
 - **Media Content Type**: Whether the system detected it as a Spotify URL or regular music
 - **Media Player Assignment**: Which media player entity is assigned to play the song
+
+Additionally, open your browser's developer console (F12) to view detailed debug logs from the card's JavaScript functions. Look for messages prefixed with `[DEBUG]` that show sensor states, media player information, and function execution details.
 
 #### Common Audio Issues
 - **Spotify URLs**: If you see Spotify URLs in the debug section, ensure your selected media player supports Spotify playback (e.g., a configured Spotify integration)

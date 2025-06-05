@@ -19,6 +19,7 @@ class SoundbeatsCard extends HTMLElement {
 
   render() {
     const isAdmin = this.checkAdminPermissions();
+    console.log('[DEBUG] render() - Starting render, isAdmin:', isAdmin, 'getCurrentSong():', this.getCurrentSong(), 'getCountdownCurrent():', this.getCountdownCurrent());
     
     this.shadowRoot.innerHTML = `
       <style>
@@ -615,8 +616,8 @@ class SoundbeatsCard extends HTMLElement {
           </div>
         </div>
         
-        <!-- Song Section - Only visible when countdown is 0 and song is selected -->
-        <div class="section song-section ${this.getCountdownCurrent() === 0 && this.getCurrentSong() ? '' : 'hidden'}">
+        <!-- Song Section - Always visible when song is available -->
+        <div class="section song-section ${this.getCurrentSong() ? '' : 'hidden'}">
           <h3>
             <ha-icon icon="mdi:music" class="icon"></ha-icon>
             Current Song
@@ -766,6 +767,7 @@ class SoundbeatsCard extends HTMLElement {
         </div>
       </div>
     `;
+    console.log('[DEBUG] render() - Render complete');
   }
 
   checkAdminPermissions() {
@@ -1035,6 +1037,8 @@ class SoundbeatsCard extends HTMLElement {
     // Get current song information with year and url exclusively from sensor, media info from media player
     if (this.hass && this.hass.states) {
       const currentSongEntity = this.hass.states['sensor.soundbeats_current_song'];
+      console.log('[DEBUG] getCurrentSong() - Current song sensor state:', currentSongEntity?.state, 'attributes:', currentSongEntity?.attributes);
+      
       if (currentSongEntity && currentSongEntity.attributes) {
         // Always get year and url from sensor attributes (exclusive source)
         const year = currentSongEntity.attributes.year || '';
@@ -1048,6 +1052,7 @@ class SoundbeatsCard extends HTMLElement {
         if (currentSongEntity.state !== 'None') {
           const mediaPlayerEntityId = currentSongEntity.state;
           const mediaPlayerEntity = this.hass.states[mediaPlayerEntityId];
+          console.log('[DEBUG] getCurrentSong() - Media player entity:', mediaPlayerEntityId, 'state:', mediaPlayerEntity?.state, 'attributes:', mediaPlayerEntity?.attributes);
           
           if (mediaPlayerEntity && mediaPlayerEntity.attributes) {
             const attributes = mediaPlayerEntity.attributes;
@@ -1057,15 +1062,18 @@ class SoundbeatsCard extends HTMLElement {
           }
         }
         
-        return {
+        const result = {
           song_name: song_name,
           artist: artist,
           year: year,
           entity_picture: entity_picture,
           url: url
         };
+        console.log('[DEBUG] getCurrentSong() - Result:', result);
+        return result;
       }
     }
+    console.log('[DEBUG] getCurrentSong() - No song data available, returning null');
     return null;
   }
 
@@ -1236,10 +1244,13 @@ class SoundbeatsCard extends HTMLElement {
     const currentCountdown = this.getCountdownCurrent();
     const currentSong = this.getCurrentSong();
     
-    // Show/hide song section based on whether countdown is 0 and song is available
+    console.log('[DEBUG] updateSongDisplay() - Countdown:', currentCountdown, 'Song:', currentSong, 'Song section found:', !!songSection);
+    
+    // Show/hide song section based on whether song is available
     if (songSection) {
-      if (currentCountdown === 0 && currentSong) {
+      if (currentSong) {
         songSection.classList.remove('hidden');
+        console.log('[DEBUG] updateSongDisplay() - Song section made visible');
         
         // Update song information
         const songImage = songSection.querySelector('.song-image');
@@ -1251,8 +1262,11 @@ class SoundbeatsCard extends HTMLElement {
         if (songName) songName.textContent = currentSong.song_name;
         if (songArtist) songArtist.textContent = currentSong.artist;
         if (songYear) songYear.textContent = currentSong.year;
+        
+        console.log('[DEBUG] updateSongDisplay() - Song information updated');
       } else {
         songSection.classList.add('hidden');
+        console.log('[DEBUG] updateSongDisplay() - Song section hidden (no song data)');
       }
     }
   }
