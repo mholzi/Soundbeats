@@ -638,7 +638,6 @@ class SoundbeatsCard extends HTMLElement {
             Team Status
           </h3>
           <p>Current game status: <span class="game-status">${this.getGameStatus()}</span></p>
-          <p>Players connected: ${this.getPlayerCount()}</p>
           <p>Game mode: ${this.getGameMode()}</p>
           
           <div class="teams-container">
@@ -787,14 +786,7 @@ class SoundbeatsCard extends HTMLElement {
     return 'Ready';
   }
 
-  getPlayerCount() {
-    // Get player count from the dedicated sensor entity
-    if (this.hass && this.hass.states) {
-      const entity = this.hass.states['sensor.soundbeats_player_count'];
-      return entity ? entity.state : '0';
-    }
-    return '0';
-  }
+
 
   getGameMode() {
     // Get game mode from the dedicated sensor entity
@@ -1185,14 +1177,8 @@ class SoundbeatsCard extends HTMLElement {
       gameStatusEl.textContent = this.getGameStatus();
     }
     
-    // Update player count
-    const playerCountText = this.shadowRoot.querySelector('.team-section p:nth-of-type(2)');
-    if (playerCountText) {
-      playerCountText.textContent = `Players connected: ${this.getPlayerCount()}`;
-    }
-    
     // Update game mode
-    const gameModeText = this.shadowRoot.querySelector('.team-section p:nth-of-type(3)');
+    const gameModeText = this.shadowRoot.querySelector('.team-section p:nth-of-type(2)');
     if (gameModeText) {
       gameModeText.textContent = `Game mode: ${this.getGameMode()}`;
     }

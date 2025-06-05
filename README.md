@@ -69,7 +69,6 @@ The integration automatically creates the following entities:
 - `sensor.soundbeats_countdown_timer` - Configurable timer duration  
 - `sensor.soundbeats_countdown_current` - Live countdown value
 - `sensor.soundbeats_audio_player` - Selected media player
-- `sensor.soundbeats_player_count` - Number of active players
 - `sensor.soundbeats_game_mode` - Current game mode (default: Classic)
 - `sensor.soundbeats_current_song` - Currently playing song information
 

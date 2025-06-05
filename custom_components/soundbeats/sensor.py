@@ -40,11 +40,10 @@ async def async_setup_entry(
     countdown_sensor = SoundbeatsCountdownTimerSensor()
     countdown_current_sensor = SoundbeatsCountdownCurrentSensor()
     audio_sensor = SoundbeatsAudioPlayerSensor()
-    player_count_sensor = SoundbeatsPlayerCountSensor()
     game_mode_sensor = SoundbeatsGameModeSensor()
     current_song_sensor = SoundbeatsCurrentSongSensor()
     
-    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, player_count_sensor, game_mode_sensor, current_song_sensor])
+    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, game_mode_sensor, current_song_sensor])
     
     # Store entity references in hass data for service access
     hass.data.setdefault(DOMAIN, {})
@@ -54,7 +53,6 @@ async def async_setup_entry(
         "countdown_sensor": countdown_sensor,
         "countdown_current_sensor": countdown_current_sensor,
         "audio_sensor": audio_sensor,
-        "player_count_sensor": player_count_sensor,
         "game_mode_sensor": game_mode_sensor,
         "current_song_sensor": current_song_sensor,
     }
@@ -452,29 +450,7 @@ class SoundbeatsAudioPlayerSensor(SensorEntity, RestoreEntity):
         _LOGGER.debug("Updating Soundbeats audio player sensor")
 
 
-class SoundbeatsPlayerCountSensor(SensorEntity):
-    """Representation of a Soundbeats player count sensor."""
 
-    def __init__(self) -> None:
-        """Initialize the player count sensor."""
-        self._attr_name = "Soundbeats Player Count"
-        self._attr_unique_id = "soundbeats_player_count"
-        self._attr_icon = "mdi:account-multiple"
-        self._player_count = 0
-
-    @property
-    def state(self) -> int:
-        """Return the state of the sensor (player count)."""
-        return self._player_count
-
-    def update_player_count(self, count: int) -> None:
-        """Update the player count."""
-        self._player_count = count
-        self.async_write_ha_state()
-
-    async def async_update(self) -> None:
-        """Update the sensor."""
-        _LOGGER.debug("Updating Soundbeats player count sensor")
 
 
 class SoundbeatsGameModeSensor(SensorEntity):
