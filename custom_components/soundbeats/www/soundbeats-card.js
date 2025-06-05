@@ -644,14 +644,16 @@ class SoundbeatsCard extends HTMLElement {
           teams[teamKey] = {
             name: entity.state,
             points: entity.attributes && entity.attributes.points !== undefined ? entity.attributes.points : 0,
-            participating: entity.attributes && entity.attributes.participating !== undefined ? entity.attributes.participating : true
+            participating: entity.attributes && entity.attributes.participating !== undefined ? entity.attributes.participating : true,
+            year_guess: entity.attributes && entity.attributes.year_guess !== undefined ? entity.attributes.year_guess : null
           };
         } else {
           // Fallback to default if entity doesn't exist yet
           teams[teamKey] = {
             name: `Team ${i}`,
             points: 0,
-            participating: true
+            participating: true,
+            year_guess: null
           };
         }
       }
@@ -664,7 +666,8 @@ class SoundbeatsCard extends HTMLElement {
       defaultTeams[teamKey] = {
         name: `Team ${i}`,
         points: 0,
-        participating: true
+        participating: true,
+        year_guess: null
       };
     }
     return defaultTeams;
@@ -709,9 +712,9 @@ class SoundbeatsCard extends HTMLElement {
             <div class="year-guess-section">
               <label class="year-guess-label">Guess the year this song was published:</label>
               <div class="year-guess-control">
-                <input type="range" class="year-slider" min="1950" max="${currentYear}" value="1990" 
-                       oninput="this.nextElementSibling.textContent = this.value">
-                <span class="year-value">1990</span>
+                <input type="range" class="year-slider" min="1950" max="${currentYear}" value="${team.year_guess || 1990}" 
+                       oninput="this.nextElementSibling.textContent = this.value; this.getRootNode().host.submitTeamGuess('${teamId}', this.value)">
+                <span class="year-value">${team.year_guess || 1990}</span>
               </div>
             </div>
           ` : ''}
@@ -860,6 +863,16 @@ class SoundbeatsCard extends HTMLElement {
     if (this.hass) {
       this.hass.callService('soundbeats', 'update_audio_player', {
         audio_player: audioPlayer
+      });
+    }
+  }
+
+  submitTeamGuess(teamId, yearGuess) {
+    // Call service to submit team's year guess
+    if (this.hass && !isNaN(yearGuess)) {
+      this.hass.callService('soundbeats', 'submit_team_guess', {
+        team_id: teamId,
+        year_guess: parseInt(yearGuess, 10)
       });
     }
   }

@@ -109,6 +109,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
         self._team_name = f"Team {team_number}"
         self._points = 0
         self._participating = True
+        self._year_guess = None
 
     async def async_added_to_hass(self) -> None:
         """Called when entity is added to hass."""
@@ -130,12 +131,17 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
                     if "participating" in last_state.attributes:
                         self._participating = bool(last_state.attributes["participating"])
                         _LOGGER.debug("Restored team %d participating: %s", self._team_number, self._participating)
+                    
+                    if "year_guess" in last_state.attributes:
+                        self._year_guess = last_state.attributes["year_guess"]
+                        _LOGGER.debug("Restored team %d year guess: %s", self._team_number, self._year_guess)
                         
             except (ValueError, TypeError, KeyError) as e:
                 _LOGGER.warning("Could not restore team %d state: %s, using defaults", self._team_number, e)
                 self._team_name = f"Team {self._team_number}"
                 self._points = 0
                 self._participating = True
+                self._year_guess = None
 
     @property
     def state(self) -> str:
@@ -149,6 +155,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
             "points": self._points,
             "participating": self._participating,
             "team_number": self._team_number,
+            "year_guess": self._year_guess,
         }
 
     def update_team_name(self, name: str) -> None:
@@ -164,6 +171,16 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
     def update_team_participating(self, participating: bool) -> None:
         """Update the team's participating status."""
         self._participating = participating
+        self.async_write_ha_state()
+
+    def update_team_year_guess(self, year_guess: int) -> None:
+        """Update the team's year guess."""
+        self._year_guess = year_guess
+        self.async_write_ha_state()
+
+    def clear_team_year_guess(self) -> None:
+        """Clear the team's year guess."""
+        self._year_guess = None
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
@@ -221,6 +238,7 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
         self._attr_unit_of_measurement = "s"
         self._current_countdown = 0
         self._countdown_task = None
+        self._evaluation_done = False
 
     async def async_added_to_hass(self) -> None:
         """Called when entity is added to hass."""
@@ -236,6 +254,7 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
         """Start a countdown from the given duration."""
         self.stop_countdown()  # Stop any existing countdown
         self._current_countdown = duration
+        self._evaluation_done = False  # Reset evaluation flag for new round
         self.async_write_ha_state()
         
         # Schedule countdown decrement
@@ -250,6 +269,7 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
             self._countdown_task()  # Cancel the scheduled task
             self._countdown_task = None
         self._current_countdown = 0
+        self._evaluation_done = False  # Reset evaluation flag when stopped
         self.async_write_ha_state()
 
     async def _decrement_countdown(self, _) -> None:
@@ -265,6 +285,110 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
                 )
             else:
                 self._countdown_task = None
+                # Trigger evaluation when countdown reaches zero
+                if not self._evaluation_done:
+                    await self._trigger_round_evaluation()
+                    self._evaluation_done = True
+
+    async def _trigger_round_evaluation(self) -> None:
+        """Trigger evaluation of team guesses when countdown reaches zero."""
+        _LOGGER.info("Countdown reached zero - triggering round evaluation")
+        
+        # Get current song information
+        current_song_entity = self.hass.states.get('sensor.soundbeats_current_song')
+        if not current_song_entity or current_song_entity.state == 'None':
+            _LOGGER.warning("No current song available for evaluation")
+            return
+        
+        song_year = current_song_entity.attributes.get('year')
+        if not song_year:
+            _LOGGER.warning("Current song has no year information")
+            return
+        
+        try:
+            song_year = int(song_year)
+        except (ValueError, TypeError):
+            _LOGGER.error("Invalid song year format: %s", song_year)
+            return
+        
+        _LOGGER.info("Evaluating guesses against song year: %d", song_year)
+        
+        # Evaluate each team's guess and award points
+        for team_number in range(1, 6):
+            team_entity_id = f"sensor.soundbeats_team_{team_number}"
+            team_entity = self.hass.states.get(team_entity_id)
+            
+            if not team_entity:
+                continue
+                
+            # Check if team is participating
+            participating = team_entity.attributes.get('participating', True)
+            if not participating:
+                continue
+                
+            # Get team's year guess
+            year_guess = team_entity.attributes.get('year_guess')
+            if year_guess is None:
+                _LOGGER.debug("Team %d has no year guess", team_number)
+                continue
+                
+            try:
+                year_guess = int(year_guess)
+            except (ValueError, TypeError):
+                _LOGGER.warning("Team %d has invalid year guess: %s", team_number, year_guess)
+                continue
+            
+            # Calculate points based on accuracy
+            year_diff = abs(year_guess - song_year)
+            points_earned = 0
+            
+            if year_diff == 0:
+                points_earned = 20  # Exact match
+            elif year_diff <= 2:
+                points_earned = 10  # Within 2 years
+            elif year_diff <= 5:
+                points_earned = 5   # Within 5 years
+            
+            if points_earned > 0:
+                # Award points to the team
+                current_points = team_entity.attributes.get('points', 0)
+                new_points = current_points + points_earned
+                
+                # Update team points via service call
+                await self.hass.services.async_call(
+                    'soundbeats', 'update_team_points',
+                    {
+                        'team_id': f'team_{team_number}',
+                        'points': new_points
+                    }
+                )
+                
+                _LOGGER.info(
+                    "Team %d: guessed %d, actual %d, difference %d years, earned %d points (total: %d)",
+                    team_number, year_guess, song_year, year_diff, points_earned, new_points
+                )
+            else:
+                _LOGGER.info(
+                    "Team %d: guessed %d, actual %d, difference %d years, earned 0 points",
+                    team_number, year_guess, song_year, year_diff
+                )
+        
+        # Clear all team guesses for the next round
+        await self._clear_all_team_guesses()
+
+    async def _clear_all_team_guesses(self) -> None:
+        """Clear all team year guesses after evaluation."""
+        # Get team sensors from hass data
+        entities = self.hass.data.get(DOMAIN, {}).get("entities", {})
+        team_sensors = entities.get("team_sensors", {})
+        
+        for team_number in range(1, 6):
+            team_key = f"soundbeats_team_{team_number}"
+            team_sensor = team_sensors.get(team_key)
+            
+            if team_sensor and hasattr(team_sensor, 'clear_team_year_guess'):
+                team_sensor.clear_team_year_guess()
+                _LOGGER.debug("Cleared year guess for team %d", team_number)
 
     async def async_update(self) -> None:
         """Update the sensor."""
