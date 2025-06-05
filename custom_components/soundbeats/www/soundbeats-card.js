@@ -1255,6 +1255,96 @@ class SoundbeatsCard extends HTMLElement {
           opacity: 1;
           background: rgba(255, 255, 255, 0.1);
         }
+        
+        /* Highscore Section Styles */
+        .highscore-section {
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
+          border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .highscore-display {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        
+        .absolute-highscore {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%);
+          border-radius: 8px;
+          border: 2px solid rgba(255, 215, 0, 0.4);
+        }
+        
+        .crown-icon {
+          color: #ffd700;
+          font-size: 1.5em;
+        }
+        
+        .highscore-label {
+          font-weight: bold;
+          color: var(--primary-text-color, #333);
+        }
+        
+        .highscore-value {
+          font-size: 1.4em;
+          font-weight: bold;
+          color: #ff8c00;
+        }
+        
+        .round-highscores {
+          padding: 12px;
+          background: rgba(255, 255, 255, 0.5);
+          border-radius: 6px;
+          border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        .round-highscores-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 12px;
+          font-weight: bold;
+          color: var(--primary-text-color, #333);
+        }
+        
+        .round-highscores-list {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+          gap: 8px;
+        }
+        
+        .round-highscore-item {
+          display: flex;
+          flex-direction: column;
+          padding: 8px;
+          background: rgba(255, 215, 0, 0.1);
+          border-radius: 4px;
+          border: 1px solid rgba(255, 215, 0, 0.2);
+          text-align: center;
+        }
+        
+        .round-number {
+          font-size: 0.85em;
+          font-weight: bold;
+          color: var(--secondary-text-color, #666);
+          margin-bottom: 4px;
+        }
+        
+        .round-score {
+          font-size: 1.1em;
+          font-weight: bold;
+          color: #ff8c00;
+        }
+        
+        .highscore-empty {
+          text-align: center;
+          color: var(--secondary-text-color, #666);
+          font-style: italic;
+          padding: 16px;
+        }
       </style>
       
       <!-- Alert Banner for No Audio Player Selected -->
@@ -1340,6 +1430,15 @@ class SoundbeatsCard extends HTMLElement {
           <div class="teams-overview-container">
             ${this.renderOtherTeamsOverview()}
           </div>
+        </div>
+        
+        <!-- Highscore Section - Always visible -->
+        <div class="section highscore-section">
+          <h3>
+            <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
+            Highscores
+          </h3>
+          ${this.renderHighscores()}
         </div>
         
         <!-- Team Section - Always visible -->
@@ -1804,6 +1903,55 @@ class SoundbeatsCard extends HTMLElement {
         </div>
       `;
     }).join('');
+  }
+
+  renderHighscores() {
+    const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
+    
+    if (!highscoreEntity) {
+      return '<div class="highscore-empty">Highscore data not available</div>';
+    }
+    
+    const absoluteHighscore = highscoreEntity.state;
+    const attributes = highscoreEntity.attributes || {};
+    
+    // Extract round highscores and sort them by round number
+    const roundHighscores = Object.entries(attributes)
+      .filter(([key, value]) => key.startsWith('round_') && typeof value === 'number')
+      .sort(([a], [b]) => {
+        const roundA = parseInt(a.replace('round_', ''));
+        const roundB = parseInt(b.replace('round_', ''));
+        return roundA - roundB;
+      });
+    
+    return `
+      <div class="highscore-display">
+        <div class="absolute-highscore">
+          <ha-icon icon="mdi:crown" class="icon crown-icon"></ha-icon>
+          <span class="highscore-label">All-Time Record:</span>
+          <span class="highscore-value">${absoluteHighscore} pts</span>
+        </div>
+        ${roundHighscores.length > 0 ? `
+          <div class="round-highscores">
+            <div class="round-highscores-header">
+              <ha-icon icon="mdi:format-list-numbered" class="icon"></ha-icon>
+              Round Records:
+            </div>
+            <div class="round-highscores-list">
+              ${roundHighscores.map(([roundKey, score]) => {
+                const roundNumber = roundKey.replace('round_', '');
+                return `
+                  <div class="round-highscore-item">
+                    <span class="round-number">Round ${roundNumber}:</span>
+                    <span class="round-score">${score} pts</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
   }
 
   startNewGame() {
