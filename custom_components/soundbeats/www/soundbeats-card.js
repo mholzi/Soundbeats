@@ -340,6 +340,16 @@ class SoundbeatsCard extends HTMLElement {
           margin-top: 12px;
         }
         
+        .no-song-message {
+          margin-top: 12px;
+          padding: 12px;
+          text-align: center;
+          font-style: italic;
+          color: var(--secondary-text-color, #666);
+          background: var(--secondary-background-color, #f5f5f5);
+          border-radius: 8px;
+        }
+        
         .bet-result {
           display: flex;
           align-items: center;
@@ -616,7 +626,7 @@ class SoundbeatsCard extends HTMLElement {
         </div>
         
         <!-- Song Section - Only visible when countdown is 0 and song is selected -->
-        <div class="section song-section ${this.getCountdownCurrent() === 0 && this.getCurrentSong() ? '' : 'hidden'}">
+        <div class="section song-section ${this.getCountdownCurrent() === 0 && this.getCurrentSong() && this.getRoundCounter() > 0 ? '' : 'hidden'}">
           <h3>
             <ha-icon icon="mdi:music" class="icon"></ha-icon>
             Current Song
@@ -793,6 +803,15 @@ class SoundbeatsCard extends HTMLElement {
     return 'Classic';
   }
 
+  getRoundCounter() {
+    // Get round counter from the dedicated sensor entity
+    if (this.hass && this.hass.states) {
+      const entity = this.hass.states['sensor.soundbeats_round_counter'];
+      return entity ? parseInt(entity.state, 10) : 0;
+    }
+    return 0;
+  }
+
   getTeams() {
     // Get teams data from individual team sensor entities
     if (this.hass && this.hass.states) {
@@ -892,6 +911,8 @@ class SoundbeatsCard extends HTMLElement {
                 ${team.betting ? '<span class="betting-info">Win: 20pts | Lose: 0pts</span>' : ''}
               </div>
             </div>
+          ` : this.getRoundCounter() === 0 ? `
+            <div class="no-song-message">No Song played yet.</div>
           ` : this.getCurrentSong() ? `
             <div class="bet-result-section">
               ${this.renderBetResult(teamId, team)}
