@@ -193,6 +193,11 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
         self._current_countdown = 0
         self._countdown_task = None
 
+    async def async_added_to_hass(self) -> None:
+        """Called when entity is added to hass."""
+        await super().async_added_to_hass()
+        _LOGGER.debug("Countdown current sensor added to hass")
+
     @property
     def state(self) -> int:
         """Return the state of the sensor (current countdown in seconds)."""
