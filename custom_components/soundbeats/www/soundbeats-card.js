@@ -29,8 +29,161 @@ class SoundbeatsCard extends HTMLElement {
     this.render();
   }
 
+  shouldShowSplashScreen() {
+    // Show splash screen when:
+    // 1. Critical game variables are missing
+    // 2. Game status is 'ready' (waiting to start)
+    // 3. No rounds have been played yet
+    const gameStatus = this.getGameStatus();
+    const roundCounter = this.getRoundCounter();
+    const missingVariables = this.getMissingGameVariables();
+    
+    // Always show if variables are missing
+    if (missingVariables.length > 0) {
+      return true;
+    }
+    
+    // Show if game is in ready state and no rounds played yet
+    if (gameStatus === 'ready' && roundCounter === 0) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  getGameStatus() {
+    // Get current game status from the main sensor
+    if (this.hass && this.hass.states) {
+      const entity = this.hass.states['sensor.soundbeats_game_status'];
+      if (entity && entity.state) {
+        return entity.state;
+      }
+    }
+    return 'ready'; // Default state
+  }
+
+  isGameReady() {
+    // Check if all critical game variables are set
+    const missingVariables = this.getMissingGameVariables();
+    return missingVariables.length === 0;
+  }
+
+  getMissingGameVariables() {
+    const missing = [];
+    
+    // Check if audio player is selected
+    const audioPlayer = this.getSelectedAudioPlayer();
+    if (!audioPlayer) {
+      missing.push({
+        key: 'audioPlayer',
+        name: 'Audio Player',
+        description: 'Select a media player to play music during the game. This is where songs will be played from.'
+      });
+    }
+    
+    // Check if timer is configured (should be between 5-300 seconds)
+    const timerLength = this.getCountdownTimerLength();
+    if (!timerLength || timerLength < 5 || timerLength > 300) {
+      missing.push({
+        key: 'timer',
+        name: 'Countdown Timer',
+        description: 'Set a countdown timer length (5-300 seconds) for how long teams have to guess each song.'
+      });
+    }
+    
+    // Check if at least one team has a user assigned
+    const teams = this.getTeams();
+    const teamsWithUsers = Object.values(teams).filter(team => 
+      team.participating && team.user_id
+    );
+    if (teamsWithUsers.length === 0) {
+      missing.push({
+        key: 'teams',
+        name: 'Team Users',
+        description: 'Assign at least one participating team to a Home Assistant user to enable gameplay.'
+      });
+    }
+    
+    return missing;
+  }
+
+  renderSplashScreen() {
+    const missingVariables = this.getMissingGameVariables();
+    const isReady = missingVariables.length === 0;
+    
+    return `
+      <div class="splash-screen">
+        <div class="splash-header">
+          <div class="splash-floating-notes">
+            <div class="note note-1">♪</div>
+            <div class="note note-2">♫</div>
+            <div class="note note-3">♪</div>
+            <div class="note note-4">♬</div>
+            <div class="note note-5">♪</div>
+          </div>
+          <h1>
+            <ha-icon icon="mdi:music-note" class="splash-icon"></ha-icon>
+            Welcome to Soundbeats!
+          </h1>
+          <p class="splash-subtitle">🎵 The ultimate Home Assistant party game experience! 🎵</p>
+          <div class="splash-sound-waves">
+            <div class="wave wave-1"></div>
+            <div class="wave wave-2"></div>
+            <div class="wave wave-3"></div>
+            <div class="wave wave-4"></div>
+            <div class="wave wave-5"></div>
+          </div>
+        </div>
+        
+        ${isReady ? `
+          <div class="splash-ready">
+            <div class="ready-message">
+              <ha-icon icon="mdi:check-circle" class="ready-icon"></ha-icon>
+              <h2>🎉 Ready to Rock! 🎉</h2>
+              <p>All game settings are configured. Let's start the music!</p>
+            </div>
+            <button class="splash-launch-button" onclick="this.getRootNode().host.startNewGame()">
+              <ha-icon icon="mdi:play-circle" class="icon"></ha-icon>
+              Launch Game
+            </button>
+          </div>
+        ` : `
+          <div class="splash-setup">
+            <div class="setup-message">
+              <ha-icon icon="mdi:cog" class="setup-icon"></ha-icon>
+              <h2>Let's Get Set Up!</h2>
+              <p>A few things need to be configured before we can start the party:</p>
+            </div>
+            
+            <div class="missing-variables">
+              ${missingVariables.map(variable => `
+                <div class="missing-variable">
+                  <div class="variable-header">
+                    <ha-icon icon="mdi:alert-circle" class="variable-icon"></ha-icon>
+                    <h3>${variable.name}</h3>
+                  </div>
+                  <p class="variable-description">${variable.description}</p>
+                </div>
+              `).join('')}
+            </div>
+            
+            <div class="setup-help">
+              <p><strong>💡 How to get started:</strong></p>
+              <ul style="text-align: left; margin: 0; padding-left: 20px;">
+                <li>Scroll down to <strong>Game Settings</strong> section to configure missing items</li>
+                <li>Ask an admin to help if you can't see the settings</li>
+                <li>Once everything is configured, return here to launch the game!</li>
+              </ul>
+            </div>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
   render() {
     const isAdmin = this.checkAdminPermissions();
+    const showSplash = this.shouldShowSplashScreen();
     
     this.shadowRoot.innerHTML = `
       <style>
@@ -1707,6 +1860,193 @@ class SoundbeatsCard extends HTMLElement {
           overflow-x: auto;
           margin: 4px 0;
         }
+        
+        /* Splash Screen Styles */
+        .splash-screen {
+          text-align: center;
+          padding: 24px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: var(--ha-card-border-radius, 4px);
+          color: white;
+          position: relative;
+          overflow: hidden;
+          min-height: 400px;
+        }
+        
+        .splash-header {
+          position: relative;
+          z-index: 2;
+          margin-bottom: 32px;
+        }
+        
+        .splash-header h1 {
+          font-size: 2.5em;
+          margin: 16px 0;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .splash-icon {
+          font-size: 1.2em;
+          color: #ffd700;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+          animation: iconBounce 3s ease-in-out infinite;
+        }
+        
+        .splash-subtitle {
+          font-size: 1.2em;
+          margin: 16px 0;
+          opacity: 0.9;
+        }
+        
+        .splash-floating-notes {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          pointer-events: none;
+          z-index: 1;
+        }
+        
+        .splash-sound-waves {
+          display: flex;
+          justify-content: center;
+          gap: 3px;
+          margin: 16px 0;
+        }
+        
+        .splash-ready {
+          z-index: 2;
+          position: relative;
+        }
+        
+        .ready-message {
+          margin-bottom: 24px;
+        }
+        
+        .ready-message h2 {
+          font-size: 2em;
+          margin: 16px 0;
+          color: #90ee90;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .ready-icon {
+          font-size: 3em;
+          color: #90ee90;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+          animation: pulse 2s ease-in-out infinite alternate;
+        }
+        
+        .splash-launch-button {
+          background: linear-gradient(45deg, #ff6b6b, #feca57);
+          color: white;
+          border: none;
+          padding: 16px 32px;
+          border-radius: 50px;
+          font-size: 1.3em;
+          font-weight: bold;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+          transition: all 0.3s ease;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .splash-launch-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .splash-launch-button:active {
+          transform: translateY(0);
+        }
+        
+        .splash-setup {
+          z-index: 2;
+          position: relative;
+        }
+        
+        .setup-message h2 {
+          font-size: 1.8em;
+          margin: 16px 0;
+          color: #ffeb3b;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .setup-icon {
+          font-size: 2.5em;
+          color: #ffeb3b;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+          animation: rotate 4s linear infinite;
+        }
+        
+        .missing-variables {
+          margin: 24px 0;
+          text-align: left;
+          max-width: 600px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        
+        .missing-variable {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 16px;
+          margin: 12px 0;
+          border-left: 4px solid #ff6b6b;
+        }
+        
+        .variable-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+        
+        .variable-header h3 {
+          margin: 0;
+          color: #ff6b6b;
+        }
+        
+        .variable-icon {
+          color: #ff6b6b;
+          font-size: 1.2em;
+        }
+        
+        .variable-description {
+          margin: 0;
+          opacity: 0.9;
+          line-height: 1.5;
+        }
+        
+        .setup-help {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 16px;
+          margin: 24px 0;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+          }
+          100% {
+            transform: scale(1.1);
+          }
+        }
+        
+        @keyframes rotate {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
       </style>
       
       <!-- Alert Banner for No Audio Player Selected -->
@@ -1745,6 +2085,7 @@ class SoundbeatsCard extends HTMLElement {
         </button>
       </div>
       
+      ${showSplash ? this.renderSplashScreen() : `
       <div class="soundbeats-card">
         <!-- Title Section - Always visible -->
         <div class="section title-section">
@@ -1922,6 +2263,7 @@ class SoundbeatsCard extends HTMLElement {
           </div>
         </div>
       </div>
+      `}
       
       <!-- QR Code Modal -->
       <div class="qr-modal" id="qr-modal">
