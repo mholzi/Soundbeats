@@ -3094,31 +3094,29 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateTeamUserId(teamId, userId) {
-    // Provide immediate visual feedback by updating the dropdown immediately
-    const activeDropdown = document.activeElement;
-    if (activeDropdown && activeDropdown.tagName === 'SELECT' && activeDropdown.classList.contains('splash-team-select')) {
-      // Keep the selection as is - browser will handle the visual update
+    // Call service immediately without debouncing since team user ID selection is a discrete action
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'update_team_user_id', {
+        team_id: teamId,
+        user_id: userId || null
+      });
     }
+    this.clearValidationCache();
     
-    // Debounce team user ID updates
-    this.debouncedServiceCall(`teamUserId_${teamId}`, () => {
-      if (this.hass) {
-        this.hass.callService('soundbeats', 'update_team_user_id', {
-          team_id: teamId,
-          user_id: userId || null
-        });
+    // Track recent user selections to prevent UI from overriding them
+    if (!this._recentUserSelections) {
+      this._recentUserSelections = {};
+    }
+    this._recentUserSelections[teamId] = { userId, timestamp: Date.now() };
+    
+    // Trigger UI refresh after a brief delay to allow the service call to complete
+    setTimeout(() => {
+      if (this.shouldShowSplashScreen()) {
+        this.updateSplashValidationState();
+        // Also update splash screen dropdowns to reflect database state
+        this.updateSplashScreenDropdowns();
       }
-      this.clearValidationCache();
-      
-      // Trigger immediate UI refresh to reflect the change
-      setTimeout(() => {
-        if (this.shouldShowSplashScreen()) {
-          this.updateSplashValidationState();
-          // Also update splash screen dropdowns to reflect database state
-          this.updateSplashScreenDropdowns();
-        }
-      }, 100);
-    });
+    }, 50); // Reduced delay since no debouncing
   }
 
   updateTeamParticipating(teamId, participating) {
@@ -4235,9 +4233,15 @@ class SoundbeatsCard extends HTMLElement {
           });
         } else {
           // Even if options haven't changed, update selection to match database
-          Array.from(select.options).forEach(option => {
-            option.selected = option.value === databaseValue;
-          });
+          // But respect recent user selections to avoid overriding their choice
+          const recentSelection = this._recentUserSelections && this._recentUserSelections[teamId];
+          const isRecentSelection = recentSelection && (Date.now() - recentSelection.timestamp < 2000); // 2 second window
+          
+          if (!isRecentSelection) {
+            Array.from(select.options).forEach(option => {
+              option.selected = option.value === databaseValue;
+            });
+          }
         }
       }
     });
