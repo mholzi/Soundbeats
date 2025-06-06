@@ -1884,6 +1884,30 @@ class SoundbeatsCard extends HTMLElement {
           border-radius: 4px;
           min-width: 20px;
         }
+        
+        .overview-year-badge,
+        .overview-points-badge {
+          font-size: 0.7em;
+          font-weight: bold;
+          text-align: center;
+          line-height: 1.1;
+          padding: 2px 4px;
+          border-radius: 4px;
+          min-width: 20px;
+          margin-bottom: 2px;
+        }
+        
+        .overview-year-badge.points-earned,
+        .overview-points-badge.points-earned {
+          background: #4caf50;
+          color: white;
+        }
+        
+        .overview-year-badge.no-points,
+        .overview-points-badge.no-points {
+          background: #f44336;
+          color: white;
+        }
         }
         
         .overview-empty {
@@ -2950,6 +2974,7 @@ class SoundbeatsCard extends HTMLElement {
             year_guess: entity.attributes && entity.attributes.year_guess !== undefined ? entity.attributes.year_guess : 1990,
             betting: entity.attributes && entity.attributes.betting !== undefined ? entity.attributes.betting : false,
             last_round_betting: entity.attributes && entity.attributes.last_round_betting !== undefined ? entity.attributes.last_round_betting : false,
+            last_round_points: entity.attributes && entity.attributes.last_round_points !== undefined ? entity.attributes.last_round_points : 0,
             user_id: entity.attributes && entity.attributes.user_id !== undefined ? entity.attributes.user_id : null
           };
         } else {
@@ -2961,6 +2986,7 @@ class SoundbeatsCard extends HTMLElement {
             year_guess: 1990,
             betting: false,
             last_round_betting: false,
+            last_round_points: 0,
             user_id: null
           };
         }
@@ -2978,6 +3004,7 @@ class SoundbeatsCard extends HTMLElement {
         year_guess: 1990,
         betting: false,
         last_round_betting: false,
+        last_round_points: 0,
         user_id: null
       };
     }
@@ -3377,8 +3404,11 @@ class SoundbeatsCard extends HTMLElement {
               </div>
             ` : ''}
             ${!isCountdownRunning && currentRound > 0 ? `
-              <div class="overview-guess-info">
+              <div class="overview-year-badge ${team.last_round_points > 0 ? 'points-earned' : 'no-points'}">
                 ${team.year_guess}
+              </div>
+              <div class="overview-points-badge ${team.last_round_points > 0 ? 'points-earned' : 'no-points'}">
+                ${team.last_round_points}pts
               </div>
             ` : ''}
           </div>
