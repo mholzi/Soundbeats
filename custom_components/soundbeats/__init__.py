@@ -122,7 +122,7 @@ async def _register_services(hass: HomeAssistant) -> None:
             if state_obj and state_obj.attributes and 'team_count' in state_obj.attributes:
                 team_count = int(state_obj.attributes['team_count'])
         
-        # Reset active teams to default names and 0 points
+        # Reset active teams to default names and 0 points (preserve user assignments)
         for i in range(1, team_count + 1):
             team_key = f"soundbeats_team_{i}"
             team_sensor = team_sensors.get(team_key)
@@ -135,8 +135,7 @@ async def _register_services(hass: HomeAssistant) -> None:
                 if hasattr(team_sensor, '_last_round_betting'):
                     team_sensor._last_round_betting = False
                     team_sensor.async_write_ha_state()
-                if hasattr(team_sensor, 'update_team_user_id'):
-                    team_sensor.update_team_user_id(None)
+                # Note: Preserve user_id assignments during game start
             else:
                 # Fallback to direct state setting
                 team_entity_id = f"sensor.soundbeats_team_{i}"
@@ -203,7 +202,8 @@ async def _register_services(hass: HomeAssistant) -> None:
                 hass.states.async_set(team_entity_id, f"Team {i}", {
                     "points": 0,
                     "participating": True,
-                    "team_number": i
+                    "team_number": i,
+                    "user_id": None
                 })
 
     async def next_song(call):
