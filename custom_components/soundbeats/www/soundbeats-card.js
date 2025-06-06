@@ -4004,6 +4004,11 @@ class SoundbeatsCard extends HTMLElement {
     // Update team display values (but not input fields)
     this.updateTeamDisplayValues();
     
+    // Update team management dropdowns if users are loaded
+    if (this.usersLoaded) {
+      this.updateTeamManagementDropdowns();
+    }
+    
     // Update teams overview description and content
     this.updateTeamsOverviewDisplay();
     
@@ -4556,9 +4561,6 @@ class SoundbeatsCard extends HTMLElement {
     } else if (hass && this.usersLoaded && this.shouldShowSplashScreen()) {
       // Update splash screen dropdowns without full re-render to prevent refresh issues
       this.updateSplashScreenDropdowns();
-    } else if (hass && this.usersLoaded) {
-      // Users are already loaded, just update the dropdown options if needed
-      this.updateTeamManagementDropdowns();
     }
     
     // Initialize highscore tracking on first load
