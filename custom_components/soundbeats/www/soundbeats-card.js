@@ -222,75 +222,49 @@ class SoundbeatsCard extends HTMLElement {
 
     let inputsHtml = '';
 
-    // Team Count Input (first priority)
-    if (missingMap.teamCount) {
-      const currentTeamCount = this.getSelectedTeamCount();
-      
-      inputsHtml += `
-        <div class="splash-input-section ${this.hasValidationError('teamCount') ? 'error' : ''}">
-          <div class="splash-input-header">
-            <ha-icon icon="mdi:account-group" class="input-icon"></ha-icon>
-            <h3>Number of Teams</h3>
-          </div>
-          <p class="input-description">How many teams will participate in the game?</p>
-          <select class="splash-team-count-select" onchange="this.getRootNode().host.updateTeamCount(this.value)">
-            <option value="">Select number of teams...</option>
-            ${[1, 2, 3, 4, 5].map(count => 
-              `<option value="${count}" ${currentTeamCount === count ? 'selected' : ''}>
-                ${count} Team${count > 1 ? 's' : ''}
-              </option>`
-            ).join('')}
-          </select>
+    // Team Count Input (always show)
+    const currentTeamCount = this.getSelectedTeamCount();
+    inputsHtml += `
+      <div class="splash-input-section ${this.hasValidationError('teamCount') ? 'error' : ''}">
+        <div class="splash-input-header">
+          <ha-icon icon="mdi:account-group" class="input-icon"></ha-icon>
+          <h3>Number of Teams</h3>
         </div>
-      `;
-    }
+        <p class="input-description">How many teams will participate in the game?</p>
+        <select class="splash-team-count-select" onchange="this.getRootNode().host.updateTeamCount(this.value)">
+          <option value="">Select number of teams...</option>
+          ${[1, 2, 3, 4, 5].map(count => 
+            `<option value="${count}" ${currentTeamCount === count ? 'selected' : ''}>
+              ${count} Team${count > 1 ? 's' : ''}
+            </option>`
+          ).join('')}
+        </select>
+      </div>
+    `;
 
-    // Audio Player Input
-    if (missingMap.audioPlayer) {
-      const mediaPlayers = this.getMediaPlayers();
-      const currentSelection = this.getSelectedAudioPlayer();
-      const isActuallyLoading = this._isLoadingMediaPlayers;
-      const hasNoPlayers = mediaPlayers.length === 0 && !isActuallyLoading;
-      
-      inputsHtml += `
-        <div class="splash-input-section ${this.hasValidationError('audioPlayer') ? 'error' : ''}">
-          <div class="splash-input-header">
-            <ha-icon icon="mdi:speaker" class="input-icon"></ha-icon>
-            <h3>Audio Player</h3>
-          </div>
-          <p class="input-description">Select where music should play from</p>
-          <select class="splash-audio-select" onchange="this.getRootNode().host.updateAudioPlayer(this.value)" ${isActuallyLoading ? 'disabled' : ''}>
-            <option value="">${isActuallyLoading ? 'Loading audio players...' : hasNoPlayers ? 'No audio players found' : 'Select an audio player...'}</option>
-            ${mediaPlayers.map(player => 
-              `<option value="${player.entity_id}" ${currentSelection === player.entity_id ? 'selected' : ''}>
-                ${player.name}
-              </option>`
-            ).join('')}
-          </select>
+    // Audio Player Input (always show)
+    const mediaPlayers = this.getMediaPlayers();
+    const currentSelection = this.getSelectedAudioPlayer();
+    const isActuallyLoading = this._isLoadingMediaPlayers;
+    const hasNoPlayers = mediaPlayers.length === 0 && !isActuallyLoading;
+    
+    inputsHtml += `
+      <div class="splash-input-section ${this.hasValidationError('audioPlayer') ? 'error' : ''}">
+        <div class="splash-input-header">
+          <ha-icon icon="mdi:speaker" class="input-icon"></ha-icon>
+          <h3>Audio Player</h3>
         </div>
-      `;
-    }
-
-    // Timer Input
-    if (missingMap.timer) {
-      const currentTimer = this.getCountdownTimerLength();
-      
-      inputsHtml += `
-        <div class="splash-input-section ${this.hasValidationError('timer') ? 'error' : ''}">
-          <div class="splash-input-header">
-            <ha-icon icon="mdi:timer-outline" class="input-icon"></ha-icon>
-            <h3>Countdown Timer</h3>
-          </div>
-          <p class="input-description">How long teams have to guess (5-300 seconds)</p>
-          <div class="splash-timer-control">
-            <input type="range" class="splash-timer-slider" min="5" max="300" step="5" 
-                   value="${currentTimer}"
-                   oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + 's';">
-            <span class="splash-timer-value">${currentTimer}s</span>
-          </div>
-        </div>
-      `;
-    }
+        <p class="input-description">Select where music should play from</p>
+        <select class="splash-audio-select" onchange="this.getRootNode().host.updateAudioPlayer(this.value)" ${isActuallyLoading ? 'disabled' : ''}>
+          <option value="">${isActuallyLoading ? 'Loading audio players...' : hasNoPlayers ? 'No audio players found' : 'Select an audio player...'}</option>
+          ${mediaPlayers.map(player => 
+            `<option value="${player.entity_id}" ${currentSelection === player.entity_id ? 'selected' : ''}>
+              ${player.name}
+            </option>`
+          ).join('')}
+        </select>
+      </div>
+    `;
 
     // Teams Input (always show if team count is already selected)
     const teamCount = this.getSelectedTeamCount();
@@ -328,6 +302,27 @@ class SoundbeatsCard extends HTMLElement {
             </div>
           </div>
         `;
+    }
+
+    // Timer Input (only show if missing - optional)
+    if (missingMap.timer) {
+      const currentTimer = this.getCountdownTimerLength();
+      
+      inputsHtml += `
+        <div class="splash-input-section ${this.hasValidationError('timer') ? 'error' : ''}">
+          <div class="splash-input-header">
+            <ha-icon icon="mdi:timer-outline" class="input-icon"></ha-icon>
+            <h3>Countdown Timer</h3>
+          </div>
+          <p class="input-description">How long teams have to guess (5-300 seconds)</p>
+          <div class="splash-timer-control">
+            <input type="range" class="splash-timer-slider" min="5" max="300" step="5" 
+                   value="${currentTimer}"
+                   oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + 's';">
+            <span class="splash-timer-value">${currentTimer}s</span>
+          </div>
+        </div>
+      `;
     }
 
     return inputsHtml;
@@ -1593,7 +1588,7 @@ class SoundbeatsCard extends HTMLElement {
           bottom: 8px;
           left: 8px;
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           gap: 4px;
         }
 
@@ -2445,7 +2440,7 @@ class SoundbeatsCard extends HTMLElement {
         
         .splash-team-item {
           display: grid;
-          grid-template-columns: auto 1fr 1fr auto;
+          grid-template-columns: auto 1fr 1fr;
           gap: 8px;
           align-items: center;
           padding: 8px;
@@ -3099,6 +3094,12 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateTeamUserId(teamId, userId) {
+    // Provide immediate visual feedback by updating the dropdown immediately
+    const activeDropdown = document.activeElement;
+    if (activeDropdown && activeDropdown.tagName === 'SELECT' && activeDropdown.classList.contains('splash-team-select')) {
+      // Keep the selection as is - browser will handle the visual update
+    }
+    
     // Debounce team user ID updates
     this.debouncedServiceCall(`teamUserId_${teamId}`, () => {
       if (this.hass) {
