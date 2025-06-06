@@ -4044,6 +4044,11 @@ class SoundbeatsCard extends HTMLElement {
     // Update team display values (but not input fields)
     this.updateTeamDisplayValues();
     
+    // Update team management dropdowns if users are loaded
+    if (this.usersLoaded) {
+      this.updateTeamManagementDropdowns();
+    }
+    
     // Update teams overview description and content
     this.updateTeamsOverviewDisplay();
     
@@ -4175,10 +4180,7 @@ class SoundbeatsCard extends HTMLElement {
     if (!teamsContainer) return;
     
     // Check if any input field in team management is currently focused - if so, block recreation
-    const isUserEditing = teamManagementContainer && 
-      (teamManagementContainer.contains(document.activeElement) && 
-       (document.activeElement.type === 'text' || document.activeElement.type === 'checkbox' || 
-        document.activeElement.tagName.toLowerCase() === 'select'));
+    const isUserEditing = this.isUserEditingTeamManagement();
     
     Object.entries(teams).forEach(([teamId, team]) => {
       const teamItem = teamsContainer.querySelector(`[data-team="${teamId}"]`);
@@ -4436,18 +4438,70 @@ class SoundbeatsCard extends HTMLElement {
     });
   }
 
+  isUserEditingTeamManagement() {
+    // Consolidated method to check if user is currently editing team management elements
+    const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
+    if (!teamManagementContainer) return false;
+    
+    // Check if any input field in team management is currently focused
+    const activeElement = document.activeElement;
+    if (!activeElement || !teamManagementContainer.contains(activeElement)) {
+      return false;
+    }
+    
+    // Check for specific input types that indicate user interaction
+    return (
+      activeElement.type === 'text' || 
+      activeElement.type === 'checkbox' || 
+      activeElement.tagName.toLowerCase() === 'select'
+    );
+  }
+
+  updateTeamManagementDropdowns() {
+    // Update only the dropdown options in team management without full re-render
+    const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
+    if (!teamManagementContainer || this.isUserEditingTeamManagement()) {
+      return; // Don't update if user is editing
+    }
+    
+    const users = this.homeAssistantUsers || [];
+    const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
+    const teams = this.getTeams();
+    
+    // Update each team's dropdown options
+    Object.entries(teams).forEach(([teamId, team]) => {
+      const managementItem = teamManagementContainer.querySelector(`[data-team="${teamId}"]`);
+      if (managementItem) {
+        const select = managementItem.querySelector('.team-user-select');
+        if (select && document.activeElement !== select) {
+          const currentValue = select.value;
+          
+          // Update options
+          select.innerHTML = `
+            <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
+            ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+              `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
+                ${user.name}
+              </option>`
+            ).join('')}
+          `;
+          
+          // Restore the selected value if it still exists
+          if (currentValue && Array.from(select.options).some(opt => opt.value === currentValue)) {
+            select.value = currentValue;
+          }
+        }
+      }
+    });
+  }
+
   recreateTeamsSection() {
     // Only recreate if teams structure has changed significantly
     const teamsContainer = this.shadowRoot.querySelector('.teams-container');
     const teamManagementContainer = this.shadowRoot.querySelector('.team-management-container');
     
     // Block recreation if user is actively editing any input field
-    const isUserEditing = teamManagementContainer && 
-      (teamManagementContainer.contains(document.activeElement) && 
-       (document.activeElement.type === 'text' || document.activeElement.type === 'checkbox' || 
-        document.activeElement.tagName.toLowerCase() === 'select'));
-       
-    if (isUserEditing) {
+    if (this.isUserEditingTeamManagement()) {
       return; // Don't recreate while user is editing
     }
     
@@ -4528,9 +4582,9 @@ class SoundbeatsCard extends HTMLElement {
     // Load users when hass becomes available for the first time
     if (hass && !this.usersLoaded) {
       this.loadHomeAssistantUsers().then(() => {
-        // Re-render team management if it exists to show the user dropdowns
+        // Only re-render team management if user is not currently editing it
         const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
-        if (teamManagementContainer) {
+        if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
           teamManagementContainer.innerHTML = this.renderTeamManagement();
           // Update the description as well
           const descriptionElement = this.shadowRoot.querySelector('.team-management-description');
