@@ -19,7 +19,7 @@ Welcome to the **Soundbeats** Home Assistant party game! This repository contain
 
 - `custom_components/soundbeats/`: Python backend for Home Assistant integration.
 - `soundbeats_lovelace/` or `www/community/soundbeats/`: JavaScript frontend for the Lovelace card.
-- `README.md`: Always update documentation with each pull request.
+- `README.md`: Always update documentation with each release.
 - `copilot-instructions.md`: (this file) Reference for Copilot and contributors.
 
 ### 2. Integration Packaging
@@ -32,12 +32,13 @@ Welcome to the **Soundbeats** Home Assistant party game! This repository contain
 
 - The card should be pre-configured and discoverable after installation.
 - No manual editing of `ui-lovelace.yaml` should be required.
-- Support all major themes and mobile responsiveness.
+- Support all major themes and mobile responsiveness. The usage will be predominantly on mobile. 
 
 ### 4. Setup & Configuration
 
 - Use config flows (`config_flow.py`) for any setup—never require YAML.
 - All settings (game options, UI preferences) must be adjustable from Home Assistant’s web UI.
+- Use a splash screen to capture all critical input data for the game with appropriate error messsages an explanantions
 
 ### 5. Testing
 
@@ -50,7 +51,7 @@ Welcome to the **Soundbeats** Home Assistant party game! This repository contain
 
 - [ ] All new features are plug-and-play and require no manual setup.
 - [ ] Lovelace card is bundled and auto-registered.
-- [ ] `README.md` is updated with major changes to the design or functionality. Please make it salesy (required for all PRs).
+- [ ] `README.md` is updated with major changes to the design or functionality. Please make it salesy and not too long..
 - [ ] Integration and UI are fully documented.
 - [ ] No manual configuration (YAML or file edits) is required for users.
 - [ ] Tests are updated and passing.
