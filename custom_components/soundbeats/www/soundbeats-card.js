@@ -29,6 +29,39 @@ class SoundbeatsCard extends HTMLElement {
     this.render();
   }
 
+  shouldShowSplashScreen() {
+    // Show splash screen when:
+    // 1. Critical game variables are missing
+    // 2. Game status is 'ready' (waiting to start)
+    // 3. No rounds have been played yet
+    const gameStatus = this.getGameStatus();
+    const roundCounter = this.getRoundCounter();
+    const missingVariables = this.getMissingGameVariables();
+    
+    // Always show if variables are missing
+    if (missingVariables.length > 0) {
+      return true;
+    }
+    
+    // Show if game is in ready state and no rounds played yet
+    if (gameStatus === 'ready' && roundCounter === 0) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  getGameStatus() {
+    // Get current game status from the main sensor
+    if (this.hass && this.hass.states) {
+      const entity = this.hass.states['sensor.soundbeats_game_status'];
+      if (entity && entity.state) {
+        return entity.state;
+      }
+    }
+    return 'ready'; // Default state
+  }
+
   isGameReady() {
     // Check if all critical game variables are set
     const missingVariables = this.getMissingGameVariables();
@@ -135,7 +168,12 @@ class SoundbeatsCard extends HTMLElement {
             </div>
             
             <div class="setup-help">
-              <p><strong>💡 Tip:</strong> Configure these settings in the Game Settings section below, then return here to launch the game!</p>
+              <p><strong>💡 How to get started:</strong></p>
+              <ul style="text-align: left; margin: 0; padding-left: 20px;">
+                <li>Scroll down to <strong>Game Settings</strong> section to configure missing items</li>
+                <li>Ask an admin to help if you can't see the settings</li>
+                <li>Once everything is configured, return here to launch the game!</li>
+              </ul>
             </div>
           </div>
         `}
@@ -145,7 +183,7 @@ class SoundbeatsCard extends HTMLElement {
 
   render() {
     const isAdmin = this.checkAdminPermissions();
-    const gameReady = this.isGameReady();
+    const showSplash = this.shouldShowSplashScreen();
     
     this.shadowRoot.innerHTML = `
       <style>
@@ -2047,7 +2085,7 @@ class SoundbeatsCard extends HTMLElement {
         </button>
       </div>
       
-      ${!gameReady ? this.renderSplashScreen() : `
+      ${showSplash ? this.renderSplashScreen() : `
       <div class="soundbeats-card">
         <!-- Title Section - Always visible -->
         <div class="section title-section">
