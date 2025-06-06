@@ -2909,16 +2909,6 @@ class SoundbeatsCard extends HTMLElement {
     return !!(teams && teams.team_1 && teams.team_1.user_id === currentUserId);
   }
 
-  getGameStatus() {
-    // Get game status from the sensor entity
-    if (this.hass && this.hass.states) {
-      const entity = this.hass.states['sensor.soundbeats_game_status'];
-      return entity ? entity.state : 'Unknown';
-    }
-    return 'Ready';
-  }
-
-
 
   getGameMode() {
     // Get game mode from the dedicated sensor entity
