@@ -27,6 +27,9 @@ class SoundbeatsCard extends HTMLElement {
     this._lastRoundHighscores = {};
     this._activeBanners = [];
     
+    // Track user's intent to launch the game (for UI transition)
+    this._userLaunchedGame = false;
+    
     // Performance optimizations - caching
     this._mediaPlayersCache = null;
     this._mediaPlayersCacheTime = 0;
@@ -54,6 +57,13 @@ class SoundbeatsCard extends HTMLElement {
     const now = Date.now();
     if (this._shouldShowSplashCache && (now - this._shouldShowSplashCacheTime) < 100) {
       return this._shouldShowSplashCache;
+    }
+    
+    // Don't show splash if user has explicitly launched the game
+    if (this._userLaunchedGame) {
+      this._shouldShowSplashCache = false;
+      this._shouldShowSplashCacheTime = now;
+      return false;
     }
     
     // Show splash screen when:
@@ -150,6 +160,12 @@ class SoundbeatsCard extends HTMLElement {
           description: `Assign a user to every team (${teamsWithoutUsers.length} of ${teamCount} teams still need users assigned).`
         });
       }
+    }
+    
+    // If configuration becomes invalid after user launched game, reset the launch flag
+    // This ensures splash screen shows again when configuration changes
+    if (missing.length > 0 && this._userLaunchedGame) {
+      this._userLaunchedGame = false;
     }
     
     // Cache the result
@@ -385,6 +401,9 @@ class SoundbeatsCard extends HTMLElement {
       // All configuration changes are already persisted immediately when users interact
       // with UI controls. Actual game logic (song start, scoring, etc.) is initiated
       // by explicit user actions on the game screen, not by this UI transition.
+      
+      // Set a flag to indicate user has launched the game
+      this._userLaunchedGame = true;
       this.clearValidationCache();  // Clear cache to ensure UI updates
       this.render();  // Re-render to transition from splash to main game UI
     } else {
