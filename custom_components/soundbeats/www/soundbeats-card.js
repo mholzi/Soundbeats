@@ -71,6 +71,16 @@ class SoundbeatsCard extends HTMLElement {
   getMissingGameVariables() {
     const missing = [];
     
+    // Check if team count is selected
+    const teamCount = this.getSelectedTeamCount();
+    if (!teamCount || teamCount < 1 || teamCount > 5) {
+      missing.push({
+        key: 'teamCount',
+        name: 'Number of Teams',
+        description: 'Select how many teams will participate in the game (1-5 teams).'
+      });
+    }
+    
     // Check if audio player is selected
     const audioPlayer = this.getSelectedAudioPlayer();
     if (!audioPlayer) {
@@ -91,7 +101,7 @@ class SoundbeatsCard extends HTMLElement {
       });
     }
     
-    // Check if at least one team has a user assigned
+    // Check if at least one team has a user assigned (only for selected number of teams)
     const teams = this.getTeams();
     const teamsWithUsers = Object.values(teams).filter(team => 
       team.participating && team.user_id
@@ -178,6 +188,29 @@ class SoundbeatsCard extends HTMLElement {
 
     let inputsHtml = '';
 
+    // Team Count Input (first priority)
+    if (missingMap.teamCount) {
+      const currentTeamCount = this.getSelectedTeamCount();
+      
+      inputsHtml += `
+        <div class="splash-input-section ${this.hasValidationError('teamCount') ? 'error' : ''}">
+          <div class="splash-input-header">
+            <ha-icon icon="mdi:account-group" class="input-icon"></ha-icon>
+            <h3>Number of Teams</h3>
+          </div>
+          <p class="input-description">How many teams will participate in the game?</p>
+          <select class="splash-team-count-select" onchange="this.getRootNode().host.updateTeamCount(this.value)">
+            <option value="">Select number of teams...</option>
+            ${[1, 2, 3, 4, 5].map(count => 
+              `<option value="${count}" ${currentTeamCount === count ? 'selected' : ''}>
+                ${count} Team${count > 1 ? 's' : ''}
+              </option>`
+            ).join('')}
+          </select>
+        </div>
+      `;
+    }
+
     // Audio Player Input
     if (missingMap.audioPlayer) {
       const mediaPlayers = this.getMediaPlayers();
@@ -223,7 +256,7 @@ class SoundbeatsCard extends HTMLElement {
       `;
     }
 
-    // Teams Input
+    // Teams Input (only show if team count is already selected)
     if (missingMap.teams) {
       const teams = this.getTeams();
       const users = this.homeAssistantUsers || [];
@@ -236,7 +269,7 @@ class SoundbeatsCard extends HTMLElement {
           </div>
           <p class="input-description">Set up at least one team with a user assigned</p>
           <div class="splash-teams-container">
-            ${Object.entries(teams).slice(0, 3).map(([teamId, team]) => `
+            ${Object.entries(teams).map(([teamId, team]) => `
               <div class="splash-team-item">
                 <label class="team-label">Team ${teamId.split('_')[1]}:</label>
                 <input type="text" class="splash-team-input" placeholder="Team Name" 
@@ -732,6 +765,27 @@ class SoundbeatsCard extends HTMLElement {
           .wave {
             width: 2px;
           }
+          
+          /* Mobile-friendly dropdown improvements */
+          .splash-audio-select,
+          .splash-team-count-select,
+          .splash-team-select,
+          .team-user-select {
+            font-size: 16px; /* Prevents zoom on iOS */
+            min-height: 44px; /* Minimum touch target size */
+            padding: 12px 16px;
+          }
+          
+          .splash-team-item {
+            flex-direction: column;
+            gap: 8px;
+            align-items: stretch;
+          }
+          
+          .splash-team-select {
+            width: 100%;
+            min-width: unset;
+          }
         }
         
         @media (max-width: 480px) {
@@ -743,6 +797,16 @@ class SoundbeatsCard extends HTMLElement {
           
           .title-section p {
             font-size: 0.9em;
+          }
+          
+          /* Ensure dropdowns are fully visible on small screens */
+          .splash-audio-select,
+          .splash-team-count-select,
+          .splash-team-select,
+          .team-user-select {
+            max-width: 100%;
+            width: 100%;
+            box-sizing: border-box;
           }
         }
         
@@ -2206,6 +2270,21 @@ class SoundbeatsCard extends HTMLElement {
           color: white;
         }
         
+        .splash-team-count-select {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+          font-size: 14px;
+        }
+        
+        .splash-team-count-select option {
+          background: #333;
+          color: white;
+        }
+        
         .splash-timer-control {
           display: flex;
           align-items: center;
@@ -2665,9 +2744,11 @@ class SoundbeatsCard extends HTMLElement {
 
   getTeams() {
     // Get teams data from individual team sensor entities
+    const teamCount = this.getSelectedTeamCount();
+    
     if (this.hass && this.hass.states) {
       const teams = {};
-      for (let i = 1; i <= 5; i++) {
+      for (let i = 1; i <= teamCount; i++) {
         const teamKey = `team_${i}`;
         const entityId = `sensor.soundbeats_team_${i}`;
         const entity = this.hass.states[entityId];
@@ -2698,7 +2779,7 @@ class SoundbeatsCard extends HTMLElement {
     }
     // Return default teams if no data available
     const defaultTeams = {};
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= teamCount; i++) {
       const teamKey = `team_${i}`;
       defaultTeams[teamKey] = {
         name: `Team ${i}`,
@@ -3540,6 +3621,26 @@ class SoundbeatsCard extends HTMLElement {
     if (this.hass) {
       this.hass.callService('soundbeats', 'update_audio_player', {
         audio_player: audioPlayer
+      });
+    }
+  }
+
+  getSelectedTeamCount() {
+    // Get selected team count from the game status entity
+    if (this.hass && this.hass.states) {
+      const entity = this.hass.states['sensor.soundbeats_game_status'];
+      if (entity && entity.attributes && entity.attributes.team_count !== undefined) {
+        return parseInt(entity.attributes.team_count);
+      }
+    }
+    return 3; // Default to 3 teams
+  }
+
+  updateTeamCount(teamCount) {
+    // Call service to update team count
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'update_team_count', {
+        team_count: parseInt(teamCount)
       });
     }
   }
