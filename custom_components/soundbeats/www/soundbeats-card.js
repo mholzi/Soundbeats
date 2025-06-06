@@ -2056,7 +2056,7 @@ class SoundbeatsCard extends HTMLElement {
           gap: 16px;
         }
         
-        .absolute-highscore {
+        .global-highscore {
           display: flex;
           align-items: center;
           gap: 12px;
@@ -2082,26 +2082,20 @@ class SoundbeatsCard extends HTMLElement {
           color: #ff8c00;
         }
         
-        .last-round-highscore {
+        .user-average {
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
           padding: 12px;
-          background: rgba(255, 255, 255, 0.5);
+          background: rgba(100, 149, 237, 0.1);
           border-radius: 6px;
-          border: 1px solid rgba(255, 215, 0, 0.2);
+          border: 1px solid rgba(100, 149, 237, 0.2);
           font-weight: bold;
         }
         
-        .last-round-highscore .icon {
-          color: #ff8c00;
-        }
-        
-        .last-round-highscore .round-indicator {
-          font-size: 0.9em;
-          color: var(--secondary-text-color, #666);
-          margin-left: 4px;
+        .user-average .icon {
+          color: #6495ed;
         }
         
         .highscore-empty {
@@ -3409,41 +3403,60 @@ class SoundbeatsCard extends HTMLElement {
       `;
     }
     
-    const absoluteHighscore = highscoreEntity.state;
-    const attributes = highscoreEntity.attributes || {};
+    // Get global average highscore (stored as average points per round)
+    const globalAverageHighscore = parseFloat(highscoreEntity.state);
     
-    // Find the last round score (highest round number with a score)
+    // Calculate user's average score per round
     const currentRound = this.getRoundCounter();
-    let lastRoundScore = null;
-    let lastRoundNumber = null;
-    
-    // Check from current round down to round 1 to find the most recent round with a score
-    for (let round = currentRound; round >= 1; round--) {
-      const roundKey = `round_${round}`;
-      if (roundKey in attributes && typeof attributes[roundKey] === 'number') {
-        lastRoundScore = attributes[roundKey];
-        lastRoundNumber = round;
-        break;
-      }
-    }
+    const userAverage = this.calculateUserAverageScore(currentRound);
     
     return `
       <div class="highscore-display">
-        <div class="absolute-highscore">
+        <div class="global-highscore">
           <ha-icon icon="mdi:crown" class="icon crown-icon"></ha-icon>
-          <span class="highscore-label">All-Time Record:</span>
-          <span class="highscore-value">${absoluteHighscore} pts</span>
+          <span class="highscore-label">Highscore (Avg/Round):</span>
+          <span class="highscore-value">${globalAverageHighscore.toFixed(1)} pts</span>
         </div>
-        ${lastRoundScore !== null ? `
-          <div class="last-round-highscore">
-            <ha-icon icon="mdi:timer-outline" class="icon"></ha-icon>
-            <span class="highscore-label">Last Round Record:</span>
-            <span class="highscore-value">${lastRoundScore} pts</span>
-            <span class="round-indicator">(Round ${lastRoundNumber})</span>
+        ${currentRound > 1 && userAverage !== null ? `
+          <div class="user-average">
+            <ha-icon icon="mdi:account" class="icon"></ha-icon>
+            <span class="highscore-label">Your Average:</span>
+            <span class="highscore-value">${userAverage.toFixed(1)} pts</span>
           </div>
         ` : ''}
       </div>
     `;
+  }
+
+  calculateUserAverageScore(currentRound) {
+    // Calculate the average score per round for teams belonging to the current user
+    if (currentRound <= 1) {
+      return null; // Don't show user average until after round 1
+    }
+    
+    const teams = this.getTeams();
+    const currentUserId = this.hass && this.hass.user ? this.hass.user.id : null;
+    
+    if (!currentUserId) {
+      return null; // Can't determine user if no user ID available
+    }
+    
+    // Find all teams that belong to the current user and are participating
+    const userTeams = Object.entries(teams)
+      .filter(([teamId, team]) => team.participating && team.user_id === currentUserId)
+      .map(([teamId, team]) => team);
+    
+    if (userTeams.length === 0) {
+      return null; // No user teams found
+    }
+    
+    // Calculate total points across all user teams, then divide by rounds
+    let totalPoints = 0;
+    userTeams.forEach(team => {
+      totalPoints += team.points || 0;
+    });
+    
+    return totalPoints / currentRound;
   }
 
   renderHighscoreDiagnosticContent() {
@@ -3640,12 +3653,12 @@ class SoundbeatsCard extends HTMLElement {
       return;
     }
     
-    const currentAbsolute = parseInt(highscoreEntity.state, 10) || 0;
+    const currentAbsolute = parseFloat(highscoreEntity.state) || 0;
     const currentAttributes = highscoreEntity.attributes || {};
     
-    // Check for new absolute highscore
+    // Check for new average highscore
     if (this._lastAbsoluteHighscore !== null && currentAbsolute > this._lastAbsoluteHighscore && currentAbsolute > 0) {
-      this.showHighscoreBanner(`New all-time record: ${currentAbsolute} points! 🏆`);
+      this.showHighscoreBanner(`New average highscore: ${currentAbsolute.toFixed(1)} pts/round! 🏆`);
     }
     
     // Check for new round highscores
@@ -3671,7 +3684,7 @@ class SoundbeatsCard extends HTMLElement {
     }
     
     // Initialize with current values to prevent false positives on first load
-    this._lastAbsoluteHighscore = parseInt(highscoreEntity.state, 10) || 0;
+    this._lastAbsoluteHighscore = parseFloat(highscoreEntity.state) || 0;
     this._lastRoundHighscores = { ...highscoreEntity.attributes } || {};
   }
 

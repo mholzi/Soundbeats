@@ -691,8 +691,10 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
         # Restore previous state if available
         if (last_state := await self.async_get_last_state()) is not None:
             try:
-                self._absolute_highscore = int(last_state.state)
-                _LOGGER.debug("Restored absolute highscore: %d", self._absolute_highscore)
+                # Convert state back to internal integer representation (* 100)
+                restored_value = float(last_state.state)
+                self._absolute_highscore = int(restored_value * 100)
+                _LOGGER.debug("Restored average highscore: %.2f (internal: %d)", restored_value, self._absolute_highscore)
                 
                 # Restore round highscores from attributes
                 if last_state.attributes:
@@ -707,16 +709,16 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
                 self._round_highscores = {}
 
     @property
-    def state(self) -> int:
-        """Return the state of the sensor (absolute highscore)."""
-        return self._absolute_highscore
+    def state(self) -> float:
+        """Return the state of the sensor (average highscore per round)."""
+        return self._absolute_highscore / 100.0 if self._absolute_highscore > 0 else 0.0
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
         attributes = {
             "friendly_name": "Soundbeats Highscore",
-            "description": "Absolute and per-round highscores for Soundbeats game",
+            "description": "Average points per round highscore for Soundbeats game",
             "played_song_ids": self._played_song_ids,
         }
         # Add round highscores as attributes
@@ -745,7 +747,7 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
         _LOGGER.debug("Updating Soundbeats highscore sensor")
 
     def update_highscore(self, team_score: int, round_number: int) -> dict[str, bool]:
-        """Update highscore records and return which records were broken.
+        """Update highscore records based on average score per round.
         
         Args:
             team_score: The team's total aggregated score
@@ -757,28 +759,33 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
         records_broken = {"absolute": False, "round": False}
         state_changed = False
         
-        # Check absolute highscore
-        if team_score > self._absolute_highscore:
-            self._absolute_highscore = team_score
-            records_broken["absolute"] = True
-            state_changed = True
-            _LOGGER.info("NEW ABSOLUTE HIGHSCORE: %d points!", team_score)
-        
-        # Check round-specific highscore
-        round_key = f"round_{round_number}"
-        current_round_record = self._round_highscores.get(round_key, 0)
-        
-        # Ensure round attribute exists (initialize with 0 if not present)
-        if round_key not in self._round_highscores:
-            self._round_highscores[round_key] = 0
-            state_changed = True
-            _LOGGER.debug("Initialized round %d highscore to 0", round_number)
-        
-        if team_score > current_round_record:
-            self._round_highscores[round_key] = team_score
-            records_broken["round"] = True
-            state_changed = True
-            _LOGGER.info("NEW ROUND %d HIGHSCORE: %d points!", round_number, team_score)
+        # Calculate average score per round for this team
+        if round_number > 0:
+            team_average = team_score / round_number
+            
+            # Check average highscore (stored as integer by multiplying by 100 for precision)
+            team_average_int = int(team_average * 100)
+            if team_average_int > self._absolute_highscore:
+                self._absolute_highscore = team_average_int
+                records_broken["absolute"] = True
+                state_changed = True
+                _LOGGER.info("NEW AVERAGE HIGHSCORE: %.2f points per round!", team_average)
+            
+            # Still track round-specific records for potential future use
+            round_key = f"round_{round_number}"
+            current_round_record = self._round_highscores.get(round_key, 0)
+            
+            # Ensure round attribute exists (initialize with 0 if not present)
+            if round_key not in self._round_highscores:
+                self._round_highscores[round_key] = 0
+                state_changed = True
+                _LOGGER.debug("Initialized round %d highscore to 0", round_number)
+            
+            if team_score > current_round_record:
+                self._round_highscores[round_key] = team_score
+                records_broken["round"] = True
+                state_changed = True
+                _LOGGER.info("NEW ROUND %d HIGHSCORE: %d points!", round_number, team_score)
         
         if state_changed:
             self.async_write_ha_state()
