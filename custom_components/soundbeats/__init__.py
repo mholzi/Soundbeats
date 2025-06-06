@@ -108,9 +108,22 @@ async def _register_services(hass: HomeAssistant) -> None:
         else:
             hass.states.async_set("sensor.soundbeats_played_songs", 0, {"played_song_ids": []})
         
-        # Reset all teams to default names and 0 points
+        # Reset teams based on current team count
         team_sensors = entities.get("team_sensors", {})
-        for i in range(1, 6):
+        main_sensor = entities.get("main_sensor")
+        team_count = 5  # Default to all teams if we can't get the setting
+        
+        # Try to get current team count from main sensor
+        if main_sensor and hasattr(main_sensor, '_team_count'):
+            team_count = main_sensor._team_count
+        else:
+            # Fallback: check state attributes
+            state_obj = hass.states.get("sensor.soundbeats_game_status")
+            if state_obj and state_obj.attributes and 'team_count' in state_obj.attributes:
+                team_count = int(state_obj.attributes['team_count'])
+        
+        # Reset active teams to default names and 0 points
+        for i in range(1, team_count + 1):
             team_key = f"soundbeats_team_{i}"
             team_sensor = team_sensors.get(team_key)
             if team_sensor:
@@ -130,6 +143,21 @@ async def _register_services(hass: HomeAssistant) -> None:
                 hass.states.async_set(team_entity_id, f"Team {i}", {
                     "points": 0,
                     "participating": True,
+                    "team_number": i
+                })
+        
+        # Disable any teams beyond the current team count
+        for i in range(team_count + 1, 6):
+            team_key = f"soundbeats_team_{i}"
+            team_sensor = team_sensors.get(team_key)
+            if team_sensor:
+                team_sensor.update_team_participating(False)
+            else:
+                # Fallback to direct state setting
+                team_entity_id = f"sensor.soundbeats_team_{i}"
+                hass.states.async_set(team_entity_id, f"Team {i}", {
+                    "points": 0,
+                    "participating": False,
                     "team_number": i
                 })
 
@@ -453,6 +481,33 @@ async def _register_services(hass: HomeAssistant) -> None:
             # Fallback to direct state setting
             hass.states.async_set("sensor.soundbeats_current_song", player)
 
+    async def update_team_count(call):
+        team_count = call.data.get("team_count")
+        if team_count is None:
+            _LOGGER.error("Missing team_count")
+            return
+        
+        # Validate team count is between 1 and 5
+        team_count = int(team_count)
+        if team_count < 1 or team_count > 5:
+            _LOGGER.error("Invalid team_count: %s (must be 1-5)", team_count)
+            return
+            
+        entities = _get_entities()
+        main_sensor = entities.get("main_sensor")
+        if main_sensor and hasattr(main_sensor, 'set_team_count'):
+            main_sensor.set_team_count(team_count)
+        else:
+            # Update the game status entity with team_count attribute
+            state_obj = hass.states.get("sensor.soundbeats_game_status")
+            if state_obj:
+                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
+                attrs["team_count"] = team_count
+                hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, attrs)
+            else:
+                # Create the entity if it doesn't exist
+                hass.states.async_set("sensor.soundbeats_game_status", "ready", {"team_count": team_count})
+
     async def update_team_year_guess(call):
         team_id = call.data.get("team_id")
         year_guess = call.data.get("year_guess")
@@ -553,6 +608,7 @@ async def _register_services(hass: HomeAssistant) -> None:
     hass.services.async_register(DOMAIN, "update_team_user_id", update_team_user_id)
     hass.services.async_register(DOMAIN, "update_countdown_timer_length", update_countdown_timer_length)
     hass.services.async_register(DOMAIN, "update_audio_player", update_audio_player)
+    hass.services.async_register(DOMAIN, "update_team_count", update_team_count)
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry and remove services if no entries remain."""
@@ -575,6 +631,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 "update_team_user_id",
                 "update_countdown_timer_length",
                 "update_audio_player",
+                "update_team_count",
             ]:
                 hass.services.async_remove(DOMAIN, svc)
     return unload_ok
