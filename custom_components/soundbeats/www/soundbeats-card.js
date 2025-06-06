@@ -3834,7 +3834,8 @@ class SoundbeatsCard extends HTMLElement {
     // Check if any input field in team management is currently focused - if so, block recreation
     const isUserEditing = teamManagementContainer && 
       (teamManagementContainer.contains(document.activeElement) && 
-       (document.activeElement.type === 'text' || document.activeElement.type === 'checkbox'));
+       (document.activeElement.type === 'text' || document.activeElement.type === 'checkbox' || 
+        document.activeElement.tagName.toLowerCase() === 'select'));
     
     Object.entries(teams).forEach(([teamId, team]) => {
       const teamItem = teamsContainer.querySelector(`[data-team="${teamId}"]`);
@@ -3972,7 +3973,8 @@ class SoundbeatsCard extends HTMLElement {
     // Block recreation if user is actively editing any input field
     const isUserEditing = teamManagementContainer && 
       (teamManagementContainer.contains(document.activeElement) && 
-       (document.activeElement.type === 'text' || document.activeElement.type === 'checkbox'));
+       (document.activeElement.type === 'text' || document.activeElement.type === 'checkbox' || 
+        document.activeElement.tagName.toLowerCase() === 'select'));
        
     if (isUserEditing) {
       return; // Don't recreate while user is editing
@@ -3994,6 +3996,7 @@ class SoundbeatsCard extends HTMLElement {
           focusedTeam = teamItem.getAttribute('data-team');
           if (focusedElement.type === 'text') focusedType = 'text';
           else if (focusedElement.type === 'checkbox') focusedType = 'checkbox';
+          else if (focusedElement.tagName.toLowerCase() === 'select') focusedType = 'select';
         }
       }
       
@@ -4016,7 +4019,8 @@ class SoundbeatsCard extends HTMLElement {
         if (targetContainer) {
           const newTeamItem = targetContainer.querySelector(`[data-team="${focusedTeam}"]`);
           if (newTeamItem) {
-            const newFocusElement = newTeamItem.querySelector(`input[type="${focusedType}"]`);
+            const selector = focusedType === 'select' ? 'select' : `input[type="${focusedType}"]`;
+            const newFocusElement = newTeamItem.querySelector(selector);
             if (newFocusElement) {
               // Use setTimeout to ensure the element is ready
               setTimeout(() => {
