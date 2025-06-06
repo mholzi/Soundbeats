@@ -3,11 +3,27 @@ Fun Home Assistant Music Guessing Party Game
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 
-A custom Home Assistant integration that brings an interactive music guessing game to your smart home. Teams compete to guess the release year of songs, with points awarded based on accuracy. Features a stunning, animated user interface with modern music-themed design that works out-of-the-box. Perfect for parties, family gatherings, and music lovers!
+A custom Home Assistant integration that brings an interactive music guessing game to your smart home. Teams compete to guess the release year of songs, with points awarded based on accuracy. Features a stunning, animated user interface with modern music-themed design and **an all-new interactive splash/setup screen** that works completely out-of-the-box. Perfect for parties, family gatherings, and music lovers!
 
-**Version:** 1.0.0  
+**Version:** V42  
 **Minimum Home Assistant Version:** 2023.1.0  
 **Integration Type:** Service-based with Custom Lovelace Card
+
+## 🎉 What's New in V42
+
+### Seamless Setup & Interactive Splash Screen
+
+- **🎮 Brand new splash/setup UI** for the Soundbeats Lovelace Card:
+  - Configure missing game settings (audio player, timer, teams) directly on the splash screen with intuitive dropdowns, sliders, and team assignment
+  - Always-visible "Launch Game" button with real-time validation and visual cues for any missing or misconfigured options
+  - Modern, stylish splash visuals and helper text for an even smoother onboarding
+  - Expanded out-of-the-box "zero-setup" experience—everything works automatically after install!
+- **⚡ Enhanced automation** with new methods and logic for updating team participation status and validating game setup
+- **🎯 Zero-configuration philosophy**: No manual configuration required, just install and play!
+
+All improvements maintain the zero-setup design philosophy while making the first-time user experience even more seamless and intuitive.
+
+---
 
 ## Installation
 
@@ -136,9 +152,9 @@ When the highscore section displays "Highscore data not available", a **diagnost
 
 ## Configuration
 
-No manual configuration is required! The integration will be automatically available in your Home Assistant interface after installation.
+**Absolutely zero manual configuration required!** With V42's new interactive splash/setup screen, everything is handled automatically through the beautiful web interface. The integration will be automatically available in your Home Assistant interface after installation.
 
-**Zero-Setup Design**: All features including team rankings, visual styling, and interface behaviors work out-of-the-box with intelligent defaults. The UI automatically adapts to game state changes, hiding unnecessary sections when not relevant and optimizing readability without any user configuration needed.
+**Enhanced Zero-Setup Design**: All features including team rankings, visual styling, interface behaviors, and now game configuration work out-of-the-box with intelligent defaults. The new splash screen guides you through any necessary setup (audio player, teams, timer) directly in the card interface. The UI automatically adapts to game state changes, hiding unnecessary sections when not relevant and optimizing readability without any user configuration needed.
 
 1. Go to Settings → Devices & Services
 2. Click "Add Integration"
@@ -146,9 +162,33 @@ No manual configuration is required! The integration will be automatically avail
 4. Click to add the integration
 5. Follow the setup wizard
 
-The integration is now ready to use!
+The integration is now ready to use! Add the Soundbeats card to your dashboard and the interactive splash screen will handle any remaining configuration automatically.
 
 **Music Data Management:** Soundbeats automatically handles all song metadata including release years and playback URLs. You do not need to configure these properties in your media player entities - the integration manages this data internally through its custom sensor while utilizing your selected media player for audio playback and retrieving song titles, artists, and artwork. Media player selection is handled automatically through the integration's interface with no separate configuration required.
+
+## ✨ Zero-Setup Experience with Interactive Splash Screen
+
+Soundbeats V42 introduces a **brand new interactive splash/setup UI** that makes getting started completely effortless. No YAML editing, no manual configuration files, no complex setup steps—everything happens directly in the beautiful Lovelace Card interface!
+
+### 🎮 Seamless Onboarding Flow
+
+When you first add the Soundbeats card to your dashboard, you'll be greeted by a stunning splash screen featuring:
+
+- **🎵 Animated Welcome Interface**: Beautiful floating musical notes, sound wave visualizations, and modern music-themed design that sets the party mood
+- **⚙️ Interactive Configuration**: Configure missing game settings (audio player, timer duration, teams) directly on the splash screen with intuitive dropdowns, sliders, and team assignment controls
+- **🚀 Always-Visible Launch Button**: A prominent "Launch Game" button that provides real-time validation and visual cues for any missing or misconfigured options
+- **✅ Smart Validation**: The interface automatically detects what needs to be configured and guides you through each step with helpful text and visual indicators
+- **🎨 Modern Visual Design**: Stylish splash visuals with the same premium design language as the main game interface
+
+### 🎯 Truly Zero-Setup Philosophy
+
+- **No YAML Required**: All configuration happens through the beautiful web interface—never touch a configuration file
+- **Auto-Detection**: The card automatically discovers your Home Assistant media players and presents them in an easy-to-use dropdown
+- **Instant Feedback**: Real-time validation shows you exactly what's ready and what needs attention
+- **One-Click Start**: Once everything is configured, just click "Launch Game" to dive straight into the fun
+- **Persistent Settings**: All your preferences are automatically saved and remembered for future games
+
+**The Result**: From installation to your first game in under 2 minutes, with zero technical knowledge required!
 
 ## Usage
 
@@ -172,7 +212,9 @@ The integration automatically creates the following entities:
 
 ### Lovelace Card
 
-The integration automatically provides a comprehensive custom Lovelace card with no additional setup required. The card features role-based sections:
+The integration automatically provides a comprehensive custom Lovelace card with **zero additional setup required**. Featuring the new **interactive splash/setup screen**, users can configure audio player, timer, and teams directly on the card without navigating away or doing any manual setup. The card includes an always-visible "Launch Game" button with visual validation cues and a modern onboarding flow that makes starting your first game effortless.
+
+The card features role-based sections:
 
 #### Admin Sections (Admin Users Only)
 - **Game Settings**: Start new games and adjust countdown timer duration (expandable section, collapsed by default)
@@ -217,9 +259,9 @@ The integration automatically provides a comprehensive custom Lovelace card with
   - **Betting Results**: Special highlighting for betting outcomes with clear win/loss indicators
   - **Always Visible**: Scoring explanations appear immediately when timer expires with no additional setup required
 
-**Note**: The admin sections feature expandable/collapsible interfaces with chevron icons. Click on the section headers to expand or collapse these sections. The expanded state persists throughout your session but resets when the page is reloaded. The card requires zero manual setup for users.
+**Note**: The admin sections feature expandable/collapsible interfaces with chevron icons. Click on the section headers to expand or collapse these sections. The expanded state persists throughout your session but resets when the page is reloaded. With the new interactive splash/setup screen, the card provides a completely seamless onboarding experience with zero manual setup required for users.
 
-To use the card, add it to your Lovelace dashboard by selecting **"Custom: Soundbeats Card"** when adding a new card.
+To use the card, add it to your Lovelace dashboard by selecting **"Custom: Soundbeats Card"** when adding a new card. The interactive splash screen will guide you through any necessary configuration automatically.
 
 #### Enhanced Modern Header Design
 
