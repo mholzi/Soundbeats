@@ -3434,18 +3434,13 @@ class SoundbeatsCard extends HTMLElement {
       return null; // No user teams found
     }
     
-    // Calculate average of all user teams' average scores
-    let totalUserAverage = 0;
-    let validTeams = 0;
-    
+    // Calculate total points across all user teams, then divide by rounds
+    let totalPoints = 0;
     userTeams.forEach(team => {
-      if (team.points > 0) {
-        totalUserAverage += team.points / currentRound;
-        validTeams++;
-      }
+      totalPoints += team.points || 0;
     });
     
-    return validTeams > 0 ? totalUserAverage / validTeams : 0;
+    return totalPoints / currentRound;
   }
 
   renderHighscoreDiagnosticContent() {
@@ -3673,7 +3668,7 @@ class SoundbeatsCard extends HTMLElement {
     }
     
     // Initialize with current values to prevent false positives on first load
-    this._lastAbsoluteHighscore = parseInt(highscoreEntity.state, 10) || 0;
+    this._lastAbsoluteHighscore = parseFloat(highscoreEntity.state) || 0;
     this._lastRoundHighscores = { ...highscoreEntity.attributes } || {};
   }
 
