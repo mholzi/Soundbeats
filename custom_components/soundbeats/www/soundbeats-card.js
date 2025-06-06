@@ -1523,9 +1523,18 @@ class SoundbeatsCard extends HTMLElement {
         .expandable-header {
           display: flex;
           align-items: center;
-          justify-content: space-between;
           cursor: pointer;
           user-select: none;
+        }
+
+        .expandable-header h3 {
+          flex: 1;
+          margin: 0;
+          margin-right: 16px; /* Reduced spacing - was previously maximized with space-between */
+        }
+
+        .expandable-header .expander-icon {
+          margin-left: auto;
         }
 
         .expandable-header:hover {
@@ -2756,6 +2765,11 @@ class SoundbeatsCard extends HTMLElement {
     // Get teams data from individual team sensor entities
     const teamCount = this.getSelectedTeamCount();
     
+    // Return empty teams object if no team count is set
+    if (!teamCount || teamCount < 1 || teamCount > 5) {
+      return {};
+    }
+    
     if (this.hass && this.hass.states) {
       const teams = {};
       for (let i = 1; i <= teamCount; i++) {
@@ -3638,7 +3652,7 @@ class SoundbeatsCard extends HTMLElement {
         return parseInt(entity.attributes.team_count);
       }
     }
-    return 3; // Default to 3 teams
+    return null; // Return null when no team count is explicitly set
   }
 
   updateTeamCount(teamCount) {
@@ -3720,6 +3734,11 @@ class SoundbeatsCard extends HTMLElement {
     
     // Update dropdown options without changing selected value if not focused
     this.updateAudioPlayerOptions();
+    
+    // Update splash screen dropdowns if splash screen is shown
+    if (this.shouldShowSplashScreen()) {
+      this.updateSplashScreenDropdowns();
+    }
     
     // Check if all songs have been played
     this.checkAllSongsPlayed();
@@ -3965,6 +3984,44 @@ class SoundbeatsCard extends HTMLElement {
     });
   }
 
+  updateSplashScreenDropdowns() {
+    // Update splash screen dropdown options without full re-render
+    // Only update if user is not actively focused on the dropdowns
+    
+    // Update audio player dropdown
+    const audioSelect = this.shadowRoot.querySelector('.splash-audio-select');
+    if (audioSelect && document.activeElement !== audioSelect) {
+      const currentSelection = this.getSelectedAudioPlayer();
+      const mediaPlayers = this.getMediaPlayers();
+      
+      audioSelect.innerHTML = '<option value="">Select an audio player...</option>';
+      mediaPlayers.forEach(player => {
+        const option = document.createElement('option');
+        option.value = player.entity_id;
+        option.textContent = player.name;
+        option.selected = currentSelection === player.entity_id;
+        audioSelect.appendChild(option);
+      });
+    }
+
+    // Update team dropdowns if they exist
+    const teamSelects = this.shadowRoot.querySelectorAll('.splash-team-select');
+    const users = this.homeAssistantUsers || [];
+    teamSelects.forEach(select => {
+      if (document.activeElement !== select) {
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">Select user...</option>';
+        users.filter(user => !user.name.startsWith('Home Assistant')).forEach(user => {
+          const option = document.createElement('option');
+          option.value = user.id;
+          option.textContent = user.name;
+          option.selected = currentValue === user.id;
+          select.appendChild(option);
+        });
+      }
+    });
+  }
+
   recreateTeamsSection() {
     // Only recreate if teams structure has changed significantly
     const teamsContainer = this.shadowRoot.querySelector('.teams-container');
@@ -4055,8 +4112,8 @@ class SoundbeatsCard extends HTMLElement {
         }
       });
     } else if (hass && this.usersLoaded && this.shouldShowSplashScreen()) {
-      // Re-render splash screen if hass data changes and splash is shown
-      this.render();
+      // Update splash screen dropdowns without full re-render to prevent refresh issues
+      this.updateSplashScreenDropdowns();
     }
     
     // Initialize highscore tracking on first load
