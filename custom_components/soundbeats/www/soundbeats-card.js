@@ -323,6 +323,15 @@ class SoundbeatsCard extends HTMLElement {
           color: white;
         }
         
+        /* Ensure secondary text is readable on the gradient background */
+        .section .overview-description,
+        .section .overview-empty,
+        .section .round-number,
+        .section .highscore-empty,
+        .section .no-team-message {
+          color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
         .title-section {
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: #ffffff;
