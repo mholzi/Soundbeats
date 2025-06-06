@@ -249,7 +249,8 @@ class SoundbeatsCard extends HTMLElement {
     if (missingMap.audioPlayer) {
       const mediaPlayers = this.getMediaPlayers();
       const currentSelection = this.getSelectedAudioPlayer();
-      const isLoading = this._isLoadingMediaPlayers || mediaPlayers.length === 0;
+      const isActuallyLoading = this._isLoadingMediaPlayers;
+      const hasNoPlayers = mediaPlayers.length === 0 && !isActuallyLoading;
       
       inputsHtml += `
         <div class="splash-input-section ${this.hasValidationError('audioPlayer') ? 'error' : ''}">
@@ -258,8 +259,8 @@ class SoundbeatsCard extends HTMLElement {
             <h3>Audio Player</h3>
           </div>
           <p class="input-description">Select where music should play from</p>
-          <select class="splash-audio-select" onchange="this.getRootNode().host.updateAudioPlayer(this.value)" ${isLoading ? 'disabled' : ''}>
-            <option value="">${isLoading ? 'Loading audio players...' : 'Select an audio player...'}</option>
+          <select class="splash-audio-select" onchange="this.getRootNode().host.updateAudioPlayer(this.value)" ${isActuallyLoading ? 'disabled' : ''}>
+            <option value="">${isActuallyLoading ? 'Loading audio players...' : hasNoPlayers ? 'No audio players found' : 'Select an audio player...'}</option>
             ${mediaPlayers.map(player => 
               `<option value="${player.entity_id}" ${currentSelection === player.entity_id ? 'selected' : ''}>
                 ${player.name}
@@ -3112,6 +3113,8 @@ class SoundbeatsCard extends HTMLElement {
       setTimeout(() => {
         if (this.shouldShowSplashScreen()) {
           this.updateSplashValidationState();
+          // Also update splash screen dropdowns to reflect database state
+          this.updateSplashScreenDropdowns();
         }
       }, 100);
     });
@@ -3789,6 +3792,13 @@ class SoundbeatsCard extends HTMLElement {
         });
       }
       this.clearValidationCache();
+      
+      // Update splash screen to show correct number of team inputs
+      setTimeout(() => {
+        if (this.shouldShowSplashScreen()) {
+          this.updateSplashTeamsSection();
+        }
+      }, 100);
     });
   }
 
@@ -4118,6 +4128,58 @@ class SoundbeatsCard extends HTMLElement {
     });
   }
 
+  updateSplashTeamsSection() {
+    // Update the teams section in the splash screen without full re-render
+    const splashTeamsContainer = this.shadowRoot.querySelector('.splash-teams-container');
+    if (!splashTeamsContainer) return;
+    
+    const teamCount = this.getSelectedTeamCount();
+    if (!teamCount || teamCount < 1 || teamCount > 5) {
+      // Hide teams section if no valid team count
+      const teamsSection = splashTeamsContainer.closest('.splash-input-section');
+      if (teamsSection) {
+        teamsSection.style.display = 'none';
+      }
+      return;
+    }
+    
+    // Show teams section and update content
+    const teamsSection = splashTeamsContainer.closest('.splash-input-section');
+    if (teamsSection) {
+      teamsSection.style.display = 'block';
+      
+      // Update description
+      const description = teamsSection.querySelector('.input-description');
+      if (description) {
+        description.textContent = `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
+      }
+    }
+    
+    // Generate new teams HTML
+    const teams = this.getTeams();
+    const users = this.homeAssistantUsers || [];
+    const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
+    
+    splashTeamsContainer.innerHTML = Object.entries(teams).map(([teamId, team]) => `
+      <div class="splash-team-item">
+        <label class="team-label">Team ${teamId.split('_')[1]}:</label>
+        <input type="text" class="splash-team-input" placeholder="Team Name" 
+               value="${team.name}" 
+               oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+        <select class="splash-team-select" 
+                onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
+                ${isLoadingUsers ? 'disabled' : ''}>
+          <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
+          ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+            `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
+              ${user.name}
+            </option>`
+          ).join('')}
+        </select>
+      </div>
+    `).join('');
+  }
+
   updateSplashScreenDropdowns() {
     // Update splash screen dropdown options without full re-render
     // Only update if user is not actively focused on the dropdowns
@@ -4147,9 +4209,15 @@ class SoundbeatsCard extends HTMLElement {
     // Update team dropdowns if they exist
     const teamSelects = this.shadowRoot.querySelectorAll('.splash-team-select');
     const users = this.homeAssistantUsers || [];
+    const teams = this.getTeams();
+    
     teamSelects.forEach(select => {
       if (document.activeElement !== select && !select.disabled) {
-        const currentValue = select.value;
+        // Extract team ID from the onchange attribute to get the correct database value
+        const onchangeAttr = select.getAttribute('onchange');
+        const teamIdMatch = onchangeAttr && onchangeAttr.match(/'([^']+)'/);
+        const teamId = teamIdMatch ? teamIdMatch[1] : null;
+        const databaseValue = teamId && teams[teamId] ? teams[teamId].user_id : null;
         
         // Only update if users have changed
         const currentOptions = Array.from(select.options).map(opt => opt.value).join(',');
@@ -4161,8 +4229,13 @@ class SoundbeatsCard extends HTMLElement {
             const option = document.createElement('option');
             option.value = user.id;
             option.textContent = user.name;
-            option.selected = currentValue === user.id;
+            option.selected = databaseValue === user.id;
             select.appendChild(option);
+          });
+        } else {
+          // Even if options haven't changed, update selection to match database
+          Array.from(select.options).forEach(option => {
+            option.selected = option.value === databaseValue;
           });
         }
       }
