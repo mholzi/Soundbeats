@@ -25,6 +25,8 @@ class SoundbeatsCard extends HTMLElement {
     this._mediaPlayersCacheTime = 0;
     this._missingVariablesCache = null;
     this._missingVariablesCacheTime = 0;
+    this._shouldShowSplashCache = null;
+    this._shouldShowSplashCacheTime = 0;
     this._debounceTimers = {};
     
     // Loading states
@@ -41,6 +43,12 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   shouldShowSplashScreen() {
+    // Cache the result to avoid repeated computation during rapid calls
+    const now = Date.now();
+    if (this._shouldShowSplashCache && (now - this._shouldShowSplashCacheTime) < 100) {
+      return this._shouldShowSplashCache;
+    }
+    
     // Show splash screen when:
     // 1. Critical game variables are missing
     // 2. Game status is 'ready' (waiting to start)
@@ -49,17 +57,22 @@ class SoundbeatsCard extends HTMLElement {
     const roundCounter = this.getRoundCounter();
     const missingVariables = this.getMissingGameVariables();
     
+    let shouldShow = false;
+    
     // Always show if variables are missing
     if (missingVariables.length > 0) {
-      return true;
+      shouldShow = true;
     }
-    
     // Show if game is in ready state and no rounds played yet
-    if (gameStatus === 'ready' && roundCounter === 0) {
-      return true;
+    else if (gameStatus === 'ready' && roundCounter === 0) {
+      shouldShow = true;
     }
     
-    return false;
+    // Cache the result
+    this._shouldShowSplashCache = shouldShow;
+    this._shouldShowSplashCacheTime = now;
+    
+    return shouldShow;
   }
 
   getGameStatus() {
@@ -337,6 +350,7 @@ class SoundbeatsCard extends HTMLElement {
   // Clear validation errors cache when state changes
   clearValidationCache() {
     this._missingVariablesCache = null;
+    this._shouldShowSplashCache = null;
     this._validationErrors = [];
   }
 
@@ -4259,6 +4273,7 @@ class SoundbeatsCard extends HTMLElement {
     if (prevHass && hass && prevHass.states !== hass.states) {
       this._mediaPlayersCache = null;
       this._missingVariablesCache = null;
+      this._shouldShowSplashCache = null;
     }
     
     // Load users when hass becomes available for the first time
