@@ -755,22 +755,32 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
             Dict with 'absolute' and 'round' keys indicating if records were broken
         """
         records_broken = {"absolute": False, "round": False}
+        state_changed = False
         
         # Check absolute highscore
         if team_score > self._absolute_highscore:
             self._absolute_highscore = team_score
             records_broken["absolute"] = True
+            state_changed = True
             _LOGGER.info("NEW ABSOLUTE HIGHSCORE: %d points!", team_score)
         
         # Check round-specific highscore
         round_key = f"round_{round_number}"
         current_round_record = self._round_highscores.get(round_key, 0)
+        
+        # Ensure round attribute exists (initialize with 0 if not present)
+        if round_key not in self._round_highscores:
+            self._round_highscores[round_key] = 0
+            state_changed = True
+            _LOGGER.debug("Initialized round %d highscore to 0", round_number)
+        
         if team_score > current_round_record:
             self._round_highscores[round_key] = team_score
             records_broken["round"] = True
+            state_changed = True
             _LOGGER.info("NEW ROUND %d HIGHSCORE: %d points!", round_number, team_score)
         
-        if records_broken["absolute"] or records_broken["round"]:
+        if state_changed:
             self.async_write_ha_state()
         
         return records_broken

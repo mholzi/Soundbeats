@@ -459,7 +459,6 @@ class SoundbeatsCard extends HTMLElement {
         /* Ensure secondary text is readable on the gradient background */
         .section .overview-description,
         .section .overview-empty,
-        .section .round-number,
         .section .highscore-empty,
         .section .no-team-message {
           color: rgba(255, 255, 255, 0.8) !important;
@@ -2047,49 +2046,26 @@ class SoundbeatsCard extends HTMLElement {
           color: #ff8c00;
         }
         
-        .round-highscores {
+        .last-round-highscore {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
           padding: 12px;
           background: rgba(255, 255, 255, 0.5);
           border-radius: 6px;
           border: 1px solid rgba(255, 215, 0, 0.2);
-        }
-        
-        .round-highscores-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 12px;
           font-weight: bold;
-          color: var(--primary-text-color, #333);
         }
         
-        .round-highscores-list {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-          gap: 8px;
-        }
-        
-        .round-highscore-item {
-          display: flex;
-          flex-direction: column;
-          padding: 8px;
-          background: rgba(255, 215, 0, 0.1);
-          border-radius: 4px;
-          border: 1px solid rgba(255, 215, 0, 0.2);
-          text-align: center;
-        }
-        
-        .round-number {
-          font-size: 0.85em;
-          font-weight: bold;
-          color: var(--secondary-text-color, #666);
-          margin-bottom: 4px;
-        }
-        
-        .round-score {
-          font-size: 1.1em;
-          font-weight: bold;
+        .last-round-highscore .icon {
           color: #ff8c00;
+        }
+        
+        .last-round-highscore .round-indicator {
+          font-size: 0.9em;
+          color: var(--secondary-text-color, #666);
+          margin-left: 4px;
         }
         
         .highscore-empty {
@@ -3323,14 +3299,20 @@ class SoundbeatsCard extends HTMLElement {
     const absoluteHighscore = highscoreEntity.state;
     const attributes = highscoreEntity.attributes || {};
     
-    // Extract round highscores and sort them by round number
-    const roundHighscores = Object.entries(attributes)
-      .filter(([key, value]) => key.startsWith('round_') && typeof value === 'number')
-      .sort(([a], [b]) => {
-        const roundA = parseInt(a.replace('round_', ''));
-        const roundB = parseInt(b.replace('round_', ''));
-        return roundA - roundB;
-      });
+    // Find the last round score (highest round number with a score)
+    const currentRound = this.getRoundCounter();
+    let lastRoundScore = null;
+    let lastRoundNumber = null;
+    
+    // Check from current round down to round 1 to find the most recent round with a score
+    for (let round = currentRound; round >= 1; round--) {
+      const roundKey = `round_${round}`;
+      if (roundKey in attributes && typeof attributes[roundKey] === 'number') {
+        lastRoundScore = attributes[roundKey];
+        lastRoundNumber = round;
+        break;
+      }
+    }
     
     return `
       <div class="highscore-display">
@@ -3339,23 +3321,12 @@ class SoundbeatsCard extends HTMLElement {
           <span class="highscore-label">All-Time Record:</span>
           <span class="highscore-value">${absoluteHighscore} pts</span>
         </div>
-        ${roundHighscores.length > 0 ? `
-          <div class="round-highscores">
-            <div class="round-highscores-header">
-              <ha-icon icon="mdi:format-list-numbered" class="icon"></ha-icon>
-              Round Records:
-            </div>
-            <div class="round-highscores-list">
-              ${roundHighscores.map(([roundKey, score]) => {
-                const roundNumber = roundKey.replace('round_', '');
-                return `
-                  <div class="round-highscore-item">
-                    <span class="round-number">Round ${roundNumber}:</span>
-                    <span class="round-score">${score} pts</span>
-                  </div>
-                `;
-              }).join('')}
-            </div>
+        ${lastRoundScore !== null ? `
+          <div class="last-round-highscore">
+            <ha-icon icon="mdi:timer-outline" class="icon"></ha-icon>
+            <span class="highscore-label">Last Round Record:</span>
+            <span class="highscore-value">${lastRoundScore} pts</span>
+            <span class="round-indicator">(Round ${lastRoundNumber})</span>
           </div>
         ` : ''}
       </div>
