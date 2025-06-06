@@ -19,6 +19,19 @@ class SoundbeatsCard extends HTMLElement {
     this._lastAbsoluteHighscore = null;
     this._lastRoundHighscores = {};
     this._activeBanners = [];
+    
+    // Performance optimizations - caching
+    this._mediaPlayersCache = null;
+    this._mediaPlayersCacheTime = 0;
+    this._missingVariablesCache = null;
+    this._missingVariablesCacheTime = 0;
+    this._shouldShowSplashCache = null;
+    this._shouldShowSplashCacheTime = 0;
+    this._debounceTimers = {};
+    
+    // Loading states
+    this._isLoadingMediaPlayers = false;
+    this._isLoadingUsers = false;
   }
 
   setConfig(config) {
@@ -30,6 +43,12 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   shouldShowSplashScreen() {
+    // Cache the result to avoid repeated computation during rapid calls
+    const now = Date.now();
+    if (this._shouldShowSplashCache && (now - this._shouldShowSplashCacheTime) < 100) {
+      return this._shouldShowSplashCache;
+    }
+    
     // Show splash screen when:
     // 1. Critical game variables are missing
     // 2. Game status is 'ready' (waiting to start)
@@ -38,17 +57,22 @@ class SoundbeatsCard extends HTMLElement {
     const roundCounter = this.getRoundCounter();
     const missingVariables = this.getMissingGameVariables();
     
+    let shouldShow = false;
+    
     // Always show if variables are missing
     if (missingVariables.length > 0) {
-      return true;
+      shouldShow = true;
     }
-    
     // Show if game is in ready state and no rounds played yet
-    if (gameStatus === 'ready' && roundCounter === 0) {
-      return true;
+    else if (gameStatus === 'ready' && roundCounter === 0) {
+      shouldShow = true;
     }
     
-    return false;
+    // Cache the result
+    this._shouldShowSplashCache = shouldShow;
+    this._shouldShowSplashCacheTime = now;
+    
+    return shouldShow;
   }
 
   getGameStatus() {
@@ -69,6 +93,12 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getMissingGameVariables() {
+    const now = Date.now();
+    // Cache validation results for 500ms to avoid heavy computation during rapid renders
+    if (this._missingVariablesCache && (now - this._missingVariablesCacheTime) < 500) {
+      return this._missingVariablesCache;
+    }
+    
     const missing = [];
     
     // Check if team count is selected
@@ -113,6 +143,10 @@ class SoundbeatsCard extends HTMLElement {
         });
       }
     }
+    
+    // Cache the result
+    this._missingVariablesCache = missing;
+    this._missingVariablesCacheTime = now;
     
     return missing;
   }
@@ -215,6 +249,7 @@ class SoundbeatsCard extends HTMLElement {
     if (missingMap.audioPlayer) {
       const mediaPlayers = this.getMediaPlayers();
       const currentSelection = this.getSelectedAudioPlayer();
+      const isLoading = this._isLoadingMediaPlayers || mediaPlayers.length === 0;
       
       inputsHtml += `
         <div class="splash-input-section ${this.hasValidationError('audioPlayer') ? 'error' : ''}">
@@ -223,8 +258,8 @@ class SoundbeatsCard extends HTMLElement {
             <h3>Audio Player</h3>
           </div>
           <p class="input-description">Select where music should play from</p>
-          <select class="splash-audio-select" onchange="this.getRootNode().host.updateAudioPlayer(this.value)">
-            <option value="">Select an audio player...</option>
+          <select class="splash-audio-select" onchange="this.getRootNode().host.updateAudioPlayer(this.value)" ${isLoading ? 'disabled' : ''}>
+            <option value="">${isLoading ? 'Loading audio players...' : 'Select an audio player...'}</option>
             ${mediaPlayers.map(player => 
               `<option value="${player.entity_id}" ${currentSelection === player.entity_id ? 'selected' : ''}>
                 ${player.name}
@@ -261,6 +296,7 @@ class SoundbeatsCard extends HTMLElement {
     if (teamCount && teamCount >= 1 && teamCount <= 5) {
         const teams = this.getTeams();
         const users = this.homeAssistantUsers || [];
+        const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
         
         inputsHtml += `
           <div class="splash-input-section ${this.hasValidationError('teams') ? 'error' : ''}">
@@ -277,8 +313,9 @@ class SoundbeatsCard extends HTMLElement {
                          value="${team.name}" 
                          oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
                   <select class="splash-team-select" 
-                          onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)">
-                    <option value="">Select user...</option>
+                          onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
+                          ${isLoadingUsers ? 'disabled' : ''}>
+                    <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
                     ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
                       `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
                         ${user.name}
@@ -299,6 +336,24 @@ class SoundbeatsCard extends HTMLElement {
     return this._validationErrors && this._validationErrors.includes(key);
   }
 
+  // Debounced service call helper
+  debouncedServiceCall(key, callback, delay = 300) {
+    if (this._debounceTimers[key]) {
+      clearTimeout(this._debounceTimers[key]);
+    }
+    this._debounceTimers[key] = setTimeout(() => {
+      callback();
+      delete this._debounceTimers[key];
+    }, delay);
+  }
+
+  // Clear validation errors cache when state changes
+  clearValidationCache() {
+    this._missingVariablesCache = null;
+    this._shouldShowSplashCache = null;
+    this._validationErrors = [];
+  }
+
   handleSplashStart() {
     const missingVariables = this.getMissingGameVariables();
     
@@ -310,14 +365,63 @@ class SoundbeatsCard extends HTMLElement {
       this._validationErrors = missingVariables.map(v => v.key);
       this.highlightMissingItems();
       
-      // Re-render to show validation errors
-      this.render();
+      // Use selective update instead of full re-render
+      this.updateSplashValidationState();
       
       // Clear validation errors after 3 seconds
       setTimeout(() => {
         this._validationErrors = [];
-        this.render();
+        this.updateSplashValidationState();
       }, 3000);
+    }
+  }
+
+  updateSplashValidationState() {
+    // Update only validation-related elements without full re-render
+    const splashSections = this.shadowRoot.querySelectorAll('.splash-input-section');
+    splashSections.forEach(section => {
+      // Remove error class from all sections first
+      section.classList.remove('error');
+    });
+
+    // Add error class to sections with validation errors
+    if (this._validationErrors) {
+      this._validationErrors.forEach(errorKey => {
+        const errorSection = this.shadowRoot.querySelector(`.splash-input-section`);
+        const allSections = this.shadowRoot.querySelectorAll('.splash-input-section');
+        allSections.forEach(section => {
+          const hasTeamCount = section.querySelector('.splash-team-count-select') && errorKey === 'teamCount';
+          const hasAudioPlayer = section.querySelector('.splash-audio-select') && errorKey === 'audioPlayer';
+          const hasTimer = section.querySelector('.splash-timer-slider') && errorKey === 'timer';
+          const hasTeams = section.querySelector('.splash-teams-container') && errorKey === 'teams';
+          
+          if (hasTeamCount || hasAudioPlayer || hasTimer || hasTeams) {
+            section.classList.add('error');
+          }
+        });
+      });
+    }
+
+    // Update start button state
+    const startButton = this.shadowRoot.querySelector('.splash-start-button');
+    const startHelp = this.shadowRoot.querySelector('.start-help');
+    const missingVariables = this.getMissingGameVariables();
+    const isReady = missingVariables.length === 0;
+    
+    if (startButton) {
+      startButton.className = `splash-start-button ${isReady ? 'ready' : 'not-ready'}`;
+      startButton.innerHTML = `
+        <ha-icon icon="mdi:play-circle" class="icon"></ha-icon>
+        ${isReady ? 'Launch Game' : 'Start Game'}
+      `;
+    }
+    
+    if (startHelp) {
+      if (isReady) {
+        startHelp.style.display = 'none';
+      } else {
+        startHelp.style.display = 'block';
+      }
     }
   }
 
@@ -2279,6 +2383,13 @@ class SoundbeatsCard extends HTMLElement {
           background: rgba(255, 255, 255, 0.1);
           color: white;
           font-size: 14px;
+          transition: all 0.3s ease;
+        }
+        
+        .splash-audio-select:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          background: rgba(255, 255, 255, 0.05);
         }
         
         .splash-audio-select option {
@@ -2385,6 +2496,13 @@ class SoundbeatsCard extends HTMLElement {
           background: rgba(255, 255, 255, 0.1);
           color: white;
           font-size: 14px;
+          transition: all 0.3s ease;
+        }
+        
+        .splash-team-select:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          background: rgba(255, 255, 255, 0.05);
         }
         
         .splash-team-select option {
@@ -2849,12 +2967,15 @@ class SoundbeatsCard extends HTMLElement {
     // Load Home Assistant users if not already loaded
     if (!this.usersLoaded && this.hass) {
       try {
+        this._isLoadingUsers = true;
         this.homeAssistantUsers = await this.getHomeAssistantUsers();
         this.usersLoaded = true;
       } catch (error) {
         console.warn('Failed to load Home Assistant users:', error);
         this.homeAssistantUsers = [];
         this.usersLoaded = true;
+      } finally {
+        this._isLoadingUsers = false;
       }
     }
   }
@@ -2957,13 +3078,16 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateTeamName(teamId, name) {
-    // Call service to update team name
-    if (this.hass && name.trim()) {
-      this.hass.callService('soundbeats', 'update_team_name', {
-        team_id: teamId,
-        name: name.trim()
-      });
-    }
+    // Debounce team name updates
+    this.debouncedServiceCall(`teamName_${teamId}`, () => {
+      if (this.hass && name.trim()) {
+        this.hass.callService('soundbeats', 'update_team_name', {
+          team_id: teamId,
+          name: name.trim()
+        });
+      }
+      this.clearValidationCache();
+    }, 500); // Longer delay for text input
   }
 
   updateTeamPoints(teamId, points) {
@@ -2992,22 +3116,23 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateTeamUserId(teamId, userId) {
-    // Call service to update team user ID
-    if (this.hass) {
-      this.hass.callService('soundbeats', 'update_team_user_id', {
-        team_id: teamId,
-        user_id: userId || null
-      });
+    // Debounce team user ID updates
+    this.debouncedServiceCall(`teamUserId_${teamId}`, () => {
+      if (this.hass) {
+        this.hass.callService('soundbeats', 'update_team_user_id', {
+          team_id: teamId,
+          user_id: userId || null
+        });
+      }
+      this.clearValidationCache();
       
       // Trigger immediate UI refresh to reflect the change
       setTimeout(() => {
         if (this.shouldShowSplashScreen()) {
-          this.render();
-        } else {
-          this.updateSplashScreenDropdowns();
+          this.updateSplashValidationState();
         }
       }, 100);
-    }
+    });
   }
 
   updateTeamParticipating(teamId, participating) {
@@ -3593,6 +3718,12 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getMediaPlayers() {
+    const now = Date.now();
+    // Cache media players for 2 seconds to avoid frequent entity iteration
+    if (this._mediaPlayersCache && (now - this._mediaPlayersCacheTime) < 2000) {
+      return this._mediaPlayersCache;
+    }
+    
     // Get all available media player entities from Home Assistant
     const mediaPlayers = [];
     if (this.hass && this.hass.states) {
@@ -3609,6 +3740,11 @@ class SoundbeatsCard extends HTMLElement {
         }
       });
     }
+    
+    // Cache the result
+    this._mediaPlayersCache = mediaPlayers;
+    this._mediaPlayersCacheTime = now;
+    
     return mediaPlayers;
   }
 
@@ -3633,21 +3769,27 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateCountdownTimerLength(timerLength) {
-    // Call service to update countdown timer length
-    if (this.hass) {
-      this.hass.callService('soundbeats', 'update_countdown_timer_length', {
-        timer_length: parseInt(timerLength)
-      });
-    }
+    // Debounce the service call to avoid rapid calls during slider movement
+    this.debouncedServiceCall('timer', () => {
+      if (this.hass) {
+        this.hass.callService('soundbeats', 'update_countdown_timer_length', {
+          timer_length: parseInt(timerLength)
+        });
+      }
+      this.clearValidationCache();
+    }, 500); // Longer delay for slider to avoid too many calls
   }
 
   updateAudioPlayer(audioPlayer) {
-    // Call service to update audio player
-    if (this.hass) {
-      this.hass.callService('soundbeats', 'update_audio_player', {
-        audio_player: audioPlayer
-      });
-    }
+    // Debounce the service call
+    this.debouncedServiceCall('audioPlayer', () => {
+      if (this.hass) {
+        this.hass.callService('soundbeats', 'update_audio_player', {
+          audio_player: audioPlayer
+        });
+      }
+      this.clearValidationCache();
+    });
   }
 
   getSelectedTeamCount() {
@@ -3662,12 +3804,15 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateTeamCount(teamCount) {
-    // Call service to update team count
-    if (this.hass) {
-      this.hass.callService('soundbeats', 'update_team_count', {
-        team_count: parseInt(teamCount)
-      });
-    }
+    // Debounce the service call
+    this.debouncedServiceCall('teamCount', () => {
+      if (this.hass) {
+        this.hass.callService('soundbeats', 'update_team_count', {
+          team_count: parseInt(teamCount)
+        });
+      }
+      this.clearValidationCache();
+    });
   }
 
   toggleGameSettings() {
@@ -3741,9 +3886,15 @@ class SoundbeatsCard extends HTMLElement {
     // Update dropdown options without changing selected value if not focused
     this.updateAudioPlayerOptions();
     
-    // Update splash screen dropdowns if splash screen is shown
+    // Update splash screen dropdowns if splash screen is shown (throttled)
     if (this.shouldShowSplashScreen()) {
-      this.updateSplashScreenDropdowns();
+      // Throttle splash screen updates to avoid excessive calls
+      if (!this._splashUpdateTimeout) {
+        this._splashUpdateTimeout = setTimeout(() => {
+          this.updateSplashScreenDropdowns();
+          this._splashUpdateTimeout = null;
+        }, 200);
+      }
     }
     
     // Check if all songs have been played
@@ -3996,34 +4147,47 @@ class SoundbeatsCard extends HTMLElement {
     
     // Update audio player dropdown
     const audioSelect = this.shadowRoot.querySelector('.splash-audio-select');
-    if (audioSelect && document.activeElement !== audioSelect) {
+    if (audioSelect && document.activeElement !== audioSelect && !audioSelect.disabled) {
       const currentSelection = this.getSelectedAudioPlayer();
       const mediaPlayers = this.getMediaPlayers();
       
-      audioSelect.innerHTML = '<option value="">Select an audio player...</option>';
-      mediaPlayers.forEach(player => {
-        const option = document.createElement('option');
-        option.value = player.entity_id;
-        option.textContent = player.name;
-        option.selected = currentSelection === player.entity_id;
-        audioSelect.appendChild(option);
-      });
+      // Only update if the options have actually changed
+      const currentOptions = Array.from(audioSelect.options).map(opt => opt.value).join(',');
+      const newOptions = ['', ...mediaPlayers.map(p => p.entity_id)].join(',');
+      
+      if (currentOptions !== newOptions) {
+        audioSelect.innerHTML = '<option value="">Select an audio player...</option>';
+        mediaPlayers.forEach(player => {
+          const option = document.createElement('option');
+          option.value = player.entity_id;
+          option.textContent = player.name;
+          option.selected = currentSelection === player.entity_id;
+          audioSelect.appendChild(option);
+        });
+      }
     }
 
     // Update team dropdowns if they exist
     const teamSelects = this.shadowRoot.querySelectorAll('.splash-team-select');
     const users = this.homeAssistantUsers || [];
     teamSelects.forEach(select => {
-      if (document.activeElement !== select) {
+      if (document.activeElement !== select && !select.disabled) {
         const currentValue = select.value;
-        select.innerHTML = '<option value="">Select user...</option>';
-        users.filter(user => !user.name.startsWith('Home Assistant')).forEach(user => {
-          const option = document.createElement('option');
-          option.value = user.id;
-          option.textContent = user.name;
-          option.selected = currentValue === user.id;
-          select.appendChild(option);
-        });
+        
+        // Only update if users have changed
+        const currentOptions = Array.from(select.options).map(opt => opt.value).join(',');
+        const newOptions = ['', ...users.filter(user => !user.name.startsWith('Home Assistant')).map(u => u.id)].join(',');
+        
+        if (currentOptions !== newOptions) {
+          select.innerHTML = '<option value="">Select user...</option>';
+          users.filter(user => !user.name.startsWith('Home Assistant')).forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.name;
+            option.selected = currentValue === user.id;
+            select.appendChild(option);
+          });
+        }
       }
     });
   }
@@ -4101,7 +4265,16 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   set hass(hass) {
+    // Invalidate caches when hass changes
+    const prevHass = this._hass;
     this._hass = hass;
+    
+    // Invalidate media players cache if states changed
+    if (prevHass && hass && prevHass.states !== hass.states) {
+      this._mediaPlayersCache = null;
+      this._missingVariablesCache = null;
+      this._shouldShowSplashCache = null;
+    }
     
     // Load users when hass becomes available for the first time
     if (hass && !this.usersLoaded) {
