@@ -108,9 +108,22 @@ async def _register_services(hass: HomeAssistant) -> None:
         else:
             hass.states.async_set("sensor.soundbeats_played_songs", 0, {"played_song_ids": []})
         
-        # Reset all teams to default names and 0 points
+        # Reset teams based on current team count
         team_sensors = entities.get("team_sensors", {})
-        for i in range(1, 6):
+        main_sensor = entities.get("main_sensor")
+        team_count = 5  # Default to all teams if we can't get the setting
+        
+        # Try to get current team count from main sensor
+        if main_sensor and hasattr(main_sensor, '_team_count'):
+            team_count = main_sensor._team_count
+        else:
+            # Fallback: check state attributes
+            state_obj = hass.states.get("sensor.soundbeats_game_status")
+            if state_obj and state_obj.attributes and 'team_count' in state_obj.attributes:
+                team_count = int(state_obj.attributes['team_count'])
+        
+        # Reset active teams to default names and 0 points
+        for i in range(1, team_count + 1):
             team_key = f"soundbeats_team_{i}"
             team_sensor = team_sensors.get(team_key)
             if team_sensor:
@@ -130,6 +143,21 @@ async def _register_services(hass: HomeAssistant) -> None:
                 hass.states.async_set(team_entity_id, f"Team {i}", {
                     "points": 0,
                     "participating": True,
+                    "team_number": i
+                })
+        
+        # Disable any teams beyond the current team count
+        for i in range(team_count + 1, 6):
+            team_key = f"soundbeats_team_{i}"
+            team_sensor = team_sensors.get(team_key)
+            if team_sensor:
+                team_sensor.update_team_participating(False)
+            else:
+                # Fallback to direct state setting
+                team_entity_id = f"sensor.soundbeats_team_{i}"
+                hass.states.async_set(team_entity_id, f"Team {i}", {
+                    "points": 0,
+                    "participating": False,
                     "team_number": i
                 })
 
