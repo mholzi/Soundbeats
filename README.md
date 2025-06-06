@@ -14,7 +14,7 @@ A custom Home Assistant integration that brings an interactive music guessing ga
 ### Seamless Setup & Interactive Splash Screen
 
 - **🎮 Brand new splash/setup UI** for the Soundbeats Lovelace Card:
-  - Configure missing game settings (audio player, timer, teams) directly on the splash screen with intuitive dropdowns, sliders, and team assignment
+  - Configure missing game settings (audio player, timer, teams) directly on the splash screen with intuitive dropdowns, sliders, and team assignment that immediately persist to Home Assistant entities
   - Always-visible "Launch Game" button with real-time validation and visual cues for any missing or misconfigured options
   - Modern, stylish splash visuals and helper text for an even smoother onboarding
   - Expanded out-of-the-box "zero-setup" experience—everything works automatically after install!
@@ -166,6 +166,14 @@ The integration is now ready to use! Add the Soundbeats card to your dashboard a
 
 **Music Data Management:** Soundbeats automatically handles all song metadata including release years and playback URLs. You do not need to configure these properties in your media player entities - the integration manages this data internally through its custom sensor while utilizing your selected media player for audio playback and retrieving song titles, artists, and artwork. Media player selection is handled automatically through the integration's interface with no separate configuration required.
 
+### Team Assignment & User Management
+
+**Immediate Persistence**: Team user assignments made through the splash screen are instantly and permanently written to Home Assistant entities. When you assign a user to a team via the dropdown, the change is immediately persisted to the respective team entity's `user_id` attribute in Home Assistant with zero delay or debouncing.
+
+**Unified Backend**: Both the splash screen team assignment and the admin team management section use the exact same backend service (`soundbeats.update_team_user_id`), ensuring consistent behavior and immediate persistence across all interfaces.
+
+**Zero-Setup Team Management**: Users can assign teams and users entirely from the UI with no manual setup required. All changes are instantly reflected in Home Assistant entities and persist across restarts, making team configuration completely seamless and reliable.
+
 ## ✨ Zero-Setup Experience with Interactive Splash Screen
 
 Soundbeats V42 introduces a **brand new interactive splash/setup UI** that makes getting started completely effortless. No YAML editing, no manual configuration files, no complex setup steps—everything happens directly in the beautiful Lovelace Card interface!
@@ -175,7 +183,7 @@ Soundbeats V42 introduces a **brand new interactive splash/setup UI** that makes
 When you first add the Soundbeats card to your dashboard, you'll be greeted by a stunning splash screen featuring:
 
 - **🎵 Animated Welcome Interface**: Beautiful floating musical notes, sound wave visualizations, and modern music-themed design that sets the party mood
-- **⚙️ Interactive Configuration**: Configure missing game settings (audio player, timer duration, teams) directly on the splash screen with intuitive dropdowns, sliders, and team assignment controls
+- **⚙️ Interactive Configuration**: Configure missing game settings (audio player, timer duration, teams) directly on the splash screen with intuitive dropdowns, sliders, and team assignment controls that instantly persist to Home Assistant entities
 - **🚀 Always-Visible Launch Button**: A prominent "Launch Game" button that provides real-time validation and visual cues for any missing or misconfigured options
 - **✅ Smart Validation**: The interface automatically detects what needs to be configured and guides you through each step with helpful text and visual indicators
 - **🎨 Modern Visual Design**: Stylish splash visuals with the same premium design language as the main game interface
@@ -186,7 +194,7 @@ When you first add the Soundbeats card to your dashboard, you'll be greeted by a
 - **Auto-Detection**: The card automatically discovers your Home Assistant media players and presents them in an easy-to-use dropdown
 - **Instant Feedback**: Real-time validation shows you exactly what's ready and what needs attention
 - **One-Click Start**: Once everything is configured, just click "Launch Game" to dive straight into the fun
-- **Persistent Settings**: All your preferences are automatically saved and remembered for future games
+- **Persistent Settings**: All your preferences and team assignments are automatically saved and immediately written to Home Assistant entities, remembered for future games
 
 **The Result**: From installation to your first game in under 2 minutes, with zero technical knowledge required!
 
