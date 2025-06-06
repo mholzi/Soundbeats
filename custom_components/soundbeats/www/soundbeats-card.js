@@ -3120,6 +3120,13 @@ class SoundbeatsCard extends HTMLElement {
         });
       }
       this.clearValidationCache();
+      
+      // Trigger UI refresh after a brief delay to allow the service call to complete
+      setTimeout(() => {
+        if (this.shouldShowSplashScreen()) {
+          this.updateSplashValidationState();
+        }
+      }, 50);
     }, 500); // Longer delay for text input
   }
 
@@ -3471,10 +3478,10 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   startNewGame() {
-    // Call service to start a new game
-    if (this.hass) {
-      this.hass.callService('soundbeats', 'start_game', {});
-    }
+    // Trigger splash screen display instead of directly starting game
+    // This follows the zero-setup philosophy where UI transitions happen first
+    this.clearValidationCache();  // Clear cache to ensure fresh validation
+    this.render();  // Re-render to show splash screen if needed
   }
 
   nextSong() {
@@ -3808,6 +3815,13 @@ class SoundbeatsCard extends HTMLElement {
         });
       }
       this.clearValidationCache();
+      
+      // Trigger UI refresh after a brief delay to allow the service call to complete
+      setTimeout(() => {
+        if (this.shouldShowSplashScreen()) {
+          this.updateSplashValidationState();
+        }
+      }, 50);
     }, 500); // Longer delay for slider to avoid too many calls
   }
 
@@ -3820,6 +3834,13 @@ class SoundbeatsCard extends HTMLElement {
         });
       }
       this.clearValidationCache();
+      
+      // Trigger UI refresh after a brief delay to allow the service call to complete
+      setTimeout(() => {
+        if (this.shouldShowSplashScreen()) {
+          this.updateSplashValidationState();
+        }
+      }, 50);
     });
   }
 
@@ -3848,6 +3869,7 @@ class SoundbeatsCard extends HTMLElement {
       setTimeout(() => {
         if (this.shouldShowSplashScreen()) {
           this.updateSplashTeamsSection();
+          this.updateSplashValidationState();
         }
       }, 100);
     });
