@@ -3176,7 +3176,7 @@ class SoundbeatsCard extends HTMLElement {
     // Check from current round down to round 1 to find the most recent round with a score
     for (let round = currentRound; round >= 1; round--) {
       const roundKey = `round_${round}`;
-      if (attributes[roundKey] && typeof attributes[roundKey] === 'number') {
+      if (roundKey in attributes && typeof attributes[roundKey] === 'number') {
         lastRoundScore = attributes[roundKey];
         lastRoundNumber = round;
         break;
