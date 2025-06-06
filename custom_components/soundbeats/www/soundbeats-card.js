@@ -2959,15 +2959,22 @@ class SoundbeatsCard extends HTMLElement {
     return defaultTeams;
   }
 
-  getTeamRankings() {
-    // Calculate team rankings based on points among participating teams assigned to current user
+  getTeamRankings(globalRankings = false) {
+    // Calculate team rankings based on points among participating teams
+    // globalRankings=true: all participating teams, globalRankings=false: only current user's teams
     const teams = this.getTeams();
     
-    // Get current user ID for filtering
+    // Get current user ID for filtering (only used when globalRankings=false)
     const currentUserId = this.hass && this.hass.user ? this.hass.user.id : null;
     
     const participatingTeams = Object.entries(teams)
-      .filter(([teamId, team]) => team.participating && team.user_id === currentUserId)
+      .filter(([teamId, team]) => {
+        if (globalRankings) {
+          return team.participating; // Show all participating teams
+        } else {
+          return team.participating && team.user_id === currentUserId; // User-specific
+        }
+      })
       .map(([teamId, team]) => ({ teamId, ...team }))
       .sort((a, b) => b.points - a.points); // Sort by points descending
     
@@ -3274,16 +3281,13 @@ class SoundbeatsCard extends HTMLElement {
 
   renderOtherTeamsOverview() {
     const teams = this.getTeams();
-    const rankings = this.getTeamRankings();
+    const rankings = this.getTeamRankings(true); // Use global rankings for overview
     const isCountdownRunning = this.getCountdownCurrent() > 0;
     const currentRound = this.getRoundCounter();
     
-    // Get current user ID for filtering
-    const currentUserId = this.hass && this.hass.user ? this.hass.user.id : null;
-    
-    // Get all participating teams assigned to current user, sorted by points descending
+    // Get all participating teams (global scoreboard), sorted by points descending
     const sortedTeams = Object.entries(teams)
-      .filter(([teamId, team]) => team.participating && team.user_id === currentUserId)
+      .filter(([teamId, team]) => team.participating) // Show all participating teams
       .map(([teamId, team]) => ({ teamId, ...team }))
       .sort((a, b) => b.points - a.points);
     

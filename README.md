@@ -227,9 +227,9 @@ The card features role-based sections:
   - **Zero-Setup Integration**: All controls work automatically without any configuration required
 
 #### Teams Overview Section
-- **User-Specific Display**: Team cards and overview only show teams assigned to the current Home Assistant user via the team management section. Each user sees only their assigned teams for a personalized experience.
+- **Global Scoreboard Display**: Team overview now displays ALL participating teams regardless of user assignment, acting as a comprehensive scoreboard visible to all users for competitive transparency.
 - **Round-Aware Visibility**: Team ranking section automatically appears only when the game has started (round counter > 0), keeping the interface clean before gameplay begins
-- **Horizontal Scrollable Leaderboard**: User-assigned active teams displayed in a single horizontal row with compact cards that scroll when overflowing
+- **Horizontal Scrollable Leaderboard**: All active participating teams displayed in a single horizontal row with compact cards that scroll when overflowing
 - **Compact Card Design**: Much smaller team cards (80-120px wide) with points prominently displayed at the top and team names in small font at the bottom
 - **Enhanced Visual Layout**: 
   - **Header Alignment**: Title section perfectly aligns with card edges for a cleaner look
@@ -239,7 +239,7 @@ The card features role-based sections:
   - **During countdown (timer running)**: Shows ranking badge, current points at top, team name at bottom, and compact "BET" indicators in top right corner
   - **When timer is 0 (round over)**: Displays ranking badge, current points at top, team name at bottom, and last round guess year in top right corner
 - **Visual Hierarchy**: Clear gold/silver/bronze styling for top 3 teams with distinct ranking badges using Material Design Icons (MDI)
-- **Smart Sorting**: Teams automatically sorted by points in descending order
+- **Smart Sorting**: Teams automatically sorted by points in descending order across all participants
 - **Responsive Design**: Horizontal scrolling ensures all teams remain visible regardless of screen size
 - **No Manual Setup**: All functionality is built into the integration with zero configuration required
 
