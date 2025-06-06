@@ -142,43 +142,159 @@ class SoundbeatsCard extends HTMLElement {
               <h2>🎉 Ready to Rock! 🎉</h2>
               <p>All game settings are configured. Let's start the music!</p>
             </div>
-            <button class="splash-launch-button" onclick="this.getRootNode().host.startNewGame()">
-              <ha-icon icon="mdi:play-circle" class="icon"></ha-icon>
-              Launch Game
-            </button>
           </div>
         ` : `
           <div class="splash-setup">
             <div class="setup-message">
               <ha-icon icon="mdi:cog" class="setup-icon"></ha-icon>
               <h2>Let's Get Set Up!</h2>
-              <p>A few things need to be configured before we can start the party:</p>
+              <p>Configure the missing settings below to start the party:</p>
             </div>
             
-            <div class="missing-variables">
-              ${missingVariables.map(variable => `
-                <div class="missing-variable">
-                  <div class="variable-header">
-                    <ha-icon icon="mdi:alert-circle" class="variable-icon"></ha-icon>
-                    <h3>${variable.name}</h3>
-                  </div>
-                  <p class="variable-description">${variable.description}</p>
-                </div>
-              `).join('')}
-            </div>
-            
-            <div class="setup-help">
-              <p><strong>💡 How to get started:</strong></p>
-              <ul style="text-align: left; margin: 0; padding-left: 20px;">
-                <li>Scroll down to <strong>Game Settings</strong> section to configure missing items</li>
-                <li>Ask an admin to help if you can't see the settings</li>
-                <li>Once everything is configured, return here to launch the game!</li>
-              </ul>
+            <div class="splash-settings">
+              ${this.renderSplashInputs(missingVariables)}
             </div>
           </div>
         `}
+        
+        <!-- Always show start button -->
+        <div class="splash-start-section">
+          <button class="splash-start-button ${isReady ? 'ready' : 'not-ready'}" 
+                  onclick="this.getRootNode().host.handleSplashStart()">
+            <ha-icon icon="mdi:play-circle" class="icon"></ha-icon>
+            ${isReady ? 'Launch Game' : 'Start Game'}
+          </button>
+          ${isReady ? '' : '<p class="start-help">Complete the settings above first</p>'}
+        </div>
       </div>
     `;
+  }
+
+  renderSplashInputs(missingVariables) {
+    const missingMap = {};
+    missingVariables.forEach(variable => {
+      missingMap[variable.key] = variable;
+    });
+
+    let inputsHtml = '';
+
+    // Audio Player Input
+    if (missingMap.audioPlayer) {
+      const mediaPlayers = this.getMediaPlayers();
+      const currentSelection = this.getSelectedAudioPlayer();
+      
+      inputsHtml += `
+        <div class="splash-input-section ${this.hasValidationError('audioPlayer') ? 'error' : ''}">
+          <div class="splash-input-header">
+            <ha-icon icon="mdi:speaker" class="input-icon"></ha-icon>
+            <h3>Audio Player</h3>
+          </div>
+          <p class="input-description">Select where music should play from</p>
+          <select class="splash-audio-select" onchange="this.getRootNode().host.updateAudioPlayer(this.value)">
+            <option value="">Select an audio player...</option>
+            ${mediaPlayers.map(player => 
+              `<option value="${player.entity_id}" ${currentSelection === player.entity_id ? 'selected' : ''}>
+                ${player.name}
+              </option>`
+            ).join('')}
+          </select>
+        </div>
+      `;
+    }
+
+    // Timer Input
+    if (missingMap.timer) {
+      const currentTimer = this.getCountdownTimerLength();
+      
+      inputsHtml += `
+        <div class="splash-input-section ${this.hasValidationError('timer') ? 'error' : ''}">
+          <div class="splash-input-header">
+            <ha-icon icon="mdi:timer-outline" class="input-icon"></ha-icon>
+            <h3>Countdown Timer</h3>
+          </div>
+          <p class="input-description">How long teams have to guess (5-300 seconds)</p>
+          <div class="splash-timer-control">
+            <input type="range" class="splash-timer-slider" min="5" max="300" step="5" 
+                   value="${currentTimer}"
+                   oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + 's';">
+            <span class="splash-timer-value">${currentTimer}s</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // Teams Input
+    if (missingMap.teams) {
+      const teams = this.getTeams();
+      const users = this.homeAssistantUsers || [];
+      
+      inputsHtml += `
+        <div class="splash-input-section ${this.hasValidationError('teams') ? 'error' : ''}">
+          <div class="splash-input-header">
+            <ha-icon icon="mdi:account-group-outline" class="input-icon"></ha-icon>
+            <h3>Team Setup</h3>
+          </div>
+          <p class="input-description">Set up at least one team with a user assigned</p>
+          <div class="splash-teams-container">
+            ${Object.entries(teams).slice(0, 3).map(([teamId, team]) => `
+              <div class="splash-team-item">
+                <label class="team-label">Team ${teamId.split('_')[1]}:</label>
+                <input type="text" class="splash-team-input" placeholder="Team Name" 
+                       value="${team.name}" 
+                       oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+                <select class="splash-team-select" 
+                        onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)">
+                  <option value="">Select user...</option>
+                  ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+                    `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
+                      ${user.name}
+                    </option>`
+                  ).join('')}
+                </select>
+                <label class="splash-team-participating">
+                  <input type="checkbox" ${team.participating ? 'checked' : ''} 
+                         onchange="this.getRootNode().host.updateTeamParticipating('${teamId}', this.checked)">
+                  <span>Participating</span>
+                </label>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    return inputsHtml;
+  }
+
+  hasValidationError(key) {
+    return this._validationErrors && this._validationErrors.includes(key);
+  }
+
+  handleSplashStart() {
+    const missingVariables = this.getMissingGameVariables();
+    
+    if (missingVariables.length === 0) {
+      // Everything is configured, start the game
+      this.startNewGame();
+    } else {
+      // Highlight missing items
+      this._validationErrors = missingVariables.map(v => v.key);
+      this.highlightMissingItems();
+      
+      // Re-render to show validation errors
+      this.render();
+      
+      // Clear validation errors after 3 seconds
+      setTimeout(() => {
+        this._validationErrors = [];
+        this.render();
+      }, 3000);
+    }
+  }
+
+  highlightMissingItems() {
+    // This method will add visual highlighting to missing items
+    // The highlighting is handled by CSS classes applied during re-render
   }
 
   render() {
@@ -2016,6 +2132,233 @@ class SoundbeatsCard extends HTMLElement {
           font-size: 1.2em;
         }
         
+        .setup-help {
+          margin-top: 24px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+          padding: 16px;
+        }
+        
+        /* Splash Screen Input Styles */
+        .splash-settings {
+          margin: 24px 0;
+          text-align: left;
+          max-width: 600px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        
+        .splash-input-section {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 20px;
+          margin: 16px 0;
+          border-left: 4px solid #4caf50;
+          transition: all 0.3s ease;
+        }
+        
+        .splash-input-section.error {
+          border-left-color: #ff6b6b;
+          background: rgba(255, 107, 107, 0.2);
+          animation: errorShake 0.5s ease-in-out;
+        }
+        
+        .splash-input-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+        
+        .splash-input-header h3 {
+          margin: 0;
+          color: #ffffff;
+          font-size: 1.1em;
+        }
+        
+        .input-icon {
+          color: #4caf50;
+          font-size: 1.2em;
+        }
+        
+        .splash-input-section.error .input-icon {
+          color: #ff6b6b;
+        }
+        
+        .input-description {
+          margin: 8px 0 12px 0;
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 0.9em;
+        }
+        
+        .splash-audio-select {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+          font-size: 14px;
+        }
+        
+        .splash-audio-select option {
+          background: #333;
+          color: white;
+        }
+        
+        .splash-timer-control {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
+        .splash-timer-slider {
+          flex: 1;
+          height: 6px;
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 3px;
+          outline: none;
+          -webkit-appearance: none;
+          appearance: none;
+        }
+        
+        .splash-timer-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          background: #4caf50;
+          border-radius: 50%;
+          cursor: pointer;
+        }
+        
+        .splash-timer-slider::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          background: #4caf50;
+          border-radius: 50%;
+          cursor: pointer;
+          border: none;
+        }
+        
+        .splash-timer-value {
+          min-width: 60px;
+          text-align: center;
+          font-weight: bold;
+          color: #4caf50;
+        }
+        
+        .splash-teams-container {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        
+        .splash-team-item {
+          display: grid;
+          grid-template-columns: auto 1fr 1fr auto;
+          gap: 8px;
+          align-items: center;
+          padding: 8px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 4px;
+        }
+        
+        .team-label {
+          font-weight: bold;
+          color: white;
+          white-space: nowrap;
+        }
+        
+        .splash-team-input {
+          padding: 6px 8px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+          font-size: 14px;
+        }
+        
+        .splash-team-input::placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .splash-team-select {
+          padding: 6px 8px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+          font-size: 14px;
+        }
+        
+        .splash-team-select option {
+          background: #333;
+          color: white;
+        }
+        
+        .splash-team-participating {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          color: white;
+          font-size: 0.85em;
+          cursor: pointer;
+        }
+        
+        .splash-start-section {
+          margin-top: 32px;
+          z-index: 2;
+          position: relative;
+        }
+        
+        .splash-start-button {
+          background: linear-gradient(45deg, #ff6b6b, #feca57);
+          color: white;
+          border: none;
+          padding: 16px 32px;
+          border-radius: 50px;
+          font-size: 1.3em;
+          font-weight: bold;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+          transition: all 0.3s ease;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .splash-start-button.not-ready {
+          background: linear-gradient(45deg, #9e9e9e, #757575);
+          opacity: 0.8;
+        }
+        
+        .splash-start-button.ready {
+          background: linear-gradient(45deg, #4caf50, #66bb6a);
+        }
+        
+        .splash-start-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .splash-start-button:active {
+          transform: translateY(0);
+        }
+        
+        .start-help {
+          margin-top: 8px;
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 0.9em;
+        }
+        
+        @keyframes errorShake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        
         .variable-description {
           margin: 0;
           opacity: 0.9;
@@ -2557,6 +2900,16 @@ class SoundbeatsCard extends HTMLElement {
       this.hass.callService('soundbeats', 'update_team_user_id', {
         team_id: teamId,
         user_id: userId || null
+      });
+    }
+  }
+
+  updateTeamParticipating(teamId, participating) {
+    // Call service to update team participation status
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'update_team_participating', {
+        team_id: teamId,
+        participating: participating
       });
     }
   }
