@@ -122,6 +122,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
         self._year_guess = 1990
         self._betting = False
         self._last_round_betting = False
+        self._last_round_points = 0
         self._user_id = None
 
     async def async_added_to_hass(self) -> None:
@@ -157,6 +158,10 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
                         self._last_round_betting = bool(last_state.attributes["last_round_betting"])
                         _LOGGER.debug("Restored team %d last round betting: %s", self._team_number, self._last_round_betting)
                     
+                    if "last_round_points" in last_state.attributes:
+                        self._last_round_points = int(last_state.attributes["last_round_points"])
+                        _LOGGER.debug("Restored team %d last round points: %s", self._team_number, self._last_round_points)
+                    
                     if "user_id" in last_state.attributes:
                         self._user_id = last_state.attributes["user_id"]
                         _LOGGER.debug("Restored team %d user_id: %s", self._team_number, self._user_id)
@@ -169,6 +174,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
                 self._year_guess = 1990
                 self._betting = False
                 self._last_round_betting = False
+                self._last_round_points = 0
                 self._user_id = None
 
     @property
@@ -186,6 +192,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
             "year_guess": self._year_guess,
             "betting": self._betting,
             "last_round_betting": self._last_round_betting,
+            "last_round_points": self._last_round_points,
             "user_id": self._user_id,
         }
 
@@ -421,6 +428,11 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
                 # Store betting state for result display before resetting
                 if hasattr(team_sensor, '_last_round_betting'):
                     team_sensor._last_round_betting = betting
+                    team_sensor.async_write_ha_state()
+                
+                # Store last round points for display
+                if hasattr(team_sensor, '_last_round_points'):
+                    team_sensor._last_round_points = points_to_add
                     team_sensor.async_write_ha_state()
                 
                 # Reset betting state after evaluation
