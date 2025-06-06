@@ -172,7 +172,7 @@ The integration is now ready to use! Add the Soundbeats card to your dashboard a
 
 **Unified Backend**: Both the splash screen team assignment and the admin team management section use the exact same backend service (`soundbeats.update_team_user_id`), ensuring consistent behavior and immediate persistence across all interfaces.
 
-**Zero-Setup Team Management**: Users can assign teams and users entirely from the UI with no manual setup required. All changes are instantly reflected in Home Assistant entities and persist across restarts, making team configuration completely seamless and reliable.
+**Zero-Setup Team Management**: Users can assign teams and users entirely from the UI with no manual setup required. All changes are instantly reflected in Home Assistant entities and persist across restarts, making team configuration completely seamless and reliable. **Important**: Before starting a game, every team (for your chosen team count) must have a user assigned—the Start Game button will only allow the transition once all teams are fully configured.
 
 ## ✨ Zero-Setup Experience with Interactive Splash Screen
 
@@ -180,21 +180,7 @@ Soundbeats V42 introduces a **brand new interactive splash/setup UI** that makes
 
 ### 🎮 Seamless Onboarding Flow
 
-When you first add the Soundbeats card to your dashboard, you'll be greeted by a stunning splash screen featuring:
 
-- **🎵 Animated Welcome Interface**: Beautiful floating musical notes, sound wave visualizations, and modern music-themed design that sets the party mood
-- **⚙️ Interactive Configuration**: Configure missing game settings (audio player, timer duration, teams) directly on the splash screen with intuitive dropdowns, sliders, and team assignment controls that instantly persist to Home Assistant entities
-- **🚀 Always-Visible Launch Button**: A prominent "Launch Game" button that transitions the UI to the main game screen once all settings are configured, with real-time validation and visual cues for any missing options
-- **✅ Smart Validation**: The interface automatically detects what needs to be configured and guides you through each step with helpful text and visual indicators
-- **🎨 Modern Visual Design**: Stylish splash visuals with the same premium design language as the main game interface
-
-### 🎯 Truly Zero-Setup Philosophy
-
-- **No YAML Required**: All configuration happens through the beautiful web interface—never touch a configuration file
-- **Auto-Detection**: The card automatically discovers your Home Assistant media players and presents them in an easy-to-use dropdown
-- **Instant Configuration Persistence**: Every change you make in the setup UI is immediately saved to Home Assistant entities with zero delay - no "save" button required
-- **Instant Feedback**: Real-time validation shows you exactly what's ready and what needs attention
-- **UI Transition Only**: Once everything is configured, click "Launch Game" to transition to the main game interface - actual game logic (song start, scoring, timer) is initiated by explicit user actions within the game screen
 - **Persistent Settings**: All your preferences and team assignments are automatically saved and immediately written to Home Assistant entities, remembered for future games
 
 **The Result**: From installation to your first game in under 2 minutes, with zero technical knowledge required!
@@ -223,7 +209,6 @@ The integration automatically creates the following entities:
 
 ### Lovelace Card
 
-The integration automatically provides a comprehensive custom Lovelace card with **zero additional setup required**. Featuring the new **interactive splash/setup screen**, users can configure audio player, timer, and teams directly on the card without navigating away or doing any manual setup. The card includes an always-visible "Launch Game" button that transitions to the main game interface once configuration is complete. All settings are instantly saved as you interact with the UI, and actual game operations (song playback, scoring, timer) are initiated by explicit user actions within the main game screen.
 
 The card features role-based sections:
 

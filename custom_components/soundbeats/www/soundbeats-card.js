@@ -138,15 +138,16 @@ class SoundbeatsCard extends HTMLElement {
       });
     }
     
-    // Check if at least one team has a user assigned (only for selected number of teams)
+    // Check if ALL teams have users assigned (only for selected number of teams)
+    // Every participating team for the chosen team count must have a user assigned
     if (teamCount && teamCount >= 1 && teamCount <= 5) {
       const teams = this.getTeams();
-      const teamsWithUsers = Object.values(teams).filter(team => team.user_id);
-      if (teamsWithUsers.length === 0) {
+      const teamsWithoutUsers = Object.values(teams).filter(team => !team.user_id);
+      if (teamsWithoutUsers.length > 0) {
         missing.push({
           key: 'teams',
           name: 'Team Users',
-          description: 'Assign at least one team to a Home Assistant user to enable gameplay.'
+          description: `Assign a user to every team (${teamsWithoutUsers.length} of ${teamCount} teams still need users assigned).`
         });
       }
     }
