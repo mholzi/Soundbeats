@@ -39,7 +39,6 @@ async def async_setup_entry(
     # Individual game settings sensors
     countdown_sensor = SoundbeatsCountdownTimerSensor()
     countdown_current_sensor = SoundbeatsCountdownCurrentSensor()
-    audio_sensor = SoundbeatsAudioPlayerSensor()
     game_mode_sensor = SoundbeatsGameModeSensor()
     current_song_sensor = SoundbeatsCurrentSongSensor()
     round_counter_sensor = SoundbeatsRoundCounterSensor()
@@ -47,7 +46,7 @@ async def async_setup_entry(
     
     highscore_sensor = SoundbeatsHighscoreSensor()
     
-    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, game_mode_sensor, current_song_sensor, round_counter_sensor, played_songs_sensor, highscore_sensor])
+    entities.extend([countdown_sensor, countdown_current_sensor, game_mode_sensor, current_song_sensor, round_counter_sensor, played_songs_sensor, highscore_sensor])
     
     # Store entity references in hass data for service access
     hass.data.setdefault(DOMAIN, {})
@@ -56,7 +55,6 @@ async def async_setup_entry(
         "team_sensors": team_sensors,
         "countdown_sensor": countdown_sensor,
         "countdown_current_sensor": countdown_current_sensor,
-        "audio_sensor": audio_sensor,
         "game_mode_sensor": game_mode_sensor,
         "current_song_sensor": current_song_sensor,
         "round_counter_sensor": round_counter_sensor,
@@ -472,44 +470,6 @@ class SoundbeatsCountdownCurrentSensor(SensorEntity):
         _LOGGER.debug("Updating Soundbeats countdown current sensor")
 
 
-class SoundbeatsAudioPlayerSensor(SensorEntity, RestoreEntity):
-    """Representation of a Soundbeats audio player sensor."""
-
-    def __init__(self) -> None:
-        """Initialize the audio player sensor."""
-        self._attr_name = "Soundbeats Audio Player"
-        self._attr_unique_id = "soundbeats_audio_player"
-        self._attr_icon = "mdi:speaker"
-        self._audio_player = None
-
-    async def async_added_to_hass(self) -> None:
-        """Called when entity is added to hass."""
-        await super().async_added_to_hass()
-        
-        # Restore previous state if available
-        if (last_state := await self.async_get_last_state()) is not None:
-            if last_state.state != "None":
-                self._audio_player = last_state.state
-                _LOGGER.debug("Restored audio player: %s", self._audio_player)
-            else:
-                _LOGGER.debug("Previous audio player was None, keeping default")
-
-    @property
-    def state(self) -> str:
-        """Return the state of the sensor (selected audio player)."""
-        return self._audio_player or "None"
-
-    def update_audio_player(self, audio_player: str) -> None:
-        """Update the selected audio player."""
-        self._audio_player = audio_player
-        self.async_write_ha_state()
-
-    async def async_update(self) -> None:
-        """Update the sensor."""
-        _LOGGER.debug("Updating Soundbeats audio player sensor")
-
-
-
 
 
 class SoundbeatsGameModeSensor(SensorEntity):
@@ -537,7 +497,7 @@ class SoundbeatsGameModeSensor(SensorEntity):
         _LOGGER.debug("Updating Soundbeats game mode sensor")
 
 
-class SoundbeatsCurrentSongSensor(SensorEntity):
+class SoundbeatsCurrentSongSensor(SensorEntity, RestoreEntity):
     """Representation of a Soundbeats current song sensor."""
 
     def __init__(self) -> None:
@@ -547,6 +507,18 @@ class SoundbeatsCurrentSongSensor(SensorEntity):
         self._attr_icon = "mdi:music-note"
         self._current_song_data = None
         self._selected_media_player = None
+
+    async def async_added_to_hass(self) -> None:
+        """Called when entity is added to hass."""
+        await super().async_added_to_hass()
+        
+        # Restore previous state if available
+        if (last_state := await self.async_get_last_state()) is not None:
+            if last_state.state != "None":
+                self._selected_media_player = last_state.state
+                _LOGGER.debug("Restored selected media player: %s", self._selected_media_player)
+            else:
+                _LOGGER.debug("Previous selected media player was None, keeping default")
 
     @property
     def state(self) -> str:
