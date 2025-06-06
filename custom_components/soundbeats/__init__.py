@@ -453,6 +453,33 @@ async def _register_services(hass: HomeAssistant) -> None:
             # Fallback to direct state setting
             hass.states.async_set("sensor.soundbeats_current_song", player)
 
+    async def update_team_count(call):
+        team_count = call.data.get("team_count")
+        if team_count is None:
+            _LOGGER.error("Missing team_count")
+            return
+        
+        # Validate team count is between 1 and 5
+        team_count = int(team_count)
+        if team_count < 1 or team_count > 5:
+            _LOGGER.error("Invalid team_count: %s (must be 1-5)", team_count)
+            return
+            
+        entities = _get_entities()
+        main_sensor = entities.get("main_sensor")
+        if main_sensor and hasattr(main_sensor, 'set_team_count'):
+            main_sensor.set_team_count(team_count)
+        else:
+            # Update the game status entity with team_count attribute
+            state_obj = hass.states.get("sensor.soundbeats_game_status")
+            if state_obj:
+                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
+                attrs["team_count"] = team_count
+                hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, attrs)
+            else:
+                # Create the entity if it doesn't exist
+                hass.states.async_set("sensor.soundbeats_game_status", "ready", {"team_count": team_count})
+
     async def update_team_year_guess(call):
         team_id = call.data.get("team_id")
         year_guess = call.data.get("year_guess")
@@ -553,6 +580,7 @@ async def _register_services(hass: HomeAssistant) -> None:
     hass.services.async_register(DOMAIN, "update_team_user_id", update_team_user_id)
     hass.services.async_register(DOMAIN, "update_countdown_timer_length", update_countdown_timer_length)
     hass.services.async_register(DOMAIN, "update_audio_player", update_audio_player)
+    hass.services.async_register(DOMAIN, "update_team_count", update_team_count)
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry and remove services if no entries remain."""
@@ -575,6 +603,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 "update_team_user_id",
                 "update_countdown_timer_length",
                 "update_audio_player",
+                "update_team_count",
             ]:
                 hass.services.async_remove(DOMAIN, svc)
     return unload_ok

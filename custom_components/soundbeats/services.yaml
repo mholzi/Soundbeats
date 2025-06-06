@@ -105,6 +105,20 @@ update_audio_player:
         entity:
           domain: media_player
 
+update_team_count:
+  name: Update Team Count
+  description: Update the number of teams participating in the game
+  fields:
+    team_count:
+      name: Team Count
+      description: The number of teams that will participate (1-5)
+      required: true
+      example: 3
+      selector:
+        number:
+          min: 1
+          max: 5
+
 update_team_year_guess:
   name: Update Team Year Guess
   description: Update the year guess of a team

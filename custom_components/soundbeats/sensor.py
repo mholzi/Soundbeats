@@ -76,6 +76,7 @@ class SoundbeatsSensor(SensorEntity):
         self._attr_unique_id = "soundbeats_game_status"
         self._attr_icon = "mdi:music-note"
         self._state = "ready"
+        self._team_count = 3  # Default to 3 teams
 
     @property
     def state(self) -> str:
@@ -88,11 +89,17 @@ class SoundbeatsSensor(SensorEntity):
         return {
             "friendly_name": "Soundbeats Game Status",
             "description": "Current status of the Soundbeats party game",
+            "team_count": self._team_count,
         }
 
     def set_state(self, new_state: str) -> None:
         """Set the game state."""
         self._state = new_state
+        self.async_write_ha_state()
+
+    def set_team_count(self, team_count: int) -> None:
+        """Set the number of teams."""
+        self._team_count = team_count
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
