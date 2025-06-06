@@ -45,10 +45,9 @@ async def async_setup_entry(
     round_counter_sensor = SoundbeatsRoundCounterSensor()
     played_songs_sensor = SoundbeatsPlayedSongsSensor()
     
-    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, game_mode_sensor, current_song_sensor, round_counter_sensor, played_songs_sensor])
     highscore_sensor = SoundbeatsHighscoreSensor()
     
-    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, game_mode_sensor, current_song_sensor, round_counter_sensor, highscore_sensor])
+    entities.extend([countdown_sensor, countdown_current_sensor, audio_sensor, game_mode_sensor, current_song_sensor, round_counter_sensor, played_songs_sensor, highscore_sensor])
     
     # Store entity references in hass data for service access
     hass.data.setdefault(DOMAIN, {})
@@ -661,6 +660,38 @@ class SoundbeatsPlayedSongsSensor(SensorEntity):
     def state(self) -> int:
         """Return the state of the sensor (number of played songs)."""
         return len(self._played_song_ids)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes."""
+        return {
+            "played_song_ids": self._played_song_ids,
+            "friendly_name": "Soundbeats Played Songs",
+            "description": "List of song IDs played since the current game started",
+        }
+
+    def add_played_song(self, song_id: int) -> None:
+        """Add a song ID to the played songs list."""
+        if song_id not in self._played_song_ids:
+            self._played_song_ids.append(song_id)
+            _LOGGER.debug("Added song ID %d to played list. Total played: %d", song_id, len(self._played_song_ids))
+            self.async_write_ha_state()
+
+    def reset_played_songs(self) -> None:
+        """Reset the played songs list to empty."""
+        self._played_song_ids = []
+        _LOGGER.info("Reset played songs list")
+        self.async_write_ha_state()
+
+    def is_song_played(self, song_id: int) -> bool:
+        """Check if a song ID has been played."""
+        return song_id in self._played_song_ids
+
+    async def async_update(self) -> None:
+        """Update the sensor."""
+        _LOGGER.debug("Updating Soundbeats played songs sensor")
+
+
 class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
     """Representation of a Soundbeats highscore sensor."""
 
@@ -672,6 +703,7 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
         self._attr_unit_of_measurement = "points"
         self._absolute_highscore = 0
         self._round_highscores = {}
+        self._played_song_ids = []
 
     async def async_added_to_hass(self) -> None:
         """Called when entity is added to hass."""
@@ -703,11 +735,14 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
-        return {
+        attributes = {
+            "friendly_name": "Soundbeats Highscore",
+            "description": "Absolute and per-round highscores for Soundbeats game",
             "played_song_ids": self._played_song_ids,
-            "friendly_name": "Soundbeats Played Songs",
-            "description": "List of song IDs played since the current game started",
         }
+        # Add round highscores as attributes
+        attributes.update(self._round_highscores)
+        return attributes
 
     def add_played_song(self, song_id: int) -> None:
         """Add a song ID to the played songs list."""
@@ -728,14 +763,7 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
 
     async def async_update(self) -> None:
         """Update the sensor."""
-        _LOGGER.debug("Updating Soundbeats played songs sensor")
-        attributes = {
-            "friendly_name": "Soundbeats Highscore",
-            "description": "Absolute and per-round highscores for Soundbeats game",
-        }
-        # Add round highscores as attributes
-        attributes.update(self._round_highscores)
-        return attributes
+        _LOGGER.debug("Updating Soundbeats highscore sensor")
 
     def update_highscore(self, team_score: int, round_number: int) -> dict[str, bool]:
         """Update highscore records and return which records were broken.
@@ -767,7 +795,3 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
             self.async_write_ha_state()
         
         return records_broken
-
-    async def async_update(self) -> None:
-        """Update the sensor."""
-        _LOGGER.debug("Updating Soundbeats highscore sensor")
