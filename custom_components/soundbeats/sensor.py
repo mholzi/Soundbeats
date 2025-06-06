@@ -196,35 +196,34 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
             "user_id": self._user_id,
         }
 
+    def _update_attribute(self, attribute_name: str, value) -> None:
+        """Generic helper for updating team attributes."""
+        setattr(self, f"_{attribute_name}", value)
+        self.async_write_ha_state()
+
     def update_team_name(self, name: str) -> None:
         """Update the team's name."""
-        self._team_name = name
-        self.async_write_ha_state()
+        self._update_attribute("team_name", name)
 
     def update_team_points(self, points: int) -> None:
         """Update the team's points."""
-        self._points = points
-        self.async_write_ha_state()
+        self._update_attribute("points", points)
 
     def update_team_participating(self, participating: bool) -> None:
         """Update the team's participating status."""
-        self._participating = participating
-        self.async_write_ha_state()
+        self._update_attribute("participating", participating)
 
     def update_team_year_guess(self, year_guess: int) -> None:
         """Update the team's year guess."""
-        self._year_guess = year_guess
-        self.async_write_ha_state()
+        self._update_attribute("year_guess", year_guess)
 
     def update_team_betting(self, betting: bool) -> None:
         """Update the team's betting status."""
-        self._betting = betting
-        self.async_write_ha_state()
+        self._update_attribute("betting", betting)
 
     def update_team_user_id(self, user_id: str) -> None:
         """Update the team's assigned user ID."""
-        self._user_id = user_id
-        self.async_write_ha_state()
+        self._update_attribute("user_id", user_id)
 
     async def async_update(self) -> None:
         """Update the sensor."""

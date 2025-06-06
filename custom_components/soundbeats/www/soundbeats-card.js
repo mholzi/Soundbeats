@@ -27,13 +27,12 @@ class SoundbeatsCard extends HTMLElement {
     this._lastRoundHighscores = {};
     this._activeBanners = [];
     
-    // Performance optimizations - caching
-    this._mediaPlayersCache = null;
-    this._mediaPlayersCacheTime = 0;
-    this._missingVariablesCache = null;
-    this._missingVariablesCacheTime = 0;
-    this._shouldShowSplashCache = null;
-    this._shouldShowSplashCacheTime = 0;
+    // Performance optimizations - unified caching system
+    this._cache = {
+      mediaPlayers: { data: null, time: 0, ttl: 2000 },
+      missingVariables: { data: null, time: 0, ttl: 500 },
+      shouldShowSplash: { data: null, time: 0, ttl: 100 }
+    };
     this._debounceTimers = {};
     
     // Loading states
@@ -55,11 +54,47 @@ class SoundbeatsCard extends HTMLElement {
     this.render();
   }
 
-  shouldShowSplashScreen() {
-    // Cache the result to avoid repeated computation during rapid calls
+  // Unified cache management helpers
+  _getCached(key) {
+    const cache = this._cache[key];
+    if (!cache) return null;
+    
     const now = Date.now();
-    if (this._shouldShowSplashCache && (now - this._shouldShowSplashCacheTime) < 100) {
-      return this._shouldShowSplashCache;
+    if (cache.data && (now - cache.time) < cache.ttl) {
+      return cache.data;
+    }
+    return null;
+  }
+
+  _setCached(key, data) {
+    const cache = this._cache[key];
+    if (cache) {
+      cache.data = data;
+      cache.time = Date.now();
+    }
+  }
+
+  _clearCache(key = null) {
+    if (key) {
+      const cache = this._cache[key];
+      if (cache) {
+        cache.data = null;
+        cache.time = 0;
+      }
+    } else {
+      // Clear all caches
+      Object.values(this._cache).forEach(cache => {
+        cache.data = null;
+        cache.time = 0;
+      });
+    }
+  }
+
+  shouldShowSplashScreen() {
+    // Use unified cache to avoid repeated computation during rapid calls
+    const cached = this._getCached('shouldShowSplash');
+    if (cached !== null) {
+      return cached;
     }
     
     // Show splash screen when:
@@ -79,8 +114,7 @@ class SoundbeatsCard extends HTMLElement {
     }
     
     // Cache the result
-    this._shouldShowSplashCache = shouldShow;
-    this._shouldShowSplashCacheTime = now;
+    this._setCached('shouldShowSplash', shouldShow);
     
     return shouldShow;
   }
@@ -103,10 +137,10 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getMissingGameVariables() {
-    const now = Date.now();
-    // Cache validation results for 500ms to avoid heavy computation during rapid renders
-    if (this._missingVariablesCache && (now - this._missingVariablesCacheTime) < 500) {
-      return this._missingVariablesCache;
+    // Use unified cache to avoid heavy computation during rapid renders
+    const cached = this._getCached('missingVariables');
+    if (cached !== null) {
+      return cached;
     }
     
     const missing = [];
@@ -156,8 +190,7 @@ class SoundbeatsCard extends HTMLElement {
     }
     
     // Cache the result
-    this._missingVariablesCache = missing;
-    this._missingVariablesCacheTime = now;
+    this._setCached('missingVariables', missing);
     
     return missing;
   }
@@ -378,8 +411,8 @@ class SoundbeatsCard extends HTMLElement {
 
   // Clear validation errors cache when state changes
   clearValidationCache() {
-    this._missingVariablesCache = null;
-    this._shouldShowSplashCache = null;
+    this._clearCache('missingVariables');
+    this._clearCache('shouldShowSplash');
     this._validationErrors = [];
   }
 
@@ -3259,16 +3292,6 @@ class SoundbeatsCard extends HTMLElement {
     }, 50); // Reduced delay since no debouncing
   }
 
-  updateTeamParticipating(teamId, participating) {
-    // Call service to update team participation status
-    if (this.hass) {
-      this.hass.callService('soundbeats', 'update_team_participating', {
-        team_id: teamId,
-        participating: participating
-      });
-    }
-  }
-
   updateTeamYearGuess(teamId, yearGuess) {
     // Call service to update team year guess
     if (this.hass) {
@@ -3863,10 +3886,10 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getMediaPlayers() {
-    const now = Date.now();
-    // Cache media players for 2 seconds to avoid frequent entity iteration
-    if (this._mediaPlayersCache && (now - this._mediaPlayersCacheTime) < 2000) {
-      return this._mediaPlayersCache;
+    // Use unified cache to avoid frequent entity iteration
+    const cached = this._getCached('mediaPlayers');
+    if (cached !== null) {
+      return cached;
     }
     
     // Get all available media player entities from Home Assistant
@@ -3887,8 +3910,7 @@ class SoundbeatsCard extends HTMLElement {
     }
     
     // Cache the result
-    this._mediaPlayersCache = mediaPlayers;
-    this._mediaPlayersCacheTime = now;
+    this._setCached('mediaPlayers', mediaPlayers);
     
     return mediaPlayers;
   }
@@ -4574,9 +4596,7 @@ class SoundbeatsCard extends HTMLElement {
     
     // Invalidate media players cache if states changed
     if (prevHass && hass && prevHass.states !== hass.states) {
-      this._mediaPlayersCache = null;
-      this._missingVariablesCache = null;
-      this._shouldShowSplashCache = null;
+      this._clearCache(); // Clear all caches when hass changes
     }
     
     // Load users when hass becomes available for the first time
