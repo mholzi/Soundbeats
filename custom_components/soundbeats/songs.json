@@ -1,152 +1,590 @@
 [
   {
-    "url": "https://open.spotify.com/track/4lBBoyZgJfm0Epu4xbZisU?si=gkwG4LC6Q0qL5OfKzkOj0w",
-    "year": 1990,
-    "id": 1
+    "url": "https://open.spotify.com/track/4u7EnebtmKWzUH433cf5Qv",
+    "year": 1975,
+    "id": 1,
+    "song": "Bohemian Rhapsody - Remastered 2011",
+    "artist": "Queen"
   },
   {
-    "url": "https://open.spotify.com/track/3P5dVXm98CgVuEpcW2HsUk?si=voZVk407TIyUrOcx1WZNtQ",
-    "year": 1990,
-    "id": 2
-  },
-  {
-    "url": "https://open.spotify.com/track/1DIXPcTDzTj8ZMHt3PDt8p?si=WxKOXwv1Sg-5hxDVh5G30g",
-    "year": 1995,
-    "id": 3
-  },
-  {
-    "url": "https://open.spotify.com/track/0v1XpBHnsbkCn7iJ9Ucr1l?si=nxdGmpLKQxajTwLCeARZbg",
-    "year": 2000,
-    "id": 4
-  },
-  {
-    "url": "https://open.spotify.com/track/7xXSaVgEvUrV1GCc3oO8HC?si=-TKptD9mRRCJPjDvUaPNPQ",
-    "year": 2000,
-    "id": 5
-  },
-  {
-    "url": "https://open.spotify.com/track/0IbTukfZdB91gclEXUQZkH?si=MAjBL05bRlKwPHY9N9qSTA",
-    "year": 2000,
-    "id": 6
-  },
-  {
-    "url": "https://open.spotify.com/track/2vlgOAH3M8Fmo19wOjeRyw?si=GFrL89h-QwmzadvR1be5Rg",
-    "year": 2000,
-    "id": 7
-  },
-  {
-    "url": "https://open.spotify.com/track/7mhxoW5aWHn5QiZqT4rS4S?si=xz2bwUWkQ3-2N_i_ONZ6oA",
-    "year": 1977,
-    "id": 8
-  },
-  {
-    "url": "https://open.spotify.com/track/1BqnZOkYJbvYLOhN0qPJDm?si=vqKqpWuFT3mprR98NB7jVQ",
-    "year": 1977,
-    "id": 9
-  },
-  {
-    "url": "https://open.spotify.com/track/2LScqpywMqGcnum6nNaxXX?si=zv_WkYQhQoKrySZylr_a4g",
-    "year": 1977,
-    "id": 10
-  },
-  {
-    "url": "https://open.spotify.com/track/57TaM8GozkJBz90xvQ1xME?si=AEj4wKoIR5q9DVPg09Np2A",
-    "year": 1977,
-    "id": 11
-  },
-  {
-    "url": "https://open.spotify.com/track/5ubvP9oKmxLUVq506fgLhk?si=0f229fa8f4a34855",
-    "year": 1978,
-    "id": 12
-  },
-  {
-    "url": "https://open.spotify.com/track/0B9x2BRHqj3Qer7biM3pU3?si=dea798b1e4514a39",
-    "year": 1978,
-    "id": 13
-  },
-  {
-    "url": "https://open.spotify.com/track/1Rl9GHgsflyIVqBRyO45Zo?si=4d62a981b2c54183",
-    "year": 1978,
-    "id": 14
-  },
-  {
-    "url": "https://open.spotify.com/track/7rIovIsXE6kMn629b7kDig?si=56202b1837544beb",
-    "year": 1979,
-    "id": 15
-  },
-  {
-    "url": "https://open.spotify.com/track/4qL9VYPB4XwJKAOq4xn2Mh?si=43bfb0e8fd4e4874",
-    "year": 1979,
-    "id": 16
-  },
-  {
-    "url": "https://open.spotify.com/track/1ibRqifchaAfeNdQGpbRVW?si=677f5ee044cd4a55",
-    "year": 1979,
-    "id": 17
-  },
-  {
-    "url": "https://open.spotify.com/track/2k1yPYf9WGA4LiqcLVwtzn?si=9351f6b8861f43f1",
-    "year": 1980,
-    "id": 18
-  },
-  {
-    "url": "https://open.spotify.com/track/7pmNNEJcBcODkrPHEIf7Cy?si=4a54cb7e62594d66",
-    "year": 1980,
-    "id": 19
-  },
-  {
-    "url": "https://open.spotify.com/track/3pbtBomO4Zt5gGiqsYeiBH?si=3802a2c3af054425",
-    "year": 1980,
-    "id": 20
-  },
-  {
-    "url": "https://open.spotify.com/track/4qO03RMQm88DdpTJcxlglY?si=2d6e5cc7f18b416e",
-    "year": 1980,
-    "id": 21
-  },
-  {
-    "url": "https://open.spotify.com/track/3K7Q9PHUWPTaknlbFPThn2?si=952b35cc09f34988",
-    "year": 1981,
-    "id": 22
-  },
-  {
-    "url": "https://open.spotify.com/track/77NNZQSqzLNqh2A9JhLRkg?si=ab5acfcd8b564f03",
-    "year": 1981,
-    "id": 23
-  },
-  {
-    "url": "https://open.spotify.com/track/5FFAqdNj7SAzVCOpPp3QZI?si=e28472e9a0204320",
-    "year": 1981,
-    "id": 24
-  },
-  {
-    "url": "https://open.spotify.com/track/7J1uxwnxfQLu4APicE5Rnj?si=faa0a8175a7949d3",
+    "url": "https://open.spotify.com/track/2374M0fQpWi3dLnB54qaLX",
     "year": 1982,
-    "id": 25
+    "id": 2,
+    "song": "Africa",
+    "artist": "TOTO"
   },
   {
-    "url": "https://open.spotify.com/track/2qeESyQyH7MRHCBotCQsNq?si=84a10537506442fe",
-    "year": 1983,
-    "id": 26
+    "url": "https://open.spotify.com/track/1M2nd8jNUkkwrc1dgBPTJz",
+    "year": 1997,
+    "id": 3,
+    "song": "Angels",
+    "artist": "Robbie Williams"
   },
   {
-    "url": "https://open.spotify.com/track/6zIfdCmmhPCX0cMquBsC37?si=e5d436fa21074c5e",
-    "year": 1983,
-    "id": 27
+    "url": "https://open.spotify.com/track/08mG3Y1vljYA6bvDt4Wqkj",
+    "year": 1980,
+    "id": 4,
+    "song": "Back In Black",
+    "artist": "AC/DC"
   },
   {
-    "url": "https://open.spotify.com/track/7IfKHTRUy4csN6GXbZuj1B?si=b1f321feeed4436d",
-    "year": 1983,
-    "id": 28
+    "url": "https://open.spotify.com/track/7azo4rpSUh8nXgtonC6Pkq",
+    "year": 2017,
+    "id": 5,
+    "song": "Thriller",
+    "artist": "Michael Jackson"
   },
   {
-    "url": "https://open.spotify.com/track/7arHM2KZ0KzIZXFVDRGClI?si=e9062cf1e41c4736",
-    "year": 1983,
-    "id": 29
-  },
-  {
-    "url": "https://open.spotify.com/track/0QVgZCAnasHo3TevIz7XLW?si=e929386c6b8245fa",
+    "url": "https://open.spotify.com/track/7yzbimr8WVyAtBX3Eg6UL9",
     "year": 1984,
-    "id": 30
+    "id": 6,
+    "song": "Hallelujah",
+    "artist": "Leonard Cohen"
+  },
+  {
+    "url": "https://open.spotify.com/track/19slC7k8bsPOAKDjHYLU2W",
+    "year": 1970,
+    "id": 7,
+    "song": "Father And Son",
+    "artist": "Yusuf / Cat Stevens"
+  },
+  {
+    "url": "https://open.spotify.com/track/0aym2LBJBk9DAYuHHutrIl",
+    "year": 2000,
+    "id": 8,
+    "song": "Hey Jude - Remastered 2015",
+    "artist": "The Beatles"
+  },
+  {
+    "url": "https://open.spotify.com/track/0GONea6G2XdnHWjNZd6zt3",
+    "year": 1984,
+    "id": 9,
+    "song": "Summer Of '69",
+    "artist": "Bryan Adams"
+  },
+  {
+    "url": "https://open.spotify.com/track/7iN1s7xHE4ifF5povM6A48",
+    "year": 1970,
+    "id": 10,
+    "song": "Let It Be - Remastered 2009",
+    "artist": "The Beatles"
+  },
+  {
+    "url": "https://open.spotify.com/track/2zYzyRzz6pRmhPzyfMEC8s",
+    "year": 1979,
+    "id": 11,
+    "song": "Highway to Hell",
+    "artist": "AC/DC"
+  },
+  {
+    "url": "https://open.spotify.com/track/40riOy7x9W7GXjyGp4pjAv",
+    "year": 1976,
+    "id": 12,
+    "song": "Hotel California - 2013 Remaster",
+    "artist": "Eagles"
+  },
+  {
+    "url": "https://open.spotify.com/track/5vdp5UmvTsnMEMESIF2Ym7",
+    "year": 1980,
+    "id": 13,
+    "song": "Another One Bites The Dust - Remastered 2011",
+    "artist": "Queen"
+  },
+  {
+    "url": "https://open.spotify.com/track/1OOtq8tRnDM8kG2gqUPjAj",
+    "year": 2008,
+    "id": 14,
+    "song": "Beat It",
+    "artist": "Michael Jackson"
+  },
+  {
+    "url": "https://open.spotify.com/track/3gdewACMIVMEWVbyb8O9sY",
+    "year": 1972,
+    "id": 16,
+    "song": "Rocket Man (I Think It's Going To Be A Long Long Time)",
+    "artist": "Elton John"
+  },
+  {
+    "url": "https://open.spotify.com/track/57bgtoPSgt236HzfBOd8kj",
+    "year": 1990,
+    "id": 18,
+    "song": "Thunderstruck",
+    "artist": "AC/DC"
+  },
+  {
+    "url": "https://open.spotify.com/track/5MMnwYs0hIxkENRsbkWJ2G",
+    "year": 1972,
+    "id": 19,
+    "song": "Smoke On The Water - Remastered 2012",
+    "artist": "Deep Purple"
+  },
+  {
+    "url": "https://open.spotify.com/track/79hJaqmVdohltPBNN6BULM",
+    "year": 1990,
+    "id": 20,
+    "song": "Stayin' Alive - From Saturday Night Fever Soundtrack",
+    "artist": "Bee Gees"
+  },
+  {
+    "url": "https://open.spotify.com/track/1lCRw5FEZ1gPDNPzy1K4zW",
+    "year": 1977,
+    "id": 21,
+    "song": "We Are The Champions - Remastered 2011",
+    "artist": "Queen"
+  },
+  {
+    "url": "https://open.spotify.com/track/2WfaOiMkCvy7F5fcp2zZ8L",
+    "year": 1985,
+    "id": 22,
+    "song": "Take on Me",
+    "artist": "a-ha"
+  },
+  {
+    "url": "https://open.spotify.com/track/7LRMbd3LEoV5wZJvXT1Lwb",
+    "year": 1976,
+    "id": 23,
+    "song": "T.N.T.",
+    "artist": "AC/DC"
+  },
+  {
+    "url": "https://open.spotify.com/track/3BQHpFgAp4l80e1XslIjNI",
+    "year": 1965,
+    "id": 24,
+    "song": "Yesterday - Remastered 2009",
+    "artist": "The Beatles"
+  },
+  {
+    "url": "https://open.spotify.com/track/1TfqLAPs4K3s2rJMoCokcS",
+    "year": 1983,
+    "id": 25,
+    "song": "Sweet Dreams (Are Made of This) - 2005 Remaster",
+    "artist": "Eurythmics,Annie Lennox,Dave Stewart"
+  },
+  {
+    "url": "https://open.spotify.com/track/0v1XpBHnsbkCn7iJ9Ucr1l",
+    "year": 2000,
+    "id": 26,
+    "song": "It's My Life",
+    "artist": "Bon Jovi"
+  },
+  {
+    "url": "https://open.spotify.com/track/0ikz6tENMONtK6qGkOrU3c",
+    "year": 1984,
+    "id": 27,
+    "song": "Wake Me Up Before You Go-Go",
+    "artist": "Wham!"
+  },
+  {
+    "url": "https://open.spotify.com/track/4pbJqGIASGPr0ZpGpnWkDn",
+    "year": 1977,
+    "id": 28,
+    "song": "We Will Rock You - Remastered 2011",
+    "artist": "Queen"
+  },
+  {
+    "url": "https://open.spotify.com/track/3ovjw5HZZv43SxTwApooCM",
+    "year": 1990,
+    "id": 29,
+    "song": "Wind Of Change",
+    "artist": "Scorpions"
+  },
+  {
+    "url": "https://open.spotify.com/track/3ic5SdHoppddKCuXPUz2fV",
+    "year": 2006,
+    "id": 30,
+    "song": "Wonderwall",
+    "artist": "Oasis"
+  },
+  {
+    "url": "https://open.spotify.com/track/44AyOl4qVkzS48vBsbNXaC",
+    "year": 1961,
+    "id": 31,
+    "song": "Can't Help Falling in Love",
+    "artist": "Elvis Presley"
+  },
+  {
+    "url": "https://open.spotify.com/track/62AuGbAkt8Ox2IrFFb8GKV",
+    "year": 1969,
+    "id": 33,
+    "song": "Sweet Caroline",
+    "artist": "Neil Diamond"
+  },
+  {
+    "url": "https://open.spotify.com/track/3SdTKo2uVsxFblQjpScoHy",
+    "year": 1962,
+    "id": 34,
+    "song": "Stand By Me",
+    "artist": "Ben E. King"
+  },
+  {
+    "url": "https://open.spotify.com/track/5LxvwujISqiB8vpRYv887S",
+    "year": 1969,
+    "id": 36,
+    "song": "I Want You Back",
+    "artist": "The Jackson 5"
+  },
+  {
+    "url": "https://open.spotify.com/track/2xYlyywNgefLCRDG8hlxZq",
+    "year": 1997,
+    "id": 37,
+    "song": "Take Me Home Country Roads - Rerecorded",
+    "artist": "John Denver"
+  },
+  {
+    "url": "https://open.spotify.com/track/3Z2tPWiNiIpg8UMMoowHIk",
+    "year": 1985,
+    "id": 38,
+    "song": "We Are The World",
+    "artist": "U.S.A. For Africa"
+  },
+  {
+    "url": "https://open.spotify.com/track/4fXGWiVhlOLdhwRDP6pIFG",
+    "year": 1995,
+    "id": 41,
+    "song": "Lemon Tree",
+    "artist": "Fools Garden"
+  },
+  {
+    "url": "https://open.spotify.com/track/4hObp5bmIJ3PP3cKA9K9GY",
+    "year": 1988,
+    "id": 42,
+    "song": "Don't Worry Be Happy",
+    "artist": "Bobby McFerrin"
+  },
+  {
+    "url": "https://open.spotify.com/track/5nNmj1cLH3r4aA4XDJ2bgY",
+    "year": 1992,
+    "id": 45,
+    "song": "September",
+    "artist": "Earth Wind & Fire"
+  },
+  {
+    "url": "https://open.spotify.com/track/6x4tKaOzfNJpEJHySoiJcs",
+    "year": 1999,
+    "id": 46,
+    "song": "Mambo No. 5 (a Little Bit of...)",
+    "artist": "Lou Bega"
+  },
+  {
+    "url": "https://open.spotify.com/track/7e89621JPkKaeDSTQ3avtg",
+    "year": 1974,
+    "id": 47,
+    "song": "Sweet Home Alabama",
+    "artist": "Lynyrd Skynyrd"
+  },
+  {
+    "url": "https://open.spotify.com/track/6I9HXaU8zbTgASGe7evWnu",
+    "year": 2012,
+    "id": 49,
+    "song": "The Final Countdown",
+    "artist": "Europe"
+  },
+  {
+    "url": "https://open.spotify.com/track/2Cdvbe2G4hZsnhNMKyGrie",
+    "year": 1981,
+    "id": 50,
+    "song": "I Love Rock 'N Roll",
+    "artist": "Joan Jett & the Blackhearts"
+  },
+  {
+    "url": "https://open.spotify.com/track/7N3PAbqfTjSEU1edb2tY8j",
+    "year": 1984,
+    "id": 51,
+    "song": "Jump - 2015 Remaster",
+    "artist": "Van Halen"
+  },
+  {
+    "url": "https://open.spotify.com/track/4caiYv89C9GZdDD1RzshWd",
+    "year": 2008,
+    "id": 52,
+    "song": "It's Raining Men - Single Version",
+    "artist": "The Weather Girls"
+  },
+  {
+    "url": "https://open.spotify.com/track/4rDbp1vnvEhieiccprPMdI",
+    "year": 1976,
+    "id": 56,
+    "song": "Somebody To Love - Remastered 2011",
+    "artist": "Queen"
+  },
+  {
+    "url": "https://open.spotify.com/track/7s25THrKz86DM225dOYwnr",
+    "year": 1967,
+    "id": 57,
+    "song": "Respect",
+    "artist": "Aretha Franklin"
+  },
+  {
+    "url": "https://open.spotify.com/track/37BTh5g05cxBIRYMbw8g2T",
+    "year": 1982,
+    "id": 58,
+    "song": "Rosanna",
+    "artist": "TOTO"
+  },
+  {
+    "url": "https://open.spotify.com/track/5T8EDUDqKcs6OSOwEsfqG7",
+    "year": 1978,
+    "id": 60,
+    "song": "Don't Stop Me Now - Remastered 2011",
+    "artist": "Queen"
+  },
+  {
+    "url": "https://open.spotify.com/track/4eHbdreAnSOrDDsFfc4Fpm",
+    "year": 1992,
+    "id": 61,
+    "song": "I Will Always Love You",
+    "artist": "Whitney Houston"
+  },
+  {
+    "url": "https://open.spotify.com/track/0wz1LjDb9ZNEYwOmDJ3Q4b",
+    "year": 1963,
+    "id": 62,
+    "song": "Surfin' U.S.A. - Remastered 2001",
+    "artist": "The Beach Boys"
+  },
+  {
+    "url": "https://open.spotify.com/track/2bCQHF9gdG5BNDVuEIEnNk",
+    "year": 2012,
+    "id": 63,
+    "song": "Smooth Criminal - 2012 Remaster",
+    "artist": "Michael Jackson"
+  },
+  {
+    "url": "https://open.spotify.com/track/1ot6jEe4w4hYnsOPjd3xKQ",
+    "year": 1982,
+    "id": 64,
+    "song": "I'm So Excited",
+    "artist": "The Pointer Sisters"
+  },
+  {
+    "url": "https://open.spotify.com/track/2tUBqZG2AbRi7Q0BIrVrEj",
+    "year": 1987,
+    "id": 65,
+    "song": "I Wanna Dance with Somebody (Who Loves Me)",
+    "artist": "Whitney Houston"
+  },
+  {
+    "url": "https://open.spotify.com/track/5zA8vzDGqPl2AzZkEYQGKh",
+    "year": 1983,
+    "id": 66,
+    "song": "Uptown Girl",
+    "artist": "Billy Joel"
+  },
+  {
+    "url": "https://open.spotify.com/track/2oXchyEBxQBe8vH6iFgbv0",
+    "year": 1998,
+    "id": 67,
+    "song": "Music",
+    "artist": "John Miles"
+  },
+  {
+    "url": "https://open.spotify.com/track/2IZZqH4K02UIYg5EohpNHF",
+    "year": 1994,
+    "id": 69,
+    "song": "Zombie",
+    "artist": "The Cranberries"
+  },
+  {
+    "url": "https://open.spotify.com/track/4xmjDH6auBwuZ4GHimjXGe",
+    "year": 1999,
+    "id": 70,
+    "song": "I Will Survive - Single Version",
+    "artist": "Gloria Gaynor"
+  },
+  {
+    "url": "https://open.spotify.com/track/5ChkMS8OtdzJeqyybCc9R5",
+    "year": 2008,
+    "id": 73,
+    "song": "Billie Jean",
+    "artist": "Michael Jackson"
+  },
+  {
+    "url": "https://open.spotify.com/track/0QKfiqpEU4h9ycPSzIFwYe",
+    "year": 1983,
+    "id": 74,
+    "song": "Maniac",
+    "artist": "Michael Sembello"
+  },
+  {
+    "url": "https://open.spotify.com/track/4aVuWgvD0X63hcOCnZtNFA",
+    "year": 1978,
+    "id": 75,
+    "song": "Hold the Line",
+    "artist": "TOTO"
+  },
+  {
+    "url": "https://open.spotify.com/track/0CUEc6T65lrU6rVW3HVYsl",
+    "year": 1999,
+    "id": 76,
+    "song": "Celebration - Single Version",
+    "artist": "Kool & The Gang"
+  },
+  {
+    "url": "https://open.spotify.com/track/6L89mwZXSOwYl76YXfX13s",
+    "year": 1994,
+    "id": 77,
+    "song": "Basket Case",
+    "artist": "Green Day"
+  },
+  {
+    "url": "https://open.spotify.com/track/1di1BEgJYzPvXUuinsYJGP",
+    "year": 1997,
+    "id": 78,
+    "song": "Everybody (Backstreet's Back) - Radio Edit",
+    "artist": "Backstreet Boys"
+  },
+  {
+    "url": "https://open.spotify.com/track/1H5VQuShs4qfwBXyHF0PeH",
+    "year": 1998,
+    "id": 79,
+    "song": "Narcotic - Radio Edit",
+    "artist": "Liquido"
+  },
+  {
+    "url": "https://open.spotify.com/track/0Dmao2oWlAZzIBX2Q1B5AH",
+    "year": 1997,
+    "id": 80,
+    "song": "Bitter Sweet Symphony - Remastered 2016",
+    "artist": "The Verve"
+  },
+  {
+    "url": "https://open.spotify.com/track/1bx7OUl2UmAnA5oZkm9If7",
+    "year": 2005,
+    "id": 81,
+    "song": "Jerk It Out",
+    "artist": "Caesars"
+  },
+  {
+    "url": "https://open.spotify.com/track/0SLtqCrXBRrnkxSOMA3X4W",
+    "year": 1997,
+    "id": 82,
+    "song": "Let Me Entertain You",
+    "artist": "Robbie Williams"
+  },
+  {
+    "url": "https://open.spotify.com/track/5n6RDaGFSN88oRWuGtYAIN",
+    "year": 1991,
+    "id": 83,
+    "song": "The Show Must Go On - Remastered 2011",
+    "artist": "Queen"
+  },
+  {
+    "url": "https://open.spotify.com/track/1INWPr855fwWdAOeecbu0W",
+    "year": 1961,
+    "id": 84,
+    "song": "Let's Twist Again",
+    "artist": "Chubby Checker"
+  },
+  {
+    "url": "https://open.spotify.com/track/2fuCquhmrzHpu5xcA1ci9x",
+    "year": 1982,
+    "id": 85,
+    "song": "Under Pressure - Remastered 2011",
+    "artist": "Queen,David Bowie"
+  },
+  {
+    "url": "https://open.spotify.com/track/5ZBeML7Lf3FMEVviTyvi8l",
+    "year": 1963,
+    "id": 86,
+    "song": "Twist And Shout - Remastered 2009",
+    "artist": "The Beatles"
+  },
+  {
+    "url": "https://open.spotify.com/track/5y788ya4NvwhBznoDIcXwK",
+    "year": 1964,
+    "id": 87,
+    "song": "The Sound of Silence - Acoustic Version",
+    "artist": "Simon & Garfunkel"
+  },
+  {
+    "url": "https://open.spotify.com/track/3Cx4yrFaX8CeHwBMReOWXI",
+    "year": 1989,
+    "id": 88,
+    "song": "We Didn't Start the Fire",
+    "artist": "Billy Joel"
+  },
+  {
+    "url": "https://open.spotify.com/track/6WCeFNVAXUtNczb7lqLiZU",
+    "year": 1973,
+    "id": 89,
+    "song": "Crocodile Rock",
+    "artist": "Elton John"
+  },
+  {
+    "url": "https://open.spotify.com/track/0rmGAIH9LNJewFw7nKzZnc",
+    "year": 1986,
+    "id": 90,
+    "song": "You Give Love A Bad Name",
+    "artist": "Bon Jovi"
+  },
+  {
+    "url": "https://open.spotify.com/track/1f3yAtsJtY87CTmM8RLnxf",
+    "year": 1991,
+    "id": 91,
+    "song": "Smells Like Teen Spirit",
+    "artist": "Nirvana"
+  },
+  {
+    "url": "https://open.spotify.com/track/4y1LsJpmMti1PfRQV9AWWe",
+    "year": 1983,
+    "id": 92,
+    "song": "Girls Just Want to Have Fun",
+    "artist": "Cyndi Lauper"
+  },
+  {
+    "url": "https://open.spotify.com/track/3NvS0SxNWIPiAJoPWUpZzr",
+    "year": 1993,
+    "id": 93,
+    "song": "What Is Love - 7 Mix",
+    "artist": "Haddaway"
+  },
+  {
+    "url": "https://open.spotify.com/track/6eN1f9KNmiWEhpE2RhQqB5",
+    "year": 1987,
+    "id": 94,
+    "song": "Paradise City",
+    "artist": "Guns N' Roses"
+  },
+  {
+    "url": "https://open.spotify.com/track/3cbV252akVZInSvJk7jAYX",
+    "year": 1983,
+    "id": 95,
+    "song": "Flashdance...What a Feeling - Radio Edit",
+    "artist": "Irene Cara"
+  },
+  {
+    "url": "https://open.spotify.com/track/0MKGH8UMfCnq5w7nG06oM5",
+    "year": 1991,
+    "id": 96,
+    "song": "Come As You Are",
+    "artist": "Nirvana"
+  },
+  {
+    "url": "https://open.spotify.com/track/6e40mgJiCid5HRAGrbpGA6",
+    "year": 2001,
+    "id": 97,
+    "song": "I Want It That Way",
+    "artist": "Backstreet Boys"
+  },
+  {
+    "url": "https://open.spotify.com/track/37ZJ0p5Jm13JPevGcx4SkF",
+    "year": 1986,
+    "id": 98,
+    "song": "Livin' On A Prayer",
+    "artist": "Bon Jovi"
+  },
+  {
+    "url": "https://open.spotify.com/track/7o2CTH4ctstm8TNelqjb51",
+    "year": 1987,
+    "id": 99,
+    "song": "Sweet Child O' Mine",
+    "artist": "Guns N' Roses"
+  },
+  {
+    "url": "https://open.spotify.com/track/60a0Rd6pjrkxjPbaKzXjfq",
+    "year": 2000,
+    "id": 100,
+    "song": "In the End",
+    "artist": "Linkin Park"
   }
 ]
