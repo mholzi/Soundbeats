@@ -102,16 +102,16 @@ class SoundbeatsCard extends HTMLElement {
     }
     
     // Check if at least one team has a user assigned (only for selected number of teams)
-    const teams = this.getTeams();
-    const teamsWithUsers = Object.values(teams).filter(team => 
-      team.participating && team.user_id
-    );
-    if (teamsWithUsers.length === 0) {
-      missing.push({
-        key: 'teams',
-        name: 'Team Users',
-        description: 'Assign at least one participating team to a Home Assistant user to enable gameplay.'
-      });
+    if (teamCount && teamCount >= 1 && teamCount <= 5) {
+      const teams = this.getTeams();
+      const teamsWithUsers = Object.values(teams).filter(team => team.user_id);
+      if (teamsWithUsers.length === 0) {
+        missing.push({
+          key: 'teams',
+          name: 'Team Users',
+          description: 'Assign at least one team to a Home Assistant user to enable gameplay.'
+        });
+      }
     }
     
     return missing;
@@ -258,42 +258,41 @@ class SoundbeatsCard extends HTMLElement {
 
     // Teams Input (only show if team count is already selected)
     if (missingMap.teams) {
-      const teams = this.getTeams();
-      const users = this.homeAssistantUsers || [];
-      
-      inputsHtml += `
-        <div class="splash-input-section ${this.hasValidationError('teams') ? 'error' : ''}">
-          <div class="splash-input-header">
-            <ha-icon icon="mdi:account-group-outline" class="input-icon"></ha-icon>
-            <h3>Team Setup</h3>
+      const teamCount = this.getSelectedTeamCount();
+      // Only show team setup if team count has been selected
+      if (teamCount && teamCount >= 1 && teamCount <= 5) {
+        const teams = this.getTeams();
+        const users = this.homeAssistantUsers || [];
+        
+        inputsHtml += `
+          <div class="splash-input-section ${this.hasValidationError('teams') ? 'error' : ''}">
+            <div class="splash-input-header">
+              <ha-icon icon="mdi:account-group-outline" class="input-icon"></ha-icon>
+              <h3>Team Setup</h3>
+            </div>
+            <p class="input-description">Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}</p>
+            <div class="splash-teams-container">
+              ${Object.entries(teams).map(([teamId, team]) => `
+                <div class="splash-team-item">
+                  <label class="team-label">Team ${teamId.split('_')[1]}:</label>
+                  <input type="text" class="splash-team-input" placeholder="Team Name" 
+                         value="${team.name}" 
+                         oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+                  <select class="splash-team-select" 
+                          onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)">
+                    <option value="">Select user...</option>
+                    ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+                      `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
+                        ${user.name}
+                      </option>`
+                    ).join('')}
+                  </select>
+                </div>
+              `).join('')}
+            </div>
           </div>
-          <p class="input-description">Set up at least one team with a user assigned</p>
-          <div class="splash-teams-container">
-            ${Object.entries(teams).map(([teamId, team]) => `
-              <div class="splash-team-item">
-                <label class="team-label">Team ${teamId.split('_')[1]}:</label>
-                <input type="text" class="splash-team-input" placeholder="Team Name" 
-                       value="${team.name}" 
-                       oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
-                <select class="splash-team-select" 
-                        onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)">
-                  <option value="">Select user...</option>
-                  ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
-                    `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
-                      ${user.name}
-                    </option>`
-                  ).join('')}
-                </select>
-                <label class="splash-team-participating">
-                  <input type="checkbox" ${team.participating ? 'checked' : ''} 
-                         onchange="this.getRootNode().host.updateTeamParticipating('${teamId}', this.checked)">
-                  <span>Participating</span>
-                </label>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
+        `;
+      }
     }
 
     return inputsHtml;
@@ -2874,11 +2873,6 @@ class SoundbeatsCard extends HTMLElement {
               </option>`
             ).join('')}
           </select>
-          <label class="participation-control">
-            <input type="checkbox" class="participating-checkbox" ${team.participating ? 'checked' : ''} 
-                   onchange="this.getRootNode().host.updateTeamParticipating('${teamId}', this.checked)">
-            <span>Active</span>
-          </label>
         </div>
       </div>
     `).join('');
@@ -4050,7 +4044,15 @@ class SoundbeatsCard extends HTMLElement {
         if (teamManagementContainer) {
           teamManagementContainer.innerHTML = this.renderTeamManagement();
         }
+        
+        // Re-render splash screen if it's currently shown to populate dropdowns
+        if (this.shouldShowSplashScreen()) {
+          this.render();
+        }
       });
+    } else if (hass && this.usersLoaded && this.shouldShowSplashScreen()) {
+      // Re-render splash screen if hass data changes and splash is shown
+      this.render();
     }
     
     // Initialize highscore tracking on first load
