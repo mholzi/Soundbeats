@@ -210,6 +210,8 @@ The integration automatically creates the following entities:
 
 **Note:** The `sensor.soundbeats_current_song` automatically manages all music-related functionality including song metadata (`year` and `url` properties) and the selected media player entity. This sensor serves as the single source of truth for both the currently selected media player and any playing song information. The integration automatically coordinates between this custom sensor (for year, URL, and media player selection) and your selected media player (for title, artist, and artwork) to provide complete song information with zero manual configuration required.
 
+**Music Selection:** Soundbeats uses a simple, curated song list without category or era filtering. The game does not include music category selection (rock, pop, etc.) or era filtering (60s, 80s, etc.) - songs are randomly selected from the complete list for maximum variety and simplicity. This design ensures zero configuration is required for music preferences and provides a straightforward gaming experience focused on year-guessing fun.
+
 ### Lovelace Card
 
 The integration automatically provides a comprehensive custom Lovelace card with **zero additional setup required**. Featuring the new **interactive splash/setup screen**, users can configure audio player, timer, and teams directly on the card without navigating away or doing any manual setup. The card includes an always-visible "Launch Game" button with visual validation cues and a modern onboarding flow that makes starting your first game effortless.
@@ -555,7 +557,7 @@ This comprehensive guide covers:
 
 See [enhancements.md](enhancements.md) for detailed improvement suggestions including:
 - UI enhancements (team color coding, animations, enhanced song display)  
-- Functionality improvements (difficulty adjustment, category filtering, statistics)
+- Functionality improvements (difficulty adjustment, statistics)
 - Implementation guides for each enhancement
 
 ### Contributing
