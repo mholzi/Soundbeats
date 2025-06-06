@@ -319,10 +319,21 @@ class SoundbeatsCard extends HTMLElement {
           margin-bottom: 16px;
           padding: 12px;
           border-radius: 8px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+        }
+        
+        /* Ensure secondary text is readable on the gradient background */
+        .section .overview-description,
+        .section .overview-empty,
+        .section .round-number,
+        .section .highscore-empty,
+        .section .no-team-message {
+          color: rgba(255, 255, 255, 0.8) !important;
         }
         
         .title-section {
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #e94560 75%, #f39c12 100%);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: #ffffff;
           text-align: center;
           position: relative;
@@ -521,12 +532,12 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .team-section {
-          background: var(--secondary-background-color, #f5f5f5);
-          border: 1px solid var(--divider-color, #e0e0e0);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
         .admin-section {
-          background: var(--error-color, #f44336);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: var(--text-primary-color, white);
           display: ${isAdmin ? 'block' : 'none'};
         }
@@ -1324,7 +1335,7 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .countdown-section {
-          background: var(--warning-color, #ff9800);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: var(--text-primary-color, white);
           text-align: center;
           position: relative;
@@ -1352,8 +1363,8 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .song-section {
-          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, rgba(3, 169, 244, 0.1) 100%);
-          border: 2px solid var(--primary-color, #03a9f4);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: 2px solid rgba(255, 255, 255, 0.3);
         }
         
         .song-card {
@@ -1487,8 +1498,8 @@ class SoundbeatsCard extends HTMLElement {
         
         /* Teams Overview Section Styles */
         .teams-overview-section {
-          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, rgba(3, 169, 244, 0.05) 100%);
-          border: 1px solid var(--primary-color, #03a9f4);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
         .overview-description {
@@ -1821,8 +1832,8 @@ class SoundbeatsCard extends HTMLElement {
         
         /* Highscore Section Styles */
         .highscore-section {
-          background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
-          border: 1px solid rgba(255, 215, 0, 0.3);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
         .highscore-display {
