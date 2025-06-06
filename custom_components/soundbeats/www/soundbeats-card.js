@@ -42,6 +42,9 @@ class SoundbeatsCard extends HTMLElement {
     
     // Track if user has successfully launched from splash screen
     this._hasLaunchedFromSplash = false;
+    
+    // Track if splash screen should be forced to show (e.g., when Start Game button is pressed)
+    this._forceShowSplash = false;
   }
 
   setConfig(config) {
@@ -61,10 +64,7 @@ class SoundbeatsCard extends HTMLElement {
     
     // Show splash screen when:
     // 1. Critical game variables are missing
-    // 2. Game status is 'ready' (waiting to start) AND no rounds have been played yet
-    //    AND user hasn't successfully launched from splash yet
-    const gameStatus = this.getGameStatus();
-    const roundCounter = this.getRoundCounter();
+    // 2. Force flag is set (e.g., when "Start Game" button is pressed)
     const missingVariables = this.getMissingGameVariables();
     
     let shouldShow = false;
@@ -73,9 +73,8 @@ class SoundbeatsCard extends HTMLElement {
     if (missingVariables.length > 0) {
       shouldShow = true;
     }
-    // Show if game is in ready state and no rounds played yet
-    // BUT only if user hasn't successfully launched from splash yet
-    else if (gameStatus === 'ready' && roundCounter === 0 && !this._hasLaunchedFromSplash) {
+    // Show if force flag is set
+    else if (this._forceShowSplash) {
       shouldShow = true;
     }
     
@@ -394,6 +393,7 @@ class SoundbeatsCard extends HTMLElement {
       // with UI controls. Actual game logic (song start, scoring, etc.) is initiated
       // by explicit user actions on the game screen, not by this UI transition.
       this._hasLaunchedFromSplash = true;  // Mark that user has successfully launched
+      this._forceShowSplash = false;  // Clear force flag after successful launch
       this.clearValidationCache();  // Clear cache to ensure UI updates
       this.render();  // Re-render to transition from splash to main game UI
     } else {
@@ -3514,12 +3514,12 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   startNewGame() {
-    // Reset the launch flag so splash screen can show again for new game setup
-    this._hasLaunchedFromSplash = false;
-    // Trigger splash screen display instead of directly starting game
+    // Set force flag to show splash screen for new game setup
+    this._forceShowSplash = true;
+    // Trigger splash screen display for new game configuration
     // This follows the zero-setup philosophy where UI transitions happen first
     this.clearValidationCache();  // Clear cache to ensure fresh validation
-    this.render();  // Re-render to show splash screen if needed
+    this.render();  // Re-render to show splash screen
   }
 
   nextSong() {
