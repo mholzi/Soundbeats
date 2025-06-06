@@ -387,8 +387,13 @@ class SoundbeatsCard extends HTMLElement {
     const missingVariables = this.getMissingGameVariables();
     
     if (missingVariables.length === 0) {
-      // Everything is configured - transition to game UI
-      // NOTE: Following zero-setup philosophy, this method ONLY handles UI transition.
+      // Everything is configured - transition to game UI and reset game state
+      // Call service to reset game state (points, played songs, round counter)
+      if (this.hass) {
+        this.hass.callService('soundbeats', 'start_game', {});
+      }
+      
+      // NOTE: Following zero-setup philosophy, this method handles UI transition.
       // All configuration changes are already persisted immediately when users interact
       // with UI controls. Actual game logic (song start, scoring, etc.) is initiated
       // by explicit user actions on the game screen, not by this UI transition.
@@ -3543,6 +3548,11 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   startNewGame() {
+    // Call service to reset game state (points, played songs, round counter)
+    if (this.hass) {
+      this.hass.callService('soundbeats', 'start_game', {});
+    }
+    
     // Set force flag to show splash screen for new game setup
     this._forceShowSplash = true;
     // Trigger splash screen display for new game configuration
