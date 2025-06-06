@@ -256,11 +256,9 @@ class SoundbeatsCard extends HTMLElement {
       `;
     }
 
-    // Teams Input (only show if team count is already selected)
-    if (missingMap.teams) {
-      const teamCount = this.getSelectedTeamCount();
-      // Only show team setup if team count has been selected
-      if (teamCount && teamCount >= 1 && teamCount <= 5) {
+    // Teams Input (always show if team count is already selected)
+    const teamCount = this.getSelectedTeamCount();
+    if (teamCount && teamCount >= 1 && teamCount <= 5) {
         const teams = this.getTeams();
         const users = this.homeAssistantUsers || [];
         
@@ -292,7 +290,6 @@ class SoundbeatsCard extends HTMLElement {
             </div>
           </div>
         `;
-      }
     }
 
     return inputsHtml;
@@ -832,7 +829,7 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .admin-controls {
-          margin-top: 12px;
+          margin-top: 10px;
         }
         
         .admin-button {
@@ -3001,6 +2998,15 @@ class SoundbeatsCard extends HTMLElement {
         team_id: teamId,
         user_id: userId || null
       });
+      
+      // Trigger immediate UI refresh to reflect the change
+      setTimeout(() => {
+        if (this.shouldShowSplashScreen()) {
+          this.render();
+        } else {
+          this.updateSplashScreenDropdowns();
+        }
+      }, 100);
     }
   }
 
