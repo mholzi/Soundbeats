@@ -1,6 +1,13 @@
 /**
  * Soundbeats Lovelace Card
  * A custom card for the Soundbeats Home Assistant integration
+ * 
+ * ZERO-SETUP ARCHITECTURE:
+ * This card follows a zero-setup, UI-driven philosophy where all configuration
+ * changes are immediately persisted to Home Assistant entities as users interact
+ * with UI controls. The Start/Launch Game button only transitions the UI and does
+ * not trigger backend services or game logic. Actual game operations (song start,
+ * scoring, etc.) are initiated by explicit user actions on the main game screen.
  */
 
 class SoundbeatsCard extends HTMLElement {
@@ -372,8 +379,13 @@ class SoundbeatsCard extends HTMLElement {
     const missingVariables = this.getMissingGameVariables();
     
     if (missingVariables.length === 0) {
-      // Everything is configured, start the game
-      this.startNewGame();
+      // Everything is configured - transition to game UI
+      // NOTE: Following zero-setup philosophy, this method ONLY handles UI transition.
+      // All configuration changes are already persisted immediately when users interact
+      // with UI controls. Actual game logic (song start, scoring, etc.) is initiated
+      // by explicit user actions on the game screen, not by this UI transition.
+      this.clearValidationCache();  // Clear cache to ensure UI updates
+      this.render();  // Re-render to transition from splash to main game UI
     } else {
       // Highlight missing items
       this._validationErrors = missingVariables.map(v => v.key);

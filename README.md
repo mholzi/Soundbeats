@@ -15,7 +15,7 @@ A custom Home Assistant integration that brings an interactive music guessing ga
 
 - **🎮 Brand new splash/setup UI** for the Soundbeats Lovelace Card:
 
-  - Always-visible "Launch Game" button with real-time validation and visual cues for any missing or misconfigured options
+  - Always-visible "Launch Game" button that transitions to the main game interface once all settings are configured (does not trigger backend processes - all configuration is already instantly saved)
   - Modern, stylish splash visuals and helper text for an even smoother onboarding
   - Expanded out-of-the-box "zero-setup" experience—everything works automatically after install!
 - **⚡ Enhanced automation** with new methods and logic for updating team participation status and validating game setup
@@ -184,7 +184,7 @@ When you first add the Soundbeats card to your dashboard, you'll be greeted by a
 
 - **🎵 Animated Welcome Interface**: Beautiful floating musical notes, sound wave visualizations, and modern music-themed design that sets the party mood
 - **⚙️ Interactive Configuration**: Configure missing game settings (audio player, timer duration, teams) directly on the splash screen with intuitive dropdowns, sliders, and team assignment controls that instantly persist to Home Assistant entities
-- **🚀 Always-Visible Launch Button**: A prominent "Launch Game" button that provides real-time validation and visual cues for any missing or misconfigured options
+- **🚀 Always-Visible Launch Button**: A prominent "Launch Game" button that transitions the UI to the main game screen once all settings are configured, with real-time validation and visual cues for any missing options
 - **✅ Smart Validation**: The interface automatically detects what needs to be configured and guides you through each step with helpful text and visual indicators
 - **🎨 Modern Visual Design**: Stylish splash visuals with the same premium design language as the main game interface
 
@@ -192,8 +192,9 @@ When you first add the Soundbeats card to your dashboard, you'll be greeted by a
 
 - **No YAML Required**: All configuration happens through the beautiful web interface—never touch a configuration file
 - **Auto-Detection**: The card automatically discovers your Home Assistant media players and presents them in an easy-to-use dropdown
+- **Instant Configuration Persistence**: Every change you make in the setup UI is immediately saved to Home Assistant entities with zero delay - no "save" button required
 - **Instant Feedback**: Real-time validation shows you exactly what's ready and what needs attention
-- **One-Click Start**: Once everything is configured, just click "Launch Game" to dive straight into the fun
+- **UI Transition Only**: Once everything is configured, click "Launch Game" to transition to the main game interface - actual game logic (song start, scoring, timer) is initiated by explicit user actions within the game screen
 - **Persistent Settings**: All your preferences and team assignments are automatically saved and immediately written to Home Assistant entities, remembered for future games
 
 **The Result**: From installation to your first game in under 2 minutes, with zero technical knowledge required!
@@ -222,7 +223,7 @@ The integration automatically creates the following entities:
 
 ### Lovelace Card
 
-The integration automatically provides a comprehensive custom Lovelace card with **zero additional setup required**. Featuring the new **interactive splash/setup screen**, users can configure audio player, timer, and teams directly on the card without navigating away or doing any manual setup. The card includes an always-visible "Launch Game" button with visual validation cues and a modern onboarding flow that makes starting your first game effortless.
+The integration automatically provides a comprehensive custom Lovelace card with **zero additional setup required**. Featuring the new **interactive splash/setup screen**, users can configure audio player, timer, and teams directly on the card without navigating away or doing any manual setup. The card includes an always-visible "Launch Game" button that transitions to the main game interface once configuration is complete. All settings are instantly saved as you interact with the UI, and actual game operations (song playback, scoring, timer) are initiated by explicit user actions within the main game screen.
 
 The card features role-based sections:
 
@@ -362,7 +363,7 @@ The Soundbeats card has been enhanced with improved visibility and clarity acros
 The integration provides comprehensive Home Assistant services for automation and external control:
 
 #### Game Control Services
-- `soundbeats.start_game` - Start a new game session (resets teams, round counter, played songs list, and stops countdown)
+- `soundbeats.start_game` - Start a new game session (resets teams, round counter, played songs list, and stops countdown). **Note**: The UI Start/Launch Game button does NOT call this service - it only transitions the interface. This service is intended for automation or explicit game initialization via Home Assistant services.
 - `soundbeats.stop_game` - Stop the current game session  
 - `soundbeats.reset_game` - Reset the game to initial state
 - `soundbeats.next_song` - Skip to the next song and start countdown timer (automatically selects only unplayed songs)
