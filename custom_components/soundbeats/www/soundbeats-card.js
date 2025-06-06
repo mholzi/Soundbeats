@@ -2866,7 +2866,7 @@ class SoundbeatsCard extends HTMLElement {
             <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.teamManagementExpanded ? 'expanded' : ''}"></ha-icon>
           </div>
           <div class="expandable-content ${this.teamManagementExpanded ? 'expanded' : 'collapsed'}">
-            <p>Configure team names and participation status.</p>
+            <p class="team-management-description">${this.getTeamManagementDescription()}</p>
             <div class="team-management-container">
               ${this.renderTeamManagement()}
             </div>
@@ -3050,33 +3050,59 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   renderTeamManagement() {
-    const teams = this.getTeams();
+    const teamCount = this.getSelectedTeamCount();
+    const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
     
-    return Object.entries(teams).map(([teamId, team]) => `
-      <div class="team-management-item" data-team="${teamId}">
-        <div class="team-management-info">
-          <span class="team-management-label">Team ${teamId.split('_')[1]}:</span>
+    if (hasValidTeamCount) {
+      // Generate teams HTML using splash screen logic
+      const teams = this.getTeams();
+      const users = this.homeAssistantUsers || [];
+      const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
+      
+      return Object.entries(teams).map(([teamId, team]) => `
+        <div class="team-management-item" data-team="${teamId}">
+          <div class="team-management-info">
+            <span class="team-management-label">Team ${teamId.split('_')[1]}:</span>
+          </div>
+          <div class="team-management-controls">
+            <input type="text" class="team-input" placeholder="Team Name" value="${team.name}" 
+                   oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+            <select 
+              class="team-user-select" 
+              onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
+              title="Assign user to team"
+              ${isLoadingUsers ? 'disabled' : ''}
+            >
+              <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
+              ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+                `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
+                  ${user.name}
+                </option>`
+              ).join('')}
+            </select>
+          </div>
         </div>
-        <div class="team-management-controls">
-          <input type="text" class="team-input" placeholder="Team Name" value="${team.name}" 
-                 oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
-          <select 
-            class="team-user-select" 
-            onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
-            title="Assign user to team"
-          >
-            <option value="">Select user...</option>
-            ${this.homeAssistantUsers
-              .filter(user => !user.name.startsWith('Home Assistant'))
-              .map(user => 
-              `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
-                ${user.name}
-              </option>`
-            ).join('')}
-          </select>
+      `).join('');
+    } else {
+      // Show prompt message when no valid team count is selected
+      return `
+        <div class="team-management-prompt">
+          <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
+          <span>Please select the number of teams in Game Settings first</span>
         </div>
-      </div>
-    `).join('');
+      `;
+    }
+  }
+
+  getTeamManagementDescription() {
+    const teamCount = this.getSelectedTeamCount();
+    const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
+    
+    if (hasValidTeamCount) {
+      return `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
+    } else {
+      return 'Please select the number of teams in Game Settings first to set up team assignments';
+    }
   }
 
   renderTeams() {
@@ -4413,6 +4439,11 @@ class SoundbeatsCard extends HTMLElement {
       
       if (teamManagementContainer) {
         teamManagementContainer.innerHTML = this.renderTeamManagement();
+        // Update the description as well
+        const descriptionElement = this.shadowRoot.querySelector('.team-management-description');
+        if (descriptionElement) {
+          descriptionElement.textContent = this.getTeamManagementDescription();
+        }
       }
       
       // Restore focus if possible
@@ -4458,6 +4489,11 @@ class SoundbeatsCard extends HTMLElement {
         const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
         if (teamManagementContainer) {
           teamManagementContainer.innerHTML = this.renderTeamManagement();
+          // Update the description as well
+          const descriptionElement = this.shadowRoot.querySelector('.team-management-description');
+          if (descriptionElement) {
+            descriptionElement.textContent = this.getTeamManagementDescription();
+          }
         }
         
         // Re-render splash screen if it's currently shown to populate dropdowns
