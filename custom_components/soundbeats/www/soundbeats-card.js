@@ -1273,13 +1273,13 @@ class SoundbeatsCard extends HTMLElement {
           background: var(--card-background-color, white);
           border: 1px solid var(--divider-color, #e0e0e0);
           border-radius: 4px;
-          padding: 12px;
-          margin-bottom: 8px;
+          padding: 16px;
+          margin-bottom: 12px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           flex-wrap: wrap;
-          gap: 8px;
+          gap: 12px;
         }
         
         .team-management-info {
@@ -1313,13 +1313,13 @@ class SoundbeatsCard extends HTMLElement {
         .game-settings {
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 20px;
         }
         
         .setting-item {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 12px;
         }
         
         .setting-label {
@@ -1563,6 +1563,12 @@ class SoundbeatsCard extends HTMLElement {
         .expandable-content.expanded {
           max-height: 1000px;
           opacity: 1;
+          padding: 16px;
+        }
+        
+        .expandable-content p {
+          margin-bottom: 16px;
+          margin-top: 0;
         }
         
         /* Teams Overview Section Styles */
