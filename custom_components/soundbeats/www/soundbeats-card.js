@@ -295,6 +295,10 @@ class SoundbeatsCard extends HTMLElement {
       
       inputsHtml += `
         <p class="input-description">Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}</p>
+        <div class="admin-warning">
+          <ha-icon icon="mdi:shield-account" class="warning-icon"></ha-icon>
+          <span><strong>Important:</strong> The user assigned to Team 1 will have admin privileges to manage game settings and teams.</span>
+        </div>
         ${Object.entries(teams).map(([teamId, team]) => `
           <div class="splash-team-item">
             <label class="team-label">Team ${teamId.split('_')[1]}:</label>
@@ -2384,6 +2388,25 @@ class SoundbeatsCard extends HTMLElement {
           font-size: 0.9em;
         }
         
+        .admin-warning {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 193, 7, 0.15);
+          border: 1px solid rgba(255, 193, 7, 0.3);
+          border-radius: 6px;
+          padding: 10px 12px;
+          margin: 8px 0 16px 0;
+          color: #ffdb57;
+          font-size: 0.85em;
+        }
+        
+        .admin-warning .warning-icon {
+          color: #ffdb57;
+          font-size: 1.2em;
+          flex-shrink: 0;
+        }
+        
         .splash-audio-select {
           width: 100%;
           padding: 8px 12px;
@@ -2869,8 +2892,16 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   checkAdminPermissions() {
-    // Check if admin is enabled in card configuration
-    return this.config && this.config.admin === true;
+    // Check if current user is assigned to team_1 (team 1 user is admin)
+    if (!this.hass || !this.hass.user) {
+      return false;
+    }
+    
+    const currentUserId = this.hass.user.id;
+    const teams = this.getTeams();
+    
+    // Check if team_1 exists and if current user is assigned to it
+    return !!(teams && teams.team_1 && teams.team_1.user_id === currentUserId);
   }
 
   getGameStatus() {
