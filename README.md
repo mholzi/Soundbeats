@@ -15,6 +15,7 @@ A custom Home Assistant integration that brings an interactive music guessing ga
 
 - **🎮 Brand new splash/setup UI** for the Soundbeats Lovelace Card:
   - Configure missing game settings (audio player, timer, teams) directly on the splash screen with intuitive dropdowns, sliders, and team assignment
+  - **Teams Setup section always visible** for a more guided and intuitive setup experience - prompts user to select team count first, then shows assignment fields
   - Always-visible "Launch Game" button with real-time validation and visual cues for any missing or misconfigured options
   - Modern, stylish splash visuals and helper text for an even smoother onboarding
   - Expanded out-of-the-box "zero-setup" experience—everything works automatically after install!

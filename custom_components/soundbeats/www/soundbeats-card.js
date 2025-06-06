@@ -266,43 +266,61 @@ class SoundbeatsCard extends HTMLElement {
       </div>
     `;
 
-    // Teams Input (always show if team count is already selected)
+    // Teams Setup Section (always show)
     const teamCount = this.getSelectedTeamCount();
-    if (teamCount && teamCount >= 1 && teamCount <= 5) {
-        const teams = this.getTeams();
-        const users = this.homeAssistantUsers || [];
-        const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
-        
-        inputsHtml += `
-          <div class="splash-input-section ${this.hasValidationError('teams') ? 'error' : ''}">
-            <div class="splash-input-header">
-              <ha-icon icon="mdi:account-group-outline" class="input-icon"></ha-icon>
-              <h3>Team Setup</h3>
-            </div>
-            <p class="input-description">Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}</p>
-            <div class="splash-teams-container">
-              ${Object.entries(teams).map(([teamId, team]) => `
-                <div class="splash-team-item">
-                  <label class="team-label">Team ${teamId.split('_')[1]}:</label>
-                  <input type="text" class="splash-team-input" placeholder="Team Name" 
-                         value="${team.name}" 
-                         oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
-                  <select class="splash-team-select" 
-                          onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
-                          ${isLoadingUsers ? 'disabled' : ''}>
-                    <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
-                    ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
-                      `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
-                        ${user.name}
-                      </option>`
-                    ).join('')}
-                  </select>
-                </div>
-              `).join('')}
-            </div>
+    const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
+    
+    inputsHtml += `
+      <div class="splash-input-section ${this.hasValidationError('teams') ? 'error' : ''}">
+        <div class="splash-input-header">
+          <ha-icon icon="mdi:account-group-outline" class="input-icon"></ha-icon>
+          <h3>Team Setup</h3>
+        </div>
+        <div class="splash-teams-container">
+    `;
+    
+    if (hasValidTeamCount) {
+      // Show team assignment fields when valid team count is selected
+      const teams = this.getTeams();
+      const users = this.homeAssistantUsers || [];
+      const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
+      
+      inputsHtml += `
+        <p class="input-description">Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}</p>
+        ${Object.entries(teams).map(([teamId, team]) => `
+          <div class="splash-team-item">
+            <label class="team-label">Team ${teamId.split('_')[1]}:</label>
+            <input type="text" class="splash-team-input" placeholder="Team Name" 
+                   value="${team.name}" 
+                   oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+            <select class="splash-team-select" 
+                    onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
+                    ${isLoadingUsers ? 'disabled' : ''}>
+              <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
+              ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+                `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
+                  ${user.name}
+                </option>`
+              ).join('')}
+            </select>
           </div>
-        `;
+        `).join('')}
+      `;
+    } else {
+      // Show prompt message when no valid team count is selected
+      inputsHtml += `
+        <p class="input-description">Please select the number of teams above to set up team assignments</p>
+        <div class="splash-teams-prompt">
+          <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
+          <span>Choose how many teams will play first</span>
+        </div>
+      `;
     }
+    
+    inputsHtml += `
+        </div>
+      </div>
+    `;
 
     // Timer Input (only show if missing - optional)
     if (missingMap.timer) {
@@ -2438,6 +2456,23 @@ class SoundbeatsCard extends HTMLElement {
           gap: 12px;
         }
         
+        .splash-teams-prompt {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 4px;
+          color: rgba(255, 255, 255, 0.7);
+          font-style: italic;
+        }
+        
+        .prompt-icon {
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 1.1em;
+        }
+        
         .splash-team-item {
           display: grid;
           grid-template-columns: auto 1fr 1fr;
@@ -4133,50 +4168,58 @@ class SoundbeatsCard extends HTMLElement {
     if (!splashTeamsContainer) return;
     
     const teamCount = this.getSelectedTeamCount();
-    if (!teamCount || teamCount < 1 || teamCount > 5) {
-      // Hide teams section if no valid team count
-      const teamsSection = splashTeamsContainer.closest('.splash-input-section');
-      if (teamsSection) {
-        teamsSection.style.display = 'none';
-      }
-      return;
-    }
+    const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
     
-    // Show teams section and update content
+    // Always show teams section
     const teamsSection = splashTeamsContainer.closest('.splash-input-section');
     if (teamsSection) {
       teamsSection.style.display = 'block';
-      
-      // Update description
+    }
+    
+    if (hasValidTeamCount) {
+      // Update description and show team assignment fields
       const description = teamsSection.querySelector('.input-description');
       if (description) {
         description.textContent = `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
       }
+      
+      // Generate teams HTML
+      const teams = this.getTeams();
+      const users = this.homeAssistantUsers || [];
+      const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
+      
+      splashTeamsContainer.innerHTML = Object.entries(teams).map(([teamId, team]) => `
+        <div class="splash-team-item">
+          <label class="team-label">Team ${teamId.split('_')[1]}:</label>
+          <input type="text" class="splash-team-input" placeholder="Team Name" 
+                 value="${team.name}" 
+                 oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+          <select class="splash-team-select" 
+                  onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
+                  ${isLoadingUsers ? 'disabled' : ''}>
+            <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
+            ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+              `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
+                ${user.name}
+              </option>`
+            ).join('')}
+          </select>
+        </div>
+      `).join('');
+    } else {
+      // Show prompt message when no valid team count is selected
+      const description = teamsSection.querySelector('.input-description');
+      if (description) {
+        description.textContent = 'Please select the number of teams above to set up team assignments';
+      }
+      
+      splashTeamsContainer.innerHTML = `
+        <div class="splash-teams-prompt">
+          <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
+          <span>Choose how many teams will play first</span>
+        </div>
+      `;
     }
-    
-    // Generate new teams HTML
-    const teams = this.getTeams();
-    const users = this.homeAssistantUsers || [];
-    const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
-    
-    splashTeamsContainer.innerHTML = Object.entries(teams).map(([teamId, team]) => `
-      <div class="splash-team-item">
-        <label class="team-label">Team ${teamId.split('_')[1]}:</label>
-        <input type="text" class="splash-team-input" placeholder="Team Name" 
-               value="${team.name}" 
-               oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
-        <select class="splash-team-select" 
-                onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
-                ${isLoadingUsers ? 'disabled' : ''}>
-          <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
-          ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
-            `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
-              ${user.name}
-            </option>`
-          ).join('')}
-        </select>
-      </div>
-    `).join('');
   }
 
   updateSplashScreenDropdowns() {
