@@ -2556,13 +2556,21 @@ class SoundbeatsCard extends HTMLElement {
         
         .global-highscore {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          gap: 12px;
+          text-align: center;
+          gap: 8px;
           padding: 16px;
           background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%);
           border-radius: 8px;
           border: 2px solid rgba(255, 215, 0, 0.4);
           flex: 1;
+        }
+        
+        .highscore-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
         
         .crown-icon {
@@ -2583,8 +2591,9 @@ class SoundbeatsCard extends HTMLElement {
         
         .user-average {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          justify-content: center;
+          text-align: center;
           gap: 8px;
           padding: 16px;
           background: rgba(100, 149, 237, 0.1);
