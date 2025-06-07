@@ -628,7 +628,7 @@ class SoundbeatsCard extends HTMLElement {
           <option value="">${isActuallyLoading ? this._t('ui.loading_audio_players') : hasNoPlayers ? this._t('ui.no_audio_players') : this._t('ui.select_audio_player')}</option>
           ${mediaPlayers.map(player => 
             `<option value="${player.entity_id}" ${currentSelection === player.entity_id ? 'selected' : ''}>
-              ${player.name}
+              ${player.name} - ${player.entity_id}
             </option>`
           ).join('')}
         </select>
@@ -3377,7 +3377,7 @@ class SoundbeatsCard extends HTMLElement {
                     <option value="">${this._t('ui.select_audio_player')}</option>
                     ${this.getMediaPlayers().map(player => 
                       `<option value="${player.entity_id}" ${this.getSelectedAudioPlayer() === player.entity_id ? 'selected' : ''}>
-                        ${player.name}
+                        ${player.name} - ${player.entity_id}
                       </option>`
                     ).join('')}
                   </select>
@@ -4974,7 +4974,7 @@ class SoundbeatsCard extends HTMLElement {
     mediaPlayers.forEach(player => {
       const option = document.createElement('option');
       option.value = player.entity_id;
-      option.textContent = player.name;
+      option.textContent = `${player.name} - ${player.entity_id}`;
       option.selected = currentSelection === player.entity_id;
       select.appendChild(option);
     });
@@ -5156,7 +5156,7 @@ class SoundbeatsCard extends HTMLElement {
         mediaPlayers.forEach(player => {
           const option = document.createElement('option');
           option.value = player.entity_id;
-          option.textContent = player.name;
+          option.textContent = `${player.name} - ${player.entity_id}`;
           option.selected = currentSelection === player.entity_id;
           audioSelect.appendChild(option);
         });
