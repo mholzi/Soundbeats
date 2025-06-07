@@ -28,566 +28,647 @@
     "year": 1980,
     "id": 4,
     "song": "Back In Black",
-    "artist": "AC/DC"
+    "artist": "AC/DC",
+    "fun_fact": "This album was AC/DC's tribute to their late lead singer Bon Scott and became one of the best-selling albums of all time!"
   },
   {
     "url": "https://open.spotify.com/track/7azo4rpSUh8nXgtonC6Pkq",
     "year": 2017,
     "id": 5,
     "song": "Thriller",
-    "artist": "Michael Jackson"
+    "artist": "Michael Jackson",
+    "fun_fact": "The music video featured groundbreaking zombie choreography and was the first music video inducted into the National Film Registry!"
   },
   {
     "url": "https://open.spotify.com/track/7yzbimr8WVyAtBX3Eg6UL9",
     "year": 1984,
     "id": 6,
     "song": "Hallelujah",
-    "artist": "Leonard Cohen"
+    "artist": "Leonard Cohen",
+    "fun_fact": "Leonard Cohen wrote over 80 verses for this song and spent 5 years perfecting it - it's been covered by more than 300 artists!"
   },
   {
     "url": "https://open.spotify.com/track/19slC7k8bsPOAKDjHYLU2W",
     "year": 1970,
     "id": 7,
     "song": "Father And Son",
-    "artist": "Yusuf / Cat Stevens"
+    "artist": "Yusuf / Cat Stevens",
+    "fun_fact": "Cat Stevens wrote this as a dialogue between a father and son, and famously sang both parts himself in different vocal styles!"
   },
   {
     "url": "https://open.spotify.com/track/0aym2LBJBk9DAYuHHutrIl",
     "year": 2000,
     "id": 8,
     "song": "Hey Jude - Remastered 2015",
-    "artist": "The Beatles"
+    "artist": "The Beatles",
+    "fun_fact": "Paul McCartney wrote this to comfort John Lennon's son Julian during his parents' divorce - 'Hey Jules' became 'Hey Jude'!"
   },
   {
     "url": "https://open.spotify.com/track/0GONea6G2XdnHWjNZd6zt3",
     "year": 1984,
     "id": 9,
     "song": "Summer Of '69",
-    "artist": "Bryan Adams"
+    "artist": "Bryan Adams",
+    "fun_fact": "Despite the title, this song isn't about the year 1969 - Bryan Adams was only 10 years old then! It's about the summer he got his first guitar."
   },
   {
     "url": "https://open.spotify.com/track/7iN1s7xHE4ifF5povM6A48",
     "year": 1970,
     "id": 10,
     "song": "Let It Be - Remastered 2009",
-    "artist": "The Beatles"
+    "artist": "The Beatles",
+    "fun_fact": "Paul McCartney dreamed of his late mother Mary saying 'Let it be' during troubled times with the band - she inspired this spiritual anthem!"
   },
   {
     "url": "https://open.spotify.com/track/2zYzyRzz6pRmhPzyfMEC8s",
     "year": 1979,
     "id": 11,
     "song": "Highway to Hell",
-    "artist": "AC/DC"
+    "artist": "AC/DC",
+    "fun_fact": "Highway to Hell was inspired by a real highway in Australia known for its dangerous curves and accidents!"
   },
   {
     "url": "https://open.spotify.com/track/40riOy7x9W7GXjyGp4pjAv",
     "year": 1976,
     "id": 12,
     "song": "Hotel California - 2013 Remaster",
-    "artist": "Eagles"
+    "artist": "Eagles",
+    "fun_fact": "The guitar solo was played simultaneously by Don Henley and Joe Walsh using two different guitars for a unique layered sound!"
   },
   {
     "url": "https://open.spotify.com/track/5vdp5UmvTsnMEMESIF2Ym7",
     "year": 1980,
     "id": 13,
     "song": "Another One Bites The Dust - Remastered 2011",
-    "artist": "Queen"
+    "artist": "Queen",
+    "fun_fact": "This song's bassline was inspired by Chic's 'Good Times' and became Queen's biggest hit in the US!"
   },
   {
     "url": "https://open.spotify.com/track/1OOtq8tRnDM8kG2gqUPjAj",
     "year": 2008,
     "id": 14,
     "song": "Beat It",
-    "artist": "Michael Jackson"
+    "artist": "Michael Jackson",
+    "fun_fact": "Michael Jackson learned to moonwalk while singing live for performances that made this song legendary!"
   },
   {
     "url": "https://open.spotify.com/track/3gdewACMIVMEWVbyb8O9sY",
     "year": 1972,
     "id": 16,
     "song": "Rocket Man (I Think It's Going To Be A Long Long Time)",
-    "artist": "Elton John"
+    "artist": "Elton John",
+    "fun_fact": "This classic was written in just 15 minutes at a hotel piano - one of the fastest-written hits in rock history!"
   },
   {
     "url": "https://open.spotify.com/track/57bgtoPSgt236HzfBOd8kj",
     "year": 1990,
     "id": 18,
     "song": "Thunderstruck",
-    "artist": "AC/DC"
+    "artist": "AC/DC",
+    "fun_fact": "The distinctive opening riff was created by accident when Angus Young was warming up his guitar during a recording session!"
   },
   {
     "url": "https://open.spotify.com/track/5MMnwYs0hIxkENRsbkWJ2G",
     "year": 1972,
     "id": 19,
     "song": "Smoke On The Water - Remastered 2012",
-    "artist": "Deep Purple"
+    "artist": "Deep Purple",
+    "fun_fact": "This song tells the true story of a fire at a casino in Switzerland that Deep Purple witnessed firsthand!"
   },
   {
     "url": "https://open.spotify.com/track/79hJaqmVdohltPBNN6BULM",
     "year": 1990,
     "id": 20,
     "song": "Stayin' Alive - From Saturday Night Fever Soundtrack",
-    "artist": "Bee Gees"
+    "artist": "Bee Gees",
+    "fun_fact": "The BPM of this song perfectly matches the ideal chest compression rate for CPR - it literally helps save lives!"
   },
   {
     "url": "https://open.spotify.com/track/1lCRw5FEZ1gPDNPzy1K4zW",
     "year": 1977,
     "id": 21,
     "song": "We Are The Champions - Remastered 2011",
-    "artist": "Queen"
+    "artist": "Queen",
+    "fun_fact": "This anthem was designed to get stadium crowds singing along - there's no chorus, just one big sing-along!"
   },
   {
     "url": "https://open.spotify.com/track/2WfaOiMkCvy7F5fcp2zZ8L",
     "year": 1985,
     "id": 22,
     "song": "Take on Me",
-    "artist": "a-ha"
+    "artist": "a-ha",
+    "fun_fact": "This song features one of the highest notes ever hit in a pop song and an innovative rotoscoped music video!"
   },
   {
     "url": "https://open.spotify.com/track/7LRMbd3LEoV5wZJvXT1Lwb",
     "year": 1976,
     "id": 23,
     "song": "T.N.T.",
-    "artist": "AC/DC"
+    "artist": "AC/DC",
+    "fun_fact": "This was AC/DC's first international hit and features the classic line 'Oi! Oi! Oi!' that became their signature chant!"
   },
   {
     "url": "https://open.spotify.com/track/3BQHpFgAp4l80e1XslIjNI",
     "year": 1965,
     "id": 24,
     "song": "Yesterday - Remastered 2009",
-    "artist": "The Beatles"
+    "artist": "The Beatles",
+    "fun_fact": "Paul McCartney woke up with this complete melody in his head and initially called it 'Scrambled Eggs'!"
   },
   {
     "url": "https://open.spotify.com/track/1TfqLAPs4K3s2rJMoCokcS",
     "year": 1983,
     "id": 25,
     "song": "Sweet Dreams (Are Made of This) - 2005 Remaster",
-    "artist": "Eurythmics,Annie Lennox,Dave Stewart"
+    "artist": "Eurythmics,Annie Lennox,Dave Stewart",
+    "fun_fact": "This song was created in a home studio and launched Eurythmics to international stardom with its dark, synth sound!"
   },
   {
     "url": "https://open.spotify.com/track/0v1XpBHnsbkCn7iJ9Ucr1l",
     "year": 2000,
     "id": 26,
     "song": "It's My Life",
-    "artist": "Bon Jovi"
+    "artist": "Bon Jovi",
+    "fun_fact": "This song marked Bon Jovi's successful transition from 80s hair metal to a more mature rock sound in the 2000s!"
   },
   {
     "url": "https://open.spotify.com/track/0ikz6tENMONtK6qGkOrU3c",
     "year": 1984,
     "id": 27,
     "song": "Wake Me Up Before You Go-Go",
-    "artist": "Wham!"
+    "artist": "Wham!",
+    "fun_fact": "George Michael wrote this after finding a note his bandmate Andrew left for his parents saying 'wake me up up'!"
   },
   {
     "url": "https://open.spotify.com/track/4pbJqGIASGPr0ZpGpnWkDn",
     "year": 1977,
     "id": 28,
     "song": "We Will Rock You - Remastered 2011",
-    "artist": "Queen"
+    "artist": "Queen",
+    "fun_fact": "This song was designed specifically to get stadium crowds involved - the stomp-stomp-clap rhythm is impossible to resist!"
   },
   {
     "url": "https://open.spotify.com/track/3ovjw5HZZv43SxTwApooCM",
     "year": 1990,
     "id": 29,
     "song": "Wind Of Change",
-    "artist": "Scorpions"
+    "artist": "Scorpions",
+    "fun_fact": "This became the anthem of German reunification and was inspired by the fall of the Berlin Wall!"
   },
   {
     "url": "https://open.spotify.com/track/3ic5SdHoppddKCuXPUz2fV",
     "year": 2006,
     "id": 30,
     "song": "Wonderwall",
-    "artist": "Oasis"
+    "artist": "Oasis",
+    "fun_fact": "Despite being Oasis's biggest hit, Noel Gallagher has said he doesn't know what 'Wonderwall' actually means!"
   },
   {
     "url": "https://open.spotify.com/track/44AyOl4qVkzS48vBsbNXaC",
     "year": 1961,
     "id": 31,
     "song": "Can't Help Falling in Love",
-    "artist": "Elvis Presley"
+    "artist": "Elvis Presley",
+    "fun_fact": "Elvis recorded this in just one take, and it became his signature ballad and wedding song favorite!"
   },
   {
     "url": "https://open.spotify.com/track/62AuGbAkt8Ox2IrFFb8GKV",
     "year": 1969,
     "id": 33,
     "song": "Sweet Caroline",
-    "artist": "Neil Diamond"
+    "artist": "Neil Diamond",
+    "fun_fact": "Neil Diamond wrote this about Caroline Kennedy when she was 11 years old, and it became Boston Red Sox's unofficial anthem!"
   },
   {
     "url": "https://open.spotify.com/track/3SdTKo2uVsxFblQjpScoHy",
     "year": 1962,
     "id": 34,
     "song": "Stand By Me",
-    "artist": "Ben E. King"
+    "artist": "Ben E. King",
+    "fun_fact": "This song has been covered over 400 times and was inducted into the Grammy Hall of Fame!"
   },
   {
     "url": "https://open.spotify.com/track/5LxvwujISqiB8vpRYv887S",
     "year": 1969,
     "id": 36,
     "song": "I Want You Back",
-    "artist": "The Jackson 5"
+    "artist": "The Jackson 5",
+    "fun_fact": "This was The Jackson 5's debut single and made 11-year-old Michael Jackson the youngest lead singer to top the charts!"
   },
   {
     "url": "https://open.spotify.com/track/2xYlyywNgefLCRDG8hlxZq",
     "year": 1997,
     "id": 37,
     "song": "Take Me Home Country Roads - Rerecorded",
-    "artist": "John Denver"
+    "artist": "John Denver",
+    "fun_fact": "John Denver had never been to West Virginia when he wrote this song, but it became the state's official song!"
   },
   {
     "url": "https://open.spotify.com/track/3Z2tPWiNiIpg8UMMoowHIk",
     "year": 1985,
     "id": 38,
     "song": "We Are The World",
-    "artist": "U.S.A. For Africa"
+    "artist": "U.S.A. For Africa",
+    "fun_fact": "This charity single brought together 46 of the biggest stars of the 80s to raise money for famine relief in Africa!"
   },
   {
     "url": "https://open.spotify.com/track/4fXGWiVhlOLdhwRDP6pIFG",
     "year": 1995,
     "id": 41,
     "song": "Lemon Tree",
-    "artist": "Fools Garden"
+    "artist": "Fools Garden",
+    "fun_fact": "Fool's Garden's biggest hit was written about waiting and became a worldwide phenomenon despite being by a German band!"
   },
   {
     "url": "https://open.spotify.com/track/4hObp5bmIJ3PP3cKA9K9GY",
     "year": 1988,
     "id": 42,
     "song": "Don't Worry Be Happy",
-    "artist": "Bobby McFerrin"
+    "artist": "Bobby McFerrin",
+    "fun_fact": "This was the first a cappella song to reach #1 on the Billboard Hot 100 - Bobby McFerrin used only his voice!"
   },
   {
     "url": "https://open.spotify.com/track/5nNmj1cLH3r4aA4XDJ2bgY",
     "year": 1992,
     "id": 45,
     "song": "September",
-    "artist": "Earth Wind & Fire"
+    "artist": "Earth Wind & Fire",
+    "fun_fact": "Earth, Wind & Fire chose 'September' because it sounded good rhythmically, not for any special meaning!"
   },
   {
     "url": "https://open.spotify.com/track/6x4tKaOzfNJpEJHySoiJcs",
     "year": 1999,
     "id": 46,
     "song": "Mambo No. 5 (a Little Bit of...)",
-    "artist": "Lou Bega"
+    "artist": "Lou Bega",
+    "fun_fact": "Lou Bega's hit was based on a 1949 mambo song and became one of the biggest one-hit wonders of the 90s!"
   },
   {
     "url": "https://open.spotify.com/track/7e89621JPkKaeDSTQ3avtg",
     "year": 1974,
     "id": 47,
     "song": "Sweet Home Alabama",
-    "artist": "Lynyrd Skynyrd"
+    "artist": "Lynyrd Skynyrd",
+    "fun_fact": "This song was Lynyrd Skynyrd's response to Neil Young's 'Southern Man' and became an unofficial Southern anthem!"
   },
   {
     "url": "https://open.spotify.com/track/6I9HXaU8zbTgASGe7evWnu",
     "year": 2012,
     "id": 49,
     "song": "The Final Countdown",
-    "artist": "Europe"
+    "artist": "Europe",
+    "fun_fact": "The famous keyboard riff was created on a cheap Yamaha keyboard and became Europe's signature song!"
   },
   {
     "url": "https://open.spotify.com/track/2Cdvbe2G4hZsnhNMKyGrie",
     "year": 1981,
     "id": 50,
     "song": "I Love Rock 'N Roll",
-    "artist": "Joan Jett & the Blackhearts"
+    "artist": "Joan Jett & the Blackhearts",
+    "fun_fact": "Joan Jett heard this song in a London club and decided to cover it - her version became bigger than the original!"
   },
   {
     "url": "https://open.spotify.com/track/7N3PAbqfTjSEU1edb2tY8j",
     "year": 1984,
     "id": 51,
     "song": "Jump - 2015 Remaster",
-    "artist": "Van Halen"
+    "artist": "Van Halen",
+    "fun_fact": "Eddie Van Halen initially didn't want to use keyboards, but 'Jump' became Van Halen's only #1 hit!"
   },
   {
     "url": "https://open.spotify.com/track/4caiYv89C9GZdDD1RzshWd",
     "year": 2008,
     "id": 52,
     "song": "It's Raining Men - Single Version",
-    "artist": "The Weather Girls"
+    "artist": "The Weather Girls",
+    "fun_fact": "This disco anthem was originally written for Donna Summer, but she passed on it before The Weather Girls made it famous!"
   },
   {
     "url": "https://open.spotify.com/track/4rDbp1vnvEhieiccprPMdI",
     "year": 1976,
     "id": 56,
     "song": "Somebody To Love - Remastered 2011",
-    "artist": "Queen"
+    "artist": "Queen",
+    "fun_fact": "This gospel-influenced Queen masterpiece features some of the most complex harmonies in rock music!"
   },
   {
     "url": "https://open.spotify.com/track/7s25THrKz86DM225dOYwnr",
     "year": 1967,
     "id": 57,
     "song": "Respect",
-    "artist": "Aretha Franklin"
+    "artist": "Aretha Franklin",
+    "fun_fact": "Aretha Franklin transformed Otis Redding's song into a feminist anthem and made it completely her own!"
   },
   {
     "url": "https://open.spotify.com/track/37BTh5g05cxBIRYMbw8g2T",
     "year": 1982,
     "id": 58,
     "song": "Rosanna",
-    "artist": "TOTO"
+    "artist": "TOTO",
+    "fun_fact": "Toto wrote this song about actress Rosanna Arquette, and it won a Grammy for Record of the Year!"
   },
   {
     "url": "https://open.spotify.com/track/5T8EDUDqKcs6OSOwEsfqG7",
     "year": 1978,
     "id": 60,
     "song": "Don't Stop Me Now - Remastered 2011",
-    "artist": "Queen"
+    "artist": "Queen",
+    "fun_fact": "Freddie Mercury considered this his favorite Queen song to perform live because of its pure joy and energy!"
   },
   {
     "url": "https://open.spotify.com/track/4eHbdreAnSOrDDsFfc4Fpm",
     "year": 1992,
     "id": 61,
     "song": "I Will Always Love You",
-    "artist": "Whitney Houston"
+    "artist": "Whitney Houston",
+    "fun_fact": "Whitney Houston's version holds the record for the longest-running #1 single by a solo artist!"
   },
   {
     "url": "https://open.spotify.com/track/0wz1LjDb9ZNEYwOmDJ3Q4b",
     "year": 1963,
     "id": 62,
     "song": "Surfin' U.S.A. - Remastered 2001",
-    "artist": "The Beach Boys"
+    "artist": "The Beach Boys",
+    "fun_fact": "The Beach Boys based this on Chuck Berry's 'Sweet Little Sixteen' and had to give him writing credit!"
   },
   {
     "url": "https://open.spotify.com/track/2bCQHF9gdG5BNDVuEIEnNk",
     "year": 2012,
     "id": 63,
     "song": "Smooth Criminal - 2012 Remaster",
-    "artist": "Michael Jackson"
+    "artist": "Michael Jackson",
+    "fun_fact": "Michael Jackson's famous 45-degree lean in the music video required specially designed shoes and practice!"
   },
   {
     "url": "https://open.spotify.com/track/1ot6jEe4w4hYnsOPjd3xKQ",
     "year": 1982,
     "id": 64,
     "song": "I'm So Excited",
-    "artist": "The Pointer Sisters"
+    "artist": "The Pointer Sisters",
+    "fun_fact": "The Pointer Sisters' high-energy hit became a staple at sporting events and dance clubs worldwide!"
   },
   {
     "url": "https://open.spotify.com/track/2tUBqZG2AbRi7Q0BIrVrEj",
     "year": 1987,
     "id": 65,
     "song": "I Wanna Dance with Somebody (Who Loves Me)",
-    "artist": "Whitney Houston"
+    "artist": "Whitney Houston",
+    "fun_fact": "This was Whitney Houston's attempt to create a fun, danceable song after her more serious ballads!"
   },
   {
     "url": "https://open.spotify.com/track/5zA8vzDGqPl2AzZkEYQGKh",
     "year": 1983,
     "id": 66,
     "song": "Uptown Girl",
-    "artist": "Billy Joel"
+    "artist": "Billy Joel",
+    "fun_fact": "Billy Joel wrote this about his relationship with Elle Macpherson, but ended up marrying Christie Brinkley instead!"
   },
   {
     "url": "https://open.spotify.com/track/2oXchyEBxQBe8vH6iFgbv0",
     "year": 1998,
     "id": 67,
     "song": "Music",
-    "artist": "John Miles"
+    "artist": "John Miles",
+    "fun_fact": "Madonna's tribute to dancing and music became her 12th #1 hit and marked her transition into electronic music!"
   },
   {
     "url": "https://open.spotify.com/track/2IZZqH4K02UIYg5EohpNHF",
     "year": 1994,
     "id": 69,
     "song": "Zombie",
-    "artist": "The Cranberries"
+    "artist": "The Cranberries",
+    "fun_fact": "The Cranberries wrote this powerful protest song about The Troubles in Northern Ireland!"
   },
   {
     "url": "https://open.spotify.com/track/4xmjDH6auBwuZ4GHimjXGe",
     "year": 1999,
     "id": 70,
     "song": "I Will Survive - Single Version",
-    "artist": "Gloria Gaynor"
+    "artist": "Gloria Gaynor",
+    "fun_fact": "Gloria Gaynor's disco anthem became the ultimate breakup song and feminist empowerment anthem!"
   },
   {
     "url": "https://open.spotify.com/track/5ChkMS8OtdzJeqyybCc9R5",
     "year": 2008,
     "id": 73,
     "song": "Billie Jean",
-    "artist": "Michael Jackson"
+    "artist": "Michael Jackson",
+    "fun_fact": "This was the first video by a Black artist to receive heavy rotation on MTV, breaking down racial barriers!"
   },
   {
     "url": "https://open.spotify.com/track/0QKfiqpEU4h9ycPSzIFwYe",
     "year": 1983,
     "id": 74,
     "song": "Maniac",
-    "artist": "Michael Sembello"
+    "artist": "Michael Sembello",
+    "fun_fact": "This Flashdance hit was created specifically for the movie and became Michael Sembello's biggest success!"
   },
   {
     "url": "https://open.spotify.com/track/4aVuWgvD0X63hcOCnZtNFA",
     "year": 1978,
     "id": 75,
     "song": "Hold the Line",
-    "artist": "TOTO"
+    "artist": "TOTO",
+    "fun_fact": "Toto's debut single showcased their technical prowess and became a classic rock radio staple!"
   },
   {
     "url": "https://open.spotify.com/track/0CUEc6T65lrU6rVW3HVYsl",
     "year": 1999,
     "id": 76,
     "song": "Celebration - Single Version",
-    "artist": "Kool & The Gang"
+    "artist": "Kool & The Gang",
+    "fun_fact": "Kool & The Gang's party anthem was written to celebrate good times and became a universal celebration song!"
   },
   {
     "url": "https://open.spotify.com/track/6L89mwZXSOwYl76YXfX13s",
     "year": 1994,
     "id": 77,
     "song": "Basket Case",
-    "artist": "Green Day"
+    "artist": "Green Day",
+    "fun_fact": "Green Day's breakthrough hit about anxiety disorders helped bring punk rock to mainstream radio!"
   },
   {
     "url": "https://open.spotify.com/track/1di1BEgJYzPvXUuinsYJGP",
     "year": 1997,
     "id": 78,
     "song": "Everybody (Backstreet's Back) - Radio Edit",
-    "artist": "Backstreet Boys"
+    "artist": "Backstreet Boys",
+    "fun_fact": "This song marked the Backstreet Boys' return and became one of their most iconic hits!"
   },
   {
     "url": "https://open.spotify.com/track/1H5VQuShs4qfwBXyHF0PeH",
     "year": 1998,
     "id": 79,
     "song": "Narcotic - Radio Edit",
-    "artist": "Liquido"
+    "artist": "Liquido",
+    "fun_fact": "Liquido's one-hit wonder became a huge success across Europe with its distinctive guitar riff!"
   },
   {
     "url": "https://open.spotify.com/track/0Dmao2oWlAZzIBX2Q1B5AH",
     "year": 1997,
     "id": 80,
     "song": "Bitter Sweet Symphony - Remastered 2016",
-    "artist": "The Verve"
+    "artist": "The Verve",
+    "fun_fact": "The Verve had to give up all royalties because they sampled a Rolling Stones orchestral version!"
   },
   {
     "url": "https://open.spotify.com/track/1bx7OUl2UmAnA5oZkm9If7",
     "year": 2005,
     "id": 81,
     "song": "Jerk It Out",
-    "artist": "Caesars"
+    "artist": "Caesars",
+    "fun_fact": "Caesars' garage rock hit became famous through iPod commercials and video game soundtracks!"
   },
   {
     "url": "https://open.spotify.com/track/0SLtqCrXBRrnkxSOMA3X4W",
     "year": 1997,
     "id": 82,
     "song": "Let Me Entertain You",
-    "artist": "Robbie Williams"
+    "artist": "Robbie Williams",
+    "fun_fact": "Robbie Williams' comeback single proved he could succeed as a solo artist after leaving Take That!"
   },
   {
     "url": "https://open.spotify.com/track/5n6RDaGFSN88oRWuGtYAIN",
     "year": 1991,
     "id": 83,
     "song": "The Show Must Go On - Remastered 2011",
-    "artist": "Queen"
+    "artist": "Queen",
+    "fun_fact": "Freddie Mercury recorded this while seriously ill, creating one of Queen's most powerful and emotional songs!"
   },
   {
     "url": "https://open.spotify.com/track/1INWPr855fwWdAOeecbu0W",
     "year": 1961,
     "id": 84,
     "song": "Let's Twist Again",
-    "artist": "Chubby Checker"
+    "artist": "Chubby Checker",
+    "fun_fact": "Chubby Checker's follow-up to 'The Twist' proved the dance craze was here to stay!"
   },
   {
     "url": "https://open.spotify.com/track/2fuCquhmrzHpu5xcA1ci9x",
     "year": 1982,
     "id": 85,
     "song": "Under Pressure - Remastered 2011",
-    "artist": "Queen,David Bowie"
+    "artist": "Queen,David Bowie",
+    "fun_fact": "This classic collaboration between Queen and David Bowie was recorded spontaneously when Bowie visited their studio!"
   },
   {
     "url": "https://open.spotify.com/track/5ZBeML7Lf3FMEVviTyvi8l",
     "year": 1963,
     "id": 86,
     "song": "Twist And Shout - Remastered 2009",
-    "artist": "The Beatles"
+    "artist": "The Beatles",
+    "fun_fact": "John Lennon sang this while sick with a cold, which gave his voice the raw, raspy sound that made it iconic!"
   },
   {
     "url": "https://open.spotify.com/track/5y788ya4NvwhBznoDIcXwK",
     "year": 1964,
     "id": 87,
     "song": "The Sound of Silence - Acoustic Version",
-    "artist": "Simon & Garfunkel"
+    "artist": "Simon & Garfunkel",
+    "fun_fact": "This song was initially a flop until producer Tom Wilson added electric instruments without telling Simon & Garfunkel!"
   },
   {
     "url": "https://open.spotify.com/track/3Cx4yrFaX8CeHwBMReOWXI",
     "year": 1989,
     "id": 88,
     "song": "We Didn't Start the Fire",
-    "artist": "Billy Joel"
+    "artist": "Billy Joel",
+    "fun_fact": "Billy Joel crammed 119 historical events into this song after someone said his generation didn't care about history!"
   },
   {
     "url": "https://open.spotify.com/track/6WCeFNVAXUtNczb7lqLiZU",
     "year": 1973,
     "id": 89,
     "song": "Crocodile Rock",
-    "artist": "Elton John"
+    "artist": "Elton John",
+    "fun_fact": "Elton John wrote this as a tribute to early rock and roll, and it became his first #1 hit in the US!"
   },
   {
     "url": "https://open.spotify.com/track/0rmGAIH9LNJewFw7nKzZnc",
     "year": 1986,
     "id": 90,
     "song": "You Give Love A Bad Name",
-    "artist": "Bon Jovi"
+    "artist": "Bon Jovi",
+    "fun_fact": "This Bon Jovi hit was co-written with Desmond Child and became their signature anthem about love gone wrong!"
   },
   {
     "url": "https://open.spotify.com/track/1f3yAtsJtY87CTmM8RLnxf",
     "year": 1991,
     "id": 91,
     "song": "Smells Like Teen Spirit",
-    "artist": "Nirvana"
+    "artist": "Nirvana",
+    "fun_fact": "Kurt Cobain wrote this about teen apathy, not knowing 'Teen Spirit' was a deodorant brand!"
   },
   {
     "url": "https://open.spotify.com/track/4y1LsJpmMti1PfRQV9AWWe",
     "year": 1983,
     "id": 92,
     "song": "Girls Just Want to Have Fun",
-    "artist": "Cyndi Lauper"
+    "artist": "Cyndi Lauper",
+    "fun_fact": "Originally written by a man, Cyndi Lauper transformed it into a feminist anthem that defined the 80s!"
   },
   {
     "url": "https://open.spotify.com/track/3NvS0SxNWIPiAJoPWUpZzr",
     "year": 1993,
     "id": 93,
     "song": "What Is Love - 7 Mix",
-    "artist": "Haddaway"
+    "artist": "Haddaway",
+    "fun_fact": "Haddaway's Eurodance hit became a global phenomenon and was famously featured in 'A Night at the Roxbury'!"
   },
   {
     "url": "https://open.spotify.com/track/6eN1f9KNmiWEhpE2RhQqB5",
     "year": 1987,
     "id": 94,
     "song": "Paradise City",
-    "artist": "Guns N' Roses"
+    "artist": "Guns N' Roses",
+    "fun_fact": "Guns N' Roses wrote this about the contrast between the gritty city life and dreams of escape to paradise!"
   },
   {
     "url": "https://open.spotify.com/track/3cbV252akVZInSvJk7jAYX",
     "year": 1983,
     "id": 95,
     "song": "Flashdance...What a Feeling - Radio Edit",
-    "artist": "Irene Cara"
+    "artist": "Irene Cara",
+    "fun_fact": "Irene Cara's movie theme song became a dance floor anthem and won an Academy Award!"
   },
   {
     "url": "https://open.spotify.com/track/0MKGH8UMfCnq5w7nG06oM5",
     "year": 1991,
     "id": 96,
     "song": "Come As You Are",
-    "artist": "Nirvana"
+    "artist": "Nirvana",
+    "fun_fact": "This Nirvana classic encouraged people to be themselves and became an alternative rock anthem!"
   },
   {
     "url": "https://open.spotify.com/track/6e40mgJiCid5HRAGrbpGA6",
     "year": 2001,
     "id": 97,
     "song": "I Want It That Way",
-    "artist": "Backstreet Boys"
+    "artist": "Backstreet Boys",
+    "fun_fact": "The Backstreet Boys' biggest hit has lyrics that don't make logical sense, but the melody was too good to change!"
   },
   {
     "url": "https://open.spotify.com/track/37ZJ0p5Jm13JPevGcx4SkF",
     "year": 1986,
     "id": 98,
     "song": "Livin' On A Prayer",
-    "artist": "Bon Jovi"
+    "artist": "Bon Jovi",
+    "fun_fact": "Bon Jovi's signature song features a talk box effect and tells the story of working-class struggles!"
   },
   {
     "url": "https://open.spotify.com/track/7o2CTH4ctstm8TNelqjb51",
     "year": 1987,
     "id": 99,
     "song": "Sweet Child O' Mine",
-    "artist": "Guns N' Roses"
+    "artist": "Guns N' Roses",
+    "fun_fact": "The famous opening riff came from a guitar warm-up exercise that Slash was playing randomly!"
   },
   {
     "url": "https://open.spotify.com/track/60a0Rd6pjrkxjPbaKzXjfq",
     "year": 2000,
     "id": 100,
     "song": "In the End",
-    "artist": "Linkin Park"
+    "artist": "Linkin Park",
+    "fun_fact": "Linkin Park's breakthrough hit perfectly captured millennial angst and became their most successful song!"
   }
 ]
