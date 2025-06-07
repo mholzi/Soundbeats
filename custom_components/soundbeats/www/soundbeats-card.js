@@ -32,8 +32,8 @@ class SoundbeatsCard extends HTMLElement {
     // Performance optimizations - unified caching system
     this._cache = {
       mediaPlayers: { data: null, time: 0, ttl: 2000 },
-      missingVariables: { data: null, time: 0, ttl: 500 },
-      shouldShowSplash: { data: null, time: 0, ttl: 100 }
+      missingVariables: { data: null, time: 0, ttl: 100 },
+      shouldShowSplash: { data: null, time: 0, ttl: 50 }
     };
     this._debounceTimers = {};
     
@@ -497,7 +497,7 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   // Debounced service call helper
-  debouncedServiceCall(key, callback, delay = 300) {
+  debouncedServiceCall(key, callback, delay = 100) {
     if (this._debounceTimers[key]) {
       clearTimeout(this._debounceTimers[key]);
     }
@@ -3531,8 +3531,8 @@ class SoundbeatsCard extends HTMLElement {
         if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
           this.updateSplashTeamsSection('management');
         }
-      }, 50);
-    }, 500); // Longer delay for text input
+      }, 10);
+    }, 150); // Reduced delay for more responsive text input
   }
 
   updateTeamPoints(teamId, points) {
@@ -3588,7 +3588,7 @@ class SoundbeatsCard extends HTMLElement {
       if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
         this.updateSplashTeamsSection('management');
       }
-    }, 50); // Reduced delay since no debouncing
+    }, 10); // Reduced delay since no debouncing
   }
 
   updateTeamYearGuess(teamId, yearGuess) {
@@ -4261,8 +4261,8 @@ class SoundbeatsCard extends HTMLElement {
         if (this.shouldShowSplashScreen()) {
           this.updateSplashValidationState();
         }
-      }, 50);
-    }, 500); // Longer delay for slider to avoid too many calls
+      }, 10);
+    }, 100); // Reduced delay for more responsive slider
   }
 
   updateAudioPlayer(audioPlayer) {
@@ -4280,8 +4280,8 @@ class SoundbeatsCard extends HTMLElement {
         if (this.shouldShowSplashScreen()) {
           this.updateSplashValidationState();
         }
-      }, 50);
-    });
+      }, 10);
+    }, 100); // Reduced delay for more responsive dropdown
   }
 
   getSelectedTeamCount() {
@@ -4316,8 +4316,8 @@ class SoundbeatsCard extends HTMLElement {
         if (teamManagementContainer) {
           this.updateSplashTeamsSection('management');
         }
-      }, 100);
-    });
+      }, 25);
+    }, 100); // Reduced delay for more responsive dropdown
   }
 
   toggleGameSettings() {
@@ -4403,7 +4403,7 @@ class SoundbeatsCard extends HTMLElement {
         this._splashUpdateTimeout = setTimeout(() => {
           this.updateSplashScreenDropdowns();
           this._splashUpdateTimeout = null;
-        }, 200);
+        }, 50);
       }
     }
     
