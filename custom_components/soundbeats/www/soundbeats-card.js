@@ -1378,6 +1378,28 @@ class SoundbeatsCard extends HTMLElement {
             width: 100%;
             box-sizing: border-box;
           }
+          
+          /* Song card mobile optimizations */
+          .song-section .icon {
+            font-size: 1.1em;
+          }
+          
+          .song-image {
+            width: 120px;
+            height: 120px;
+          }
+          
+          .song-name {
+            font-size: 1.2em;
+          }
+          
+          .song-artist {
+            font-size: 1.0em;
+          }
+          
+          .song-year {
+            font-size: 0.95em;
+          }
         }
         
         .section h3 {
