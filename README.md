@@ -29,6 +29,7 @@ From installation to gameplay in under two minutes, Soundbeats is designed for i
 ### ✨ Stunning User Interface
 * **🎨 Animated & Modern Design**: A premium, music-themed interface with animated notes, sound waves, and glowing effects.
 * **📱 Mobile-First**: Perfectly designed for passing a phone or tablet around the party.
+* **🎛️ Consistent Media Controls**: Perfectly aligned Next Song and volume buttons with uniform sizing and a visually prominent Next Song button featuring an eye-catching gradient design.
 * **🎉 Highscore Celebrations**: Automatic tracking and celebratory banners for new all-time and per-round highscores.
 * **🔍 Built-in Diagnostics**: Quickly troubleshoot highscore and audio issues with the integrated diagnostic panel.
 
