@@ -3215,10 +3215,7 @@ class SoundbeatsCard extends HTMLElement {
             <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.teamManagementExpanded ? 'expanded' : ''}"></ha-icon>
           </div>
           <div class="expandable-content ${this.teamManagementExpanded ? 'expanded' : 'collapsed'}">
-            <p class="team-management-description">${this.getTeamManagementDescription()}</p>
-            <div class="team-management-container">
-              ${this.renderTeamManagement()}
-            </div>
+            ${this.renderTeamManagementContent()}
           </div>
         </div>
       </div>
@@ -3514,6 +3511,55 @@ class SoundbeatsCard extends HTMLElement {
         </div>
       `;
     }
+  }
+
+  renderTeamManagementContent() {
+    // Team Count dropdown and heading (copied from splash screen)
+    const currentTeamCount = this.getSelectedTeamCount();
+    let contentHtml = `
+      <div class="splash-input-section ${this.hasValidationError('teamCount') ? 'error' : ''}">
+        <div class="splash-input-header">
+          <ha-icon icon="mdi:account-group" class="input-icon"></ha-icon>
+          <h3>${this._t('settings.number_of_teams')}</h3>
+        </div>
+        <p class="input-description">${this._t('settings.teams_description')}</p>
+        <select class="splash-team-count-select" onchange="this.getRootNode().host.updateTeamCount(this.value)">
+          <option value="">${this._t('settings.select_teams_placeholder')}</option>
+          ${[1, 2, 3, 4, 5].map(count => 
+            `<option value="${count}" ${currentTeamCount === count ? 'selected' : ''}>
+              ${count} Team${count > 1 ? 's' : ''}
+            </option>`
+          ).join('')}
+        </select>
+      </div>
+    `;
+
+    // Team management description and admin warning
+    const teamCount = this.getSelectedTeamCount();
+    const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
+    
+    if (hasValidTeamCount) {
+      contentHtml += `
+        <p class="team-management-description">${this.getTeamManagementDescription()}</p>
+        <div class="admin-warning">
+          <ha-icon icon="mdi:shield-account" class="warning-icon"></ha-icon>
+          <span><strong>Important:</strong> ${this._t('settings.team_admin_notice')}</span>
+        </div>
+      `;
+    } else {
+      contentHtml += `
+        <p class="team-management-description">${this.getTeamManagementDescription()}</p>
+      `;
+    }
+
+    // Team management container
+    contentHtml += `
+      <div class="team-management-container">
+        ${this.renderTeamManagement()}
+      </div>
+    `;
+
+    return contentHtml;
   }
 
   getTeamManagementDescription() {
