@@ -764,8 +764,8 @@ class SoundbeatsCard extends HTMLElement {
         
         .qr-code-icon {
           position: absolute;
-          bottom: 8px;
-          right: 8px;
+          top: 8px;
+          left: 8px;
           width: 32px;
           height: 32px;
           background: rgba(255, 255, 255, 0.9);
