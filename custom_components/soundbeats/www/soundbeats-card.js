@@ -181,12 +181,18 @@ class SoundbeatsCard extends HTMLElement {
         cache.data = null;
         cache.time = 0;
       }
+      // Reset loading state when media players cache is cleared
+      if (key === 'mediaPlayers') {
+        this._isLoadingMediaPlayers = false;
+      }
     } else {
       // Clear all caches
       Object.values(this._cache).forEach(cache => {
         cache.data = null;
         cache.time = 0;
       });
+      // Reset loading state when all caches are cleared
+      this._isLoadingMediaPlayers = false;
     }
   }
 
@@ -4049,22 +4055,30 @@ class SoundbeatsCard extends HTMLElement {
       return cached;
     }
     
+    // Check if Home Assistant is available and has states
+    if (!this.hass || !this.hass.states) {
+      // Set loading state when hass is not ready
+      this._isLoadingMediaPlayers = true;
+      return [];
+    }
+    
     // Get all available media player entities from Home Assistant
     const mediaPlayers = [];
-    if (this.hass && this.hass.states) {
-      Object.keys(this.hass.states).forEach(entityId => {
-        if (entityId.startsWith('media_player.')) {
-          const entity = this.hass.states[entityId];
-          // Only include media players that are not unavailable
-          if (entity.state !== 'unavailable') {
-            mediaPlayers.push({
-              entity_id: entityId,
-              name: entity.attributes.friendly_name || entityId.split('.')[1].replace(/_/g, ' ')
-            });
-          }
+    Object.keys(this.hass.states).forEach(entityId => {
+      if (entityId.startsWith('media_player.')) {
+        const entity = this.hass.states[entityId];
+        // Only include media players that are not unavailable
+        if (entity.state !== 'unavailable') {
+          mediaPlayers.push({
+            entity_id: entityId,
+            name: entity.attributes.friendly_name || entityId.split('.')[1].replace(/_/g, ' ')
+          });
         }
-      });
-    }
+      }
+    });
+    
+    // Clear loading state once we have processed the states
+    this._isLoadingMediaPlayers = false;
     
     // Cache the result
     this._setCached('mediaPlayers', mediaPlayers);
@@ -4558,13 +4572,17 @@ class SoundbeatsCard extends HTMLElement {
     if (audioSelect && document.activeElement !== audioSelect && !audioSelect.disabled) {
       const currentSelection = this.getSelectedAudioPlayer();
       const mediaPlayers = this.getMediaPlayers();
+      const isActuallyLoading = this._isLoadingMediaPlayers;
+      const hasNoPlayers = mediaPlayers.length === 0 && !isActuallyLoading;
       
-      // Only update if the options have actually changed
+      // Only update if the options have actually changed or loading state has changed
       const currentOptions = Array.from(audioSelect.options).map(opt => opt.value).join(',');
       const newOptions = ['', ...mediaPlayers.map(p => p.entity_id)].join(',');
+      const currentFirstOptionText = audioSelect.options[0] ? audioSelect.options[0].textContent : '';
+      const newFirstOptionText = isActuallyLoading ? this._t('ui.loading_audio_players') : hasNoPlayers ? this._t('ui.no_audio_players') : this._t('ui.select_audio_player');
       
-      if (currentOptions !== newOptions) {
-        audioSelect.innerHTML = `<option value="">${this._t('ui.select_audio_player')}</option>`;
+      if (currentOptions !== newOptions || currentFirstOptionText !== newFirstOptionText) {
+        audioSelect.innerHTML = `<option value="">${newFirstOptionText}</option>`;
         mediaPlayers.forEach(player => {
           const option = document.createElement('option');
           option.value = player.entity_id;
