@@ -104,7 +104,9 @@ class SoundbeatsCard extends HTMLElement {
             teams_overview: "Teams Overview",
             highscores_after_round: "Highscores (after Round {round})",
             team_status: "Team Status",
-            game_settings: "Game Settings"
+            game_settings: "Game Settings",
+            volume_up: "Volume Up",
+            volume_down: "Volume Down"
           },
           settings: {
             number_of_teams: "Number of Teams",
@@ -123,7 +125,17 @@ class SoundbeatsCard extends HTMLElement {
             select_teams_for_assignments: "Please select the number of teams in Game Settings first",
             select_teams_for_assignments_full: "Please select the number of teams in Game Settings first to set up team assignments",
             teams_count_option: "{count} Team{plural}",
-            team_name_placeholder: "Team Name"
+            team_name_placeholder: "Team Name",
+            default_team_name: "Team {number}",
+            team_admin_label: "Team {number} (Admin)",
+            missing_team_users_name: "Team Users",
+            missing_team_users_description: "Assign a user to every team ({missing} of {total} teams still need users assigned).",
+            missing_team_count_name: "Number of Teams",
+            missing_team_count_description: "Select how many teams will participate in the game (1-5 teams).",
+            missing_audio_player_name: "Audio Player",
+            missing_audio_player_description: "Select a media player to play music during the game. This is where songs will be played from.",
+            missing_countdown_timer_name: "Countdown Timer",
+            missing_countdown_timer_description: "Set a countdown timer length (5-300 seconds) for how long teams have to guess each song."
           },
           alerts: {
             no_audio_player_title: "No Audio Player Selected",
@@ -170,7 +182,10 @@ class SoundbeatsCard extends HTMLElement {
           betting: {
             place_bet: "Place Bet",
             betting_active: "BETTING!",
-            win_lose_info: "Win: 20pts | Lose: 0pts"
+            win_lose_info: "Win: 20pts | Lose: 0pts",
+            cancel_bet_aria: "Cancel bet",
+            place_bet_for_aria: "Place bet for {team}",
+            cancel_bet_for_aria: "Cancel bet for {team}"
           },
           defaults: {
             unknown_title: "Unknown Title",
@@ -216,7 +231,9 @@ class SoundbeatsCard extends HTMLElement {
             teams_overview: "Teams-Übersicht",
             highscores_after_round: "Highscores (nach Runde {round})",
             team_status: "Team-Status",
-            game_settings: "Spiel-Einstellungen"
+            game_settings: "Spiel-Einstellungen",
+            volume_up: "Lautstärke erhöhen",
+            volume_down: "Lautstärke verringern"
           },
           settings: {
             number_of_teams: "Anzahl der Teams",
@@ -235,7 +252,17 @@ class SoundbeatsCard extends HTMLElement {
             select_teams_for_assignments: "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen",
             select_teams_for_assignments_full: "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen, um Team-Zuweisungen einzurichten",
             teams_count_option: "{count} Team{plural}",
-            team_name_placeholder: "Team-Name"
+            team_name_placeholder: "Team-Name",
+            default_team_name: "Team {number}",
+            team_admin_label: "Team {number} (Admin)",
+            missing_team_users_name: "Team-Benutzer",
+            missing_team_users_description: "Weisen Sie jedem Team einen Benutzer zu ({missing} von {total} Teams benötigen noch Benutzer).",
+            missing_team_count_name: "Anzahl der Teams",
+            missing_team_count_description: "Wählen Sie aus, wie viele Teams am Spiel teilnehmen werden (1-5 Teams).",
+            missing_audio_player_name: "Audio-Player",
+            missing_audio_player_description: "Wählen Sie einen Media-Player aus, um Musik während des Spiels abzuspielen. Hier werden die Songs abgespielt.",
+            missing_countdown_timer_name: "Countdown-Timer",
+            missing_countdown_timer_description: "Stellen Sie eine Countdown-Timer-Länge ein (5-300 Sekunden), wie lange Teams zum Raten haben."
           },
           alerts: {
             no_audio_player_title: "Kein Audio-Player ausgewählt",
@@ -282,7 +309,10 @@ class SoundbeatsCard extends HTMLElement {
           betting: {
             place_bet: "Wette platzieren",
             betting_active: "WETTET!",
-            win_lose_info: "Gewinn: 20 Pkt | Verlust: 0 Pkt"
+            win_lose_info: "Gewinn: 20 Pkt | Verlust: 0 Pkt",
+            cancel_bet_aria: "Wette stornieren",
+            place_bet_for_aria: "Wette platzieren für {team}",
+            cancel_bet_for_aria: "Wette stornieren für {team}"
           },
           defaults: {
             unknown_title: "Unbekannter Titel",
@@ -424,8 +454,8 @@ class SoundbeatsCard extends HTMLElement {
     if (!teamCount || teamCount < 1 || teamCount > 5) {
       missing.push({
         key: 'teamCount',
-        name: 'Number of Teams',
-        description: 'Select how many teams will participate in the game (1-5 teams).'
+        name: this._t('settings.missing_team_count_name'),
+        description: this._t('settings.missing_team_count_description')
       });
     }
     
@@ -434,8 +464,8 @@ class SoundbeatsCard extends HTMLElement {
     if (!audioPlayer) {
       missing.push({
         key: 'audioPlayer',
-        name: 'Audio Player',
-        description: 'Select a media player to play music during the game. This is where songs will be played from.'
+        name: this._t('settings.missing_audio_player_name'),
+        description: this._t('settings.missing_audio_player_description')
       });
     }
     
@@ -444,8 +474,8 @@ class SoundbeatsCard extends HTMLElement {
     if (!timerLength || timerLength < 5 || timerLength > 300) {
       missing.push({
         key: 'timer',
-        name: 'Countdown Timer',
-        description: 'Set a countdown timer length (5-300 seconds) for how long teams have to guess each song.'
+        name: this._t('settings.missing_countdown_timer_name'),
+        description: this._t('settings.missing_countdown_timer_description')
       });
     }
     
@@ -457,8 +487,8 @@ class SoundbeatsCard extends HTMLElement {
       if (teamsWithoutUsers.length > 0) {
         missing.push({
           key: 'teams',
-          name: 'Team Users',
-          description: `Assign a user to every team (${teamsWithoutUsers.length} of ${teamCount} teams still need users assigned).`
+          name: this._t('settings.missing_team_users_name'),
+          description: this._ts('settings.missing_team_users_description', { missing: teamsWithoutUsers.length, total: teamCount })
         });
       }
     }
@@ -3197,10 +3227,10 @@ class SoundbeatsCard extends HTMLElement {
               <div class="song-year">${this.getCurrentSong().year}</div>
               ${isAdmin ? `
                 <div class="song-volume-buttons">
-                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeUp()" title="Volume Up">
+                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeUp()" title="${this._t('ui.volume_up')}">
                     <ha-icon icon="mdi:volume-plus"></ha-icon>
                   </button>
-                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeDown()" title="Volume Down">
+                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeDown()" title="${this._t('ui.volume_down')}">
                     <ha-icon icon="mdi:volume-minus"></ha-icon>
                   </button>
                 </div>
@@ -3527,7 +3557,7 @@ class SoundbeatsCard extends HTMLElement {
         } else {
           // Fallback to default if entity doesn't exist yet
           teams[teamKey] = {
-            name: `Team ${i}`,
+            name: this._ts('settings.default_team_name', { number: i }),
             points: 0,
             participating: true,
             year_guess: 1990,
@@ -3545,7 +3575,7 @@ class SoundbeatsCard extends HTMLElement {
     for (let i = 1; i <= teamCount; i++) {
       const teamKey = `team_${i}`;
       defaultTeams[teamKey] = {
-        name: `Team ${i}`,
+        name: this._ts('settings.default_team_name', { number: i }),
         points: 0,
         participating: true,
         year_guess: 1990,
@@ -3689,7 +3719,7 @@ class SoundbeatsCard extends HTMLElement {
                 -->
                 <button class="bet-button ${team.betting ? 'betting-active' : ''}" 
                         onclick="this.getRootNode().host.toggleTeamBetting('${teamId}', ${!team.betting})"
-                        aria-label="${team.betting ? 'Cancel bet' : 'Place bet for ' + team.name}">
+                        aria-label="${team.betting ? this._t('betting.cancel_bet_aria') : this._ts('betting.place_bet_for_aria', { team: team.name })}">
                   ${team.betting ? this._t('betting.betting_active') : this._t('betting.place_bet')}
                 </button>
                 ${team.betting ? `<div class="betting-info">${this._t('betting.win_lose_info')}</div>` : ''}
@@ -4767,11 +4797,11 @@ class SoundbeatsCard extends HTMLElement {
         if (team.betting) {
           betButton.classList.add('betting-active');
           betButton.textContent = this._t('betting.betting_active');
-          betButton.setAttribute('aria-label', `Cancel bet for ${team.name}`);
+          betButton.setAttribute('aria-label', this._ts('betting.cancel_bet_for_aria', { team: team.name }));
         } else {
           betButton.classList.remove('betting-active');
           betButton.textContent = this._t('betting.place_bet');
-          betButton.setAttribute('aria-label', `Place bet for ${team.name}`);
+          betButton.setAttribute('aria-label', this._ts('betting.place_bet_for_aria', { team: team.name }));
         }
         
         // Update onclick handler to reflect current state
@@ -4891,7 +4921,7 @@ class SoundbeatsCard extends HTMLElement {
             <select class="${selectClass}" 
                     onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
                     ${isLoadingUsers ? 'disabled' : ''}>
-              <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
+              <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
               ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
                 `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
                   ${user.name}
@@ -4904,7 +4934,9 @@ class SoundbeatsCard extends HTMLElement {
         return `
           <div class="${itemClass}" data-team="${teamId}">
             <div class="team-management-info">
-              <span class="${labelClass}">${this._ts('settings.team_label', { number: teamId.split('_')[1] })}</span>
+              <span class="${labelClass}">${teamId === 'team_1' ? 
+                this._ts('settings.team_admin_label', { number: teamId.split('_')[1] }) : 
+                this._ts('settings.team_label', { number: teamId.split('_')[1] })}</span>
             </div>
             <div class="team-management-controls">
               <input type="text" class="${inputClass}" placeholder="${this._t('settings.team_name_placeholder')}" value="${team.name}" 
@@ -4985,7 +5017,7 @@ class SoundbeatsCard extends HTMLElement {
         const teamsSection = teamsContainer.closest('.splash-input-section');
         const description = teamsSection.querySelector('.input-description');
         if (description) {
-          description.textContent = 'Please select the number of teams above to set up team assignments';
+          description.textContent = this._t('settings.select_teams_first');
         }
         
         teamsContainer.innerHTML = `
