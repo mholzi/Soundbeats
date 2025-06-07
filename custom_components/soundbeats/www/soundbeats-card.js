@@ -2877,7 +2877,7 @@ class SoundbeatsCard extends HTMLElement {
         .version-footer {
           position: absolute;
           bottom: 8px;
-          right: 8px;
+          left: 8px;
           font-size: 10px;
           color: rgba(255, 255, 255, 0.5);
           font-family: monospace;
