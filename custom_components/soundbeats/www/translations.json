@@ -26,6 +26,52 @@
       "close": "Close",
       "language": "Language"
     },
+    "settings": {
+      "number_of_teams": "Number of Teams",
+      "teams_description": "How many teams will participate in the game?",
+      "select_teams_placeholder": "Select number of teams...",
+      "audio_player": "Audio Player",
+      "audio_player_description": "Select where music should play from",
+      "team_setup": "Team Setup",
+      "team_assignment_description": "Assign users to your {count} team{plural}",
+      "team_admin_notice": "The user assigned to Team 1 will have admin privileges to manage game settings and teams.",
+      "select_teams_first": "Please select the number of teams above to set up team assignments",
+      "choose_teams_first": "Choose how many teams will play first",
+      "countdown_timer": "Countdown Timer",
+      "countdown_description": "How long teams have to guess (5-300 seconds)",
+      "team_label": "Team {number}:",
+      "select_teams_for_assignments": "Please select the number of teams in Game Settings first",
+      "select_teams_for_assignments_full": "Please select the number of teams in Game Settings first to set up team assignments"
+    },
+    "alerts": {
+      "no_audio_player_title": "No Audio Player Selected",
+      "no_audio_player_message": "Please select an audio player in the admin settings before starting the next song.",
+      "all_songs_played_title": "All Songs Played!",
+      "all_songs_played_message": "All available songs have been played. Start a new game to reset the playlist.",
+      "new_highscore_message": "Congratulations on the new highscore!"
+    },
+    "game": {
+      "year_guess_label": "Guess the year this song was published:",
+      "no_song_message": "No Song played yet.",
+      "your_average": "Your Average:",
+      "your_guess_vs_actual": "Your guess: {guess} | Actual year: {year}",
+      "no_participating_teams": "No participating teams",
+      "highscore_data_not_available": "Highscore data not available",
+      "highscore_avg_round": "Highscore (Avg/Round):"
+    },
+    "diagnostics": {
+      "ha_not_available": "Home Assistant instance not available",
+      "ha_states_not_available": "Home Assistant states not available",
+      "sensor_not_found": "'sensor.soundbeats_highscore' not found",
+      "available_entities": "Available Soundbeats Entities:",
+      "troubleshooting": "Troubleshooting:",
+      "verify_integration": "Verify the Soundbeats integration is properly installed",
+      "check_sensor": "Check that the integration has created the highscore sensor",
+      "restart_ha": "Restart Home Assistant if the sensor was recently added",
+      "entity_state": "Entity State:",
+      "entity_attributes": "Entity Attributes:",
+      "status": "Status:"
+    },
     "buttons": {
       "close": "×"
     }
@@ -56,6 +102,52 @@
       "qr_modal_description": "Scannen Sie diesen QR-Code mit Ihrem Mobilgerät, um von Ihrem Telefon auf Home Assistant zuzugreifen.",
       "close": "Schließen",
       "language": "Sprache"
+    },
+    "settings": {
+      "number_of_teams": "Anzahl der Teams",
+      "teams_description": "Wie viele Teams werden am Spiel teilnehmen?",
+      "select_teams_placeholder": "Anzahl der Teams auswählen...",
+      "audio_player": "Audio-Player",
+      "audio_player_description": "Wählen Sie aus, wo die Musik abgespielt werden soll",
+      "team_setup": "Team-Einrichtung",
+      "team_assignment_description": "Weisen Sie Benutzer Ihren {count} Team{plural} zu",
+      "team_admin_notice": "Der Benutzer, der Team 1 zugewiesen wird, hat Administratorrechte zur Verwaltung von Spieleinstellungen und Teams.",
+      "select_teams_first": "Bitte wählen Sie zuerst die Anzahl der Teams aus, um Team-Zuweisungen einzurichten",
+      "choose_teams_first": "Wählen Sie zuerst aus, wie viele Teams spielen werden",
+      "countdown_timer": "Countdown-Timer",
+      "countdown_description": "Wie lange haben Teams zum Raten (5-300 Sekunden)",
+      "team_label": "Team {number}:",
+      "select_teams_for_assignments": "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen",
+      "select_teams_for_assignments_full": "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen, um Team-Zuweisungen einzurichten"
+    },
+    "alerts": {
+      "no_audio_player_title": "Kein Audio-Player ausgewählt",
+      "no_audio_player_message": "Bitte wählen Sie einen Audio-Player in den Admin-Einstellungen aus, bevor Sie das nächste Lied starten.",
+      "all_songs_played_title": "Alle Lieder gespielt!",
+      "all_songs_played_message": "Alle verfügbaren Lieder wurden gespielt. Starten Sie ein neues Spiel, um die Playlist zurückzusetzen.",
+      "new_highscore_message": "Herzlichen Glückwunsch zum neuen Highscore!"
+    },
+    "game": {
+      "year_guess_label": "Raten Sie das Jahr, in dem dieses Lied veröffentlicht wurde:",
+      "no_song_message": "Noch kein Lied gespielt.",
+      "your_average": "Ihr Durchschnitt:",
+      "your_guess_vs_actual": "Ihr Tipp: {guess} | Tatsächliches Jahr: {year}",
+      "no_participating_teams": "Keine teilnehmenden Teams",
+      "highscore_data_not_available": "Highscore-Daten nicht verfügbar",
+      "highscore_avg_round": "Highscore (Durchschn./Runde):"
+    },
+    "diagnostics": {
+      "ha_not_available": "Home Assistant-Instanz nicht verfügbar",
+      "ha_states_not_available": "Home Assistant-Zustände nicht verfügbar",
+      "sensor_not_found": "'sensor.soundbeats_highscore' nicht gefunden",
+      "available_entities": "Verfügbare Soundbeats-Entitäten:",
+      "troubleshooting": "Fehlerbehebung:",
+      "verify_integration": "Überprüfen Sie, ob die Soundbeats-Integration ordnungsgemäß installiert ist",
+      "check_sensor": "Überprüfen Sie, ob die Integration den Highscore-Sensor erstellt hat",
+      "restart_ha": "Starten Sie Home Assistant neu, wenn der Sensor kürzlich hinzugefügt wurde",
+      "entity_state": "Entitätszustand:",
+      "entity_attributes": "Entitätsattribute:",
+      "status": "Status:"
     },
     "buttons": {
       "close": "×"
