@@ -2972,8 +2972,8 @@ class SoundbeatsCard extends HTMLElement {
           ` : ''}
         </div>
         
-        <!-- Teams Overview Section - Conditionally hidden when round counter is 0 -->
-        <div class="section teams-overview-section" ${this.getRoundCounter() === 0 ? 'style="display: none;"' : ''}>
+        <!-- Teams Overview Section - Always visible -->
+        <div class="section teams-overview-section">
           <h3>
             <ha-icon icon="mdi:trophy-outline" class="icon"></ha-icon>
             Teams Overview
@@ -3562,7 +3562,7 @@ class SoundbeatsCard extends HTMLElement {
     
     return sortedTeams.map((team, index) => {
       const rank = rankings[team.teamId] || (index + 1);
-      const rankClass = currentRound === 0 ? 'rank-other' :
+      const rankClass = currentRound === 0 || team.points === 0 ? 'rank-other' :
                        rank === 1 ? 'rank-1' : 
                        rank === 2 ? 'rank-2' : 
                        rank === 3 ? 'rank-3' : 'rank-other';
@@ -4437,22 +4437,17 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateTeamsOverviewDisplay() {
-    // Update the overview content and visibility based on round counter
+    // Update the overview content - always visible
     const teamsOverviewSection = this.shadowRoot.querySelector('.teams-overview-section');
     const teamsOverviewContainer = this.shadowRoot.querySelector('.teams-overview-container');
-    const roundCounter = this.getRoundCounter();
     
-    // Hide/show the entire teams overview section based on round counter
+    // Always show the teams overview section
     if (teamsOverviewSection) {
-      if (roundCounter > 0) {
-        teamsOverviewSection.style.display = 'block';
-      } else {
-        teamsOverviewSection.style.display = 'none';
-      }
+      teamsOverviewSection.style.display = 'block';
     }
     
-    // Update teams overview content if section is visible
-    if (teamsOverviewContainer && roundCounter > 0) {
+    // Always update teams overview content
+    if (teamsOverviewContainer) {
       teamsOverviewContainer.innerHTML = this.renderOtherTeamsOverview();
     }
   }
