@@ -33,7 +33,12 @@
       "team_status": "Team Status",
       "game_settings": "Game Settings",
       "volume_up": "Volume Up",
-      "volume_down": "Volume Down"
+      "volume_down": "Volume Down",
+      "play": "Play",
+      "pause": "Pause",
+      "next_song": "Next Song",
+      "countdown_timer_length": "Countdown Timer Length",
+      "points_earned": "Points earned"
     },
     "settings": {
       "number_of_teams": "Number of Teams",
@@ -54,7 +59,7 @@
       "teams_count_option": "{count} Team{plural}",
       "team_name_placeholder": "Team Name",
       "default_team_name": "Team {number}",
-      "team_admin_label": "Team {number} (Admin)",
+      "team_admin_label": "Team {number}\n(Admin)",
       "missing_team_users_name": "Team Users",
       "missing_team_users_description": "Assign a user to every team ({missing} of {total} teams still need users assigned).",
       "missing_team_count_name": "Number of Teams",
@@ -160,7 +165,12 @@
       "team_status": "Team-Status",
       "game_settings": "Spiel-Einstellungen",
       "volume_up": "Lautstärke erhöhen",
-      "volume_down": "Lautstärke verringern"
+      "volume_down": "Lautstärke verringern",
+      "play": "Abspielen",
+      "pause": "Pausieren",
+      "next_song": "Nächster Song",
+      "countdown_timer_length": "Countdown-Timer-Länge",
+      "points_earned": "Punkte erhalten"
     },
     "settings": {
       "number_of_teams": "Anzahl der Teams",
@@ -181,7 +191,7 @@
       "teams_count_option": "{count} Team{plural}",
       "team_name_placeholder": "Team-Name",
       "default_team_name": "Team {number}",
-      "team_admin_label": "Team {number} (Admin)",
+      "team_admin_label": "Team {number}\n(Admin)",
       "missing_team_users_name": "Team-Benutzer",
       "missing_team_users_description": "Weisen Sie jedem Team einen Benutzer zu ({missing} von {total} Teams benötigen noch Benutzer).",
       "missing_team_count_name": "Anzahl der Teams",

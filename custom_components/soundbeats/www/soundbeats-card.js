@@ -108,7 +108,10 @@ class SoundbeatsCard extends HTMLElement {
             volume_up: "Volume Up",
             volume_down: "Volume Down",
             play: "Play",
-            pause: "Pause"
+            pause: "Pause",
+            next_song: "Next Song",
+            countdown_timer_length: "Countdown Timer Length",
+            points_earned: "Points earned"
           },
           settings: {
             number_of_teams: "Number of Teams",
@@ -129,7 +132,7 @@ class SoundbeatsCard extends HTMLElement {
             teams_count_option: "{count} Team{plural}",
             team_name_placeholder: "Team Name",
             default_team_name: "Team {number}",
-            team_admin_label: "Team {number} (Admin)",
+            team_admin_label: "Team {number}\n(Admin)",
             missing_team_users_name: "Team Users",
             missing_team_users_description: "Assign a user to every team ({missing} of {total} teams still need users assigned).",
             missing_team_count_name: "Number of Teams",
@@ -237,7 +240,10 @@ class SoundbeatsCard extends HTMLElement {
             volume_up: "Lautstärke erhöhen",
             volume_down: "Lautstärke verringern",
             play: "Abspielen",
-            pause: "Pausieren"
+            pause: "Pausieren",
+            next_song: "Nächster Song",
+            countdown_timer_length: "Countdown-Timer-Länge",
+            points_earned: "Punkte erhalten"
           },
           settings: {
             number_of_teams: "Anzahl der Teams",
@@ -258,7 +264,7 @@ class SoundbeatsCard extends HTMLElement {
             teams_count_option: "{count} Team{plural}",
             team_name_placeholder: "Team-Name",
             default_team_name: "Team {number}",
-            team_admin_label: "Team {number} (Admin)",
+            team_admin_label: "Team {number}\n(Admin)",
             missing_team_users_name: "Team-Benutzer",
             missing_team_users_description: "Weisen Sie jedem Team einen Benutzer zu ({missing} von {total} Teams benötigen noch Benutzer).",
             missing_team_count_name: "Anzahl der Teams",
@@ -2067,6 +2073,7 @@ class SoundbeatsCard extends HTMLElement {
           display: flex;
           align-items: center;
           gap: 2px;
+          min-height: 24px;
         }
 
         .song-next-button:hover {
@@ -3265,7 +3272,7 @@ class SoundbeatsCard extends HTMLElement {
                 </div>
                 <button class="song-next-button" onclick="this.getRootNode().host.nextSong()">
                   <ha-icon icon="mdi:skip-next" class="icon"></ha-icon>
-                  Next Song
+                  ${this._t('ui.next_song')}
                 </button>
               ` : ''}
             </div>
@@ -3325,7 +3332,7 @@ class SoundbeatsCard extends HTMLElement {
               <div class="setting-item">
                 <div class="setting-label">
                   <ha-icon icon="mdi:timer-outline" class="icon"></ha-icon>
-                  Countdown Timer Length
+                  ${this._t('ui.countdown_timer_length')}
                 </div>
                 <div class="setting-control">
                   <input 
@@ -3928,7 +3935,7 @@ class SoundbeatsCard extends HTMLElement {
             <strong>${wasCorrect ? 'BET WON!' : 'BET LOST!'}</strong>
             <div class="result-details">
               Your guess: ${teamGuess} | Actual year: ${songYear}
-              <br>Points earned: ${pointsEarned}. ${explanation}
+              <br>${this._t('ui.points_earned')}: ${pointsEarned}. ${explanation}
             </div>
           </div>
         </div>
@@ -3942,7 +3949,7 @@ class SoundbeatsCard extends HTMLElement {
             <strong>${this._ts('game.your_guess_vs_actual', { guess: teamGuess, year: songYear })}</strong>
           </div>
           <div class="result-scoring">
-            Points earned: ${pointsEarned}. ${explanation}
+            ${this._t('ui.points_earned')}: ${pointsEarned}. ${explanation}
           </div>
         </div>
       `;
