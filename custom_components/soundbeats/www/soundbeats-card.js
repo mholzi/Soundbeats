@@ -573,11 +573,18 @@ class SoundbeatsCard extends HTMLElement {
     if (hasValidTeamCount) {
       // Show team assignment fields when valid team count is selected
       inputsHtml += `
-        <p class="input-description">${this._ts('settings.team_assignment_description', { count: teamCount, plural: teamCount > 1 ? 's' : '' })}</p>
+        <p class="input-description">${this._ts('settings.team_assignment_description', { count: teamCount, plural: teamCount > 1 ? 's' : '' })}</p>`;
+      
+      // Only show admin warning in splash screen context - never in main interface
+      if (this.shouldShowSplashScreen()) {
+        inputsHtml += `
         <div class="admin-warning">
           <ha-icon icon="mdi:shield-account" class="warning-icon"></ha-icon>
           <span><strong>Important:</strong> ${this._t('settings.team_admin_notice')}</span>
-        </div>
+        </div>`;
+      }
+      
+      inputsHtml += `
         ${this.renderTeamsContent('splash')}
       `;
     } else {
@@ -3680,16 +3687,15 @@ class SoundbeatsCard extends HTMLElement {
       }
       this.clearValidationCache();
       
-      // Trigger UI refresh in both splash screen and team management after a brief delay
+      // Only trigger UI refresh for splash screen, never for team management during editing
+      // This prevents the focus loss issue when editing team names
       setTimeout(() => {
         if (this.shouldShowSplashScreen()) {
           this.updateSplashValidationState();
         }
-        // Update team management section if it exists
-        const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
-        if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
-          this.updateSplashTeamsSection('management');
-        }
+        // Do NOT update team management section to prevent focus loss
+        // The team management section will update naturally through other mechanisms
+        // without disrupting the user's editing experience
       }, 10);
     }, 50); // Further reduced delay for more responsive text input
   }
@@ -3742,7 +3748,8 @@ class SoundbeatsCard extends HTMLElement {
         // Also update splash screen dropdowns to reflect database state
         this.updateSplashScreenDropdowns();
       }
-      // Update team management section if it exists
+      // Only update team management section for user ID changes (dropdown selections)
+      // since these are discrete actions that don't interfere with text input focus
       const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
       if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
         this.updateSplashTeamsSection('management');
@@ -4485,9 +4492,10 @@ class SoundbeatsCard extends HTMLElement {
           this.updateSplashTeamsSection('splash');
           this.updateSplashValidationState();
         }
-        // Also update team management section if it exists
+        // Only update team management section if user is not currently editing
+        // to prevent disrupting focus during text input
         const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
-        if (teamManagementContainer) {
+        if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
           this.updateSplashTeamsSection('management');
         }
       }, 25);
@@ -4761,7 +4769,7 @@ class SoundbeatsCard extends HTMLElement {
           if (nameInput && document.activeElement !== nameInput) {
             // Check if there's a recent team name change to avoid overriding user input
             const recentChange = this._recentTeamNameChanges && this._recentTeamNameChanges[teamId];
-            const isRecentChange = recentChange && (Date.now() - recentChange.timestamp < 1000); // 1 second window
+            const isRecentChange = recentChange && (Date.now() - recentChange.timestamp < 3000); // 3 second window for consistency
             
             if (!isRecentChange) {
               nameInput.value = team.name;
@@ -4897,7 +4905,7 @@ class SoundbeatsCard extends HTMLElement {
     // Check if there are recent team name changes - prevent full HTML regeneration if so
     const hasRecentTeamNameChanges = this._recentTeamNameChanges && 
       Object.values(this._recentTeamNameChanges).some(change => 
-        Date.now() - change.timestamp < 1000 // 1 second window
+        Date.now() - change.timestamp < 3000 // 3 second window to ensure safe protection
       );
     
     if (hasRecentTeamNameChanges) {
@@ -5148,8 +5156,11 @@ class SoundbeatsCard extends HTMLElement {
       }
       
       if (teamManagementContainer) {
-        // Use unified team rendering logic
-        this.updateSplashTeamsSection('management');
+        // Use unified team rendering logic, but only if user is not currently editing
+        // to prevent focus loss during text input
+        if (!this.isUserEditingTeamManagement()) {
+          this.updateSplashTeamsSection('management');
+        }
       }
       
       // Restore focus if possible
