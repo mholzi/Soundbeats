@@ -43,6 +43,14 @@ Welcome to the **Soundbeats** Home Assistant party game! This repository contain
 
 - Provide thorough unit and integration tests for both backend and frontend code.
 - Use Home Assistant’s test tools for Python and appropriate frameworks for JS.
+### 6. Language Support and Translation Requirements
+
+- **All UI text must be dynamic** and use the translation system - no hardcoded strings allowed.
+- **Use translation helpers**: Use `_t('key')` or `_ts('key', substitutions)` for all user-facing text.
+- **Maintain dual language support**: All new text must include both English (`en`) and German (`de`) translations.
+- **Update translation files**: Add new keys to both `custom_components/soundbeats/www/translations.json` and the embedded fallback translations in `soundbeats-card.js`.
+- **Follow translation key structure**: Use logical groupings like `ui.*`, `settings.*`, `alerts.*`, `game.*`, `diagnostics.*`, `betting.*`, `defaults.*`, etc.
+- **No static text exceptions**: Button labels, error messages, placeholders, default values, and all user-visible content must use translations.
 
 ---
 
@@ -53,6 +61,9 @@ Welcome to the **Soundbeats** Home Assistant party game! This repository contain
 - [ ] Integration and UI are fully documented.
 - [ ] No manual configuration (YAML or file edits) is required for users.
 - [ ] Tests are updated and passing.
+- [ ] **All UI text uses the translation system with `_t()` calls - no hardcoded strings.**
+- [ ] **Both English and German translations are provided for all new text.**
+- [ ] **Translation files are updated**: `translations.json` and embedded fallback translations.
 
 ---
 

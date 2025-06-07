@@ -74,6 +74,22 @@
     },
     "buttons": {
       "close": "×"
+    },
+    "language_toggle": {
+      "german": "Deutsch",
+      "english": "English"
+    },
+    "betting": {
+      "place_bet": "Place Bet",
+      "betting_active": "BETTING!",
+      "win_lose_info": "Win: 20pts | Lose: 0pts"
+    },
+    "defaults": {
+      "unknown_title": "Unknown Title",
+      "unknown_artist": "Unknown Artist",
+      "classic_mode": "Classic",
+      "none_found": "None found",
+      "points_suffix": "pts"
     }
   },
   "de": {
@@ -151,6 +167,22 @@
     },
     "buttons": {
       "close": "×"
+    },
+    "language_toggle": {
+      "german": "Deutsch",
+      "english": "English"
+    },
+    "betting": {
+      "place_bet": "Wette platzieren",
+      "betting_active": "WETTET!",
+      "win_lose_info": "Gewinn: 20 Pkt | Verlust: 0 Pkt"
+    },
+    "defaults": {
+      "unknown_title": "Unbekannter Titel",
+      "unknown_artist": "Unbekannter Künstler",
+      "classic_mode": "Klassisch",
+      "none_found": "Keine gefunden",
+      "points_suffix": "Pkt"
     }
   }
 }
