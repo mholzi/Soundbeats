@@ -806,15 +806,34 @@ class SoundbeatsCard extends HTMLElement {
           z-index: 10;
         }
         
-        .qr-modal-controls {
+        .settings-language-toggle {
+          background: var(--card-background-color, #ffffff);
+          border: 1px solid var(--divider-color, #e0e0e0);
+          color: var(--primary-text-color);
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 0.9em;
+          cursor: pointer;
           display: flex;
           align-items: center;
           gap: 8px;
+          transition: all 0.2s ease;
+          min-width: 140px;
+          justify-content: flex-start;
         }
         
-        .qr-language-toggle {
-          font-size: 0.7em;
-          padding: 6px 10px;
+        .settings-language-toggle:hover {
+          background: var(--secondary-background-color, #f5f5f5);
+          border-color: var(--primary-color, #03a9f4);
+        }
+        
+        .language-flag {
+          font-size: 1.2em;
+          line-height: 1;
+        }
+        
+        .language-text {
+          font-weight: 500;
         }
         
         .qr-code-container {
@@ -3106,6 +3125,18 @@ class SoundbeatsCard extends HTMLElement {
                   </select>
                 </div>
               </div>
+              <div class="setting-item">
+                <div class="setting-label">
+                  <ha-icon icon="mdi:translate" class="icon"></ha-icon>
+                  ${this._t('ui.language')}
+                </div>
+                <div class="setting-control">
+                  <button class="language-toggle-btn settings-language-toggle" onclick="this.getRootNode().host._toggleLanguage()" title="${this._t('ui.language')}">
+                    <span class="language-flag">${this._currentLanguage === 'en' ? '🇬🇧' : '🇩🇪'}</span>
+                    <span class="language-text">${this._currentLanguage === 'en' ? 'English' : 'Deutsch'}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -3139,15 +3170,9 @@ class SoundbeatsCard extends HTMLElement {
         <div class="qr-modal-content">
           <div class="qr-modal-header">
             <h3 class="qr-modal-title">${this._t('ui.qr_modal_title')}</h3>
-            <div class="qr-modal-controls">
-              <button class="language-toggle-btn qr-language-toggle" onclick="this.getRootNode().host._toggleLanguage()" title="${this._t('ui.language')}">
-                <ha-icon icon="mdi:translate" class="language-icon"></ha-icon>
-                <span class="language-text">${this._currentLanguage.toUpperCase()}</span>
-              </button>
-              <button class="qr-modal-close" onclick="this.getRootNode().host.hideQrModal()">
-                <ha-icon icon="mdi:close"></ha-icon>
-              </button>
-            </div>
+            <button class="qr-modal-close" onclick="this.getRootNode().host.hideQrModal()">
+              <ha-icon icon="mdi:close"></ha-icon>
+            </button>
           </div>
           <div class="qr-code-container">
             <img class="qr-code-image" id="qr-code-image" alt="${this._t('ui.qr_code_alt')}" />
