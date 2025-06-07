@@ -722,6 +722,8 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
         self._absolute_highscore = 0
         self._round_highscores = {}
         self._played_song_ids = []
+        self._total_points = 0  # Total points for current highscore record
+        self._total_rounds = 0  # Number of rounds for current highscore record
 
     async def async_added_to_hass(self) -> None:
         """Called when entity is added to hass."""
@@ -740,12 +742,23 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
                     for key, value in last_state.attributes.items():
                         if key.startswith("round_") and isinstance(value, (int, float)):
                             self._round_highscores[key] = int(value)
+                    
+                    # Restore total_points and total_rounds attributes
+                    if "total_points" in last_state.attributes:
+                        self._total_points = int(last_state.attributes["total_points"])
+                        _LOGGER.debug("Restored total points: %d", self._total_points)
+                    if "total_rounds" in last_state.attributes:
+                        self._total_rounds = int(last_state.attributes["total_rounds"])
+                        _LOGGER.debug("Restored total rounds: %d", self._total_rounds)
+                    
                     _LOGGER.debug("Restored round highscores: %s", self._round_highscores)
                     
             except (ValueError, TypeError):
                 _LOGGER.warning("Could not restore highscore state, using defaults")
                 self._absolute_highscore = 0
                 self._round_highscores = {}
+                self._total_points = 0
+                self._total_rounds = 0
 
     @property
     def state(self) -> float:
@@ -759,6 +772,8 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
             "friendly_name": "Soundbeats Highscore",
             "description": "Average points per round highscore for Soundbeats game",
             "played_song_ids": self._played_song_ids,
+            "total_points": self._total_points,
+            "total_rounds": self._total_rounds,
         }
         # Add round highscores as attributes
         attributes.update(self._round_highscores)
@@ -806,9 +821,12 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
             team_average_int = int(team_average * 100)
             if team_average_int > self._absolute_highscore:
                 self._absolute_highscore = team_average_int
+                self._total_points = team_score  # Store absolute aggregated points
+                self._total_rounds = round_number  # Store number of rounds
                 records_broken["absolute"] = True
                 state_changed = True
-                _LOGGER.info("NEW AVERAGE HIGHSCORE: %.2f points per round!", team_average)
+                _LOGGER.info("NEW AVERAGE HIGHSCORE: %.2f points per round! (Total: %d points after %d rounds)", 
+                           team_average, team_score, round_number)
             
             # Still track round-specific records for potential future use
             round_key = f"round_{round_number}"
