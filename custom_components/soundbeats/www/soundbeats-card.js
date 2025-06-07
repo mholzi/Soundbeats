@@ -3171,7 +3171,7 @@ class SoundbeatsCard extends HTMLElement {
         <!-- Teams Overview Section - Always visible -->
         <div class="section teams-overview-section">
           <h3>
-            <ha-icon icon="mdi:trophy-outline" class="icon"></ha-icon>
+            <ha-icon icon="mdi:podium" class="icon"></ha-icon>
             Teams Overview
           </h3>
           
