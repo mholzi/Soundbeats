@@ -1,5 +1,6 @@
 """The Soundbeats integration."""
 import logging
+import os
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
