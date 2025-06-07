@@ -144,6 +144,25 @@ class SoundbeatsCard extends HTMLElement {
             entity_state: "Entity State:",
             entity_attributes: "Entity Attributes:",
             status: "Status:"
+          },
+          buttons: {
+            close: "×"
+          },
+          language_toggle: {
+            german: "Deutsch",
+            english: "English"
+          },
+          betting: {
+            place_bet: "Place Bet",
+            betting_active: "BETTING!",
+            win_lose_info: "Win: 20pts | Lose: 0pts"
+          },
+          defaults: {
+            unknown_title: "Unknown Title",
+            unknown_artist: "Unknown Artist",
+            classic_mode: "Classic",
+            none_found: "None found",
+            points_suffix: "pts"
           }
         },
         de: {
@@ -218,6 +237,25 @@ class SoundbeatsCard extends HTMLElement {
             entity_state: "Entitätszustand:",
             entity_attributes: "Entitätsattribute:",
             status: "Status:"
+          },
+          buttons: {
+            close: "×"
+          },
+          language_toggle: {
+            german: "Deutsch",
+            english: "English"
+          },
+          betting: {
+            place_bet: "Wette platzieren",
+            betting_active: "WETTET!",
+            win_lose_info: "Gewinn: 20 Pkt | Verlust: 0 Pkt"
+          },
+          defaults: {
+            unknown_title: "Unbekannter Titel",
+            unknown_artist: "Unbekannter Künstler",
+            classic_mode: "Klassisch",
+            none_found: "Keine gefunden",
+            points_suffix: "Pkt"
           }
         }
       };
@@ -3227,7 +3265,7 @@ class SoundbeatsCard extends HTMLElement {
                 <div class="setting-control">
                   <button class="language-toggle-btn settings-language-toggle" onclick="this.getRootNode().host._toggleLanguage()" title="${this._t('ui.language')}">
                     <span class="language-flag">${this._currentLanguage === 'en' ? '🇩🇪' : '🇬🇧'}</span>
-                    <span class="language-text">${this._currentLanguage === 'en' ? 'Deutsch' : 'English'}</span>
+                    <span class="language-text">${this._currentLanguage === 'en' ? this._t('language_toggle.german') : this._t('language_toggle.english')}</span>
                   </button>
                 </div>
               </div>
@@ -3401,9 +3439,9 @@ class SoundbeatsCard extends HTMLElement {
     // Get game mode from the dedicated sensor entity
     if (this.hass && this.hass.states) {
       const entity = this.hass.states['sensor.soundbeats_game_mode'];
-      return entity ? entity.state : 'Classic';
+      return entity ? entity.state : this._t('defaults.classic_mode');
     }
-    return 'Classic';
+    return this._t('defaults.classic_mode');
   }
 
   getRoundCounter() {
@@ -3607,9 +3645,9 @@ class SoundbeatsCard extends HTMLElement {
                 <button class="bet-button ${team.betting ? 'betting-active' : ''}" 
                         onclick="this.getRootNode().host.toggleTeamBetting('${teamId}', ${!team.betting})"
                         aria-label="${team.betting ? 'Cancel bet' : 'Place bet for ' + team.name}">
-                  ${team.betting ? 'BETTING!' : 'Place Bet'}
+                  ${team.betting ? this._t('betting.betting_active') : this._t('betting.place_bet')}
                 </button>
-                ${team.betting ? '<div class="betting-info">Win: 20pts | Lose: 0pts</div>' : ''}
+                ${team.betting ? `<div class="betting-info">${this._t('betting.win_lose_info')}</div>` : ''}
               </div>
             </div>
           ` : this.getRoundCounter() === 0 ? `
@@ -3973,7 +4011,7 @@ class SoundbeatsCard extends HTMLElement {
           <strong>${this._t('diagnostics.available_entities')}</strong> 
           ${soundbeatsEntities.length > 0 ? 
             `<ul>${soundbeatsEntities.map(id => `<li>${id}</li>`).join('')}</ul>` : 
-            'None found'
+            this._t('defaults.none_found')
           }
         </div>
         <div class="diagnostic-item">
@@ -4212,8 +4250,8 @@ class SoundbeatsCard extends HTMLElement {
         const url = currentSongEntity.attributes.url || '';
         
         // Get media player info if available
-        let song_name = 'Unknown Title';
-        let artist = 'Unknown Artist';
+        let song_name = this._t('defaults.unknown_title');
+        let artist = this._t('defaults.unknown_artist');
         let entity_picture = '';
         
         if (currentSongEntity.state !== 'None') {
@@ -4222,8 +4260,8 @@ class SoundbeatsCard extends HTMLElement {
           
           if (mediaPlayerEntity && mediaPlayerEntity.attributes) {
             const attributes = mediaPlayerEntity.attributes;
-            song_name = attributes.media_title || 'Unknown Title';
-            artist = attributes.media_artist || 'Unknown Artist';
+            song_name = attributes.media_title || this._t('defaults.unknown_title');
+            artist = attributes.media_artist || this._t('defaults.unknown_artist');
             entity_picture = attributes.entity_picture || '';
           }
         }
@@ -4241,8 +4279,8 @@ class SoundbeatsCard extends HTMLElement {
     // Return dummy values if sensor entity or attributes are missing/unavailable
     // This ensures the card always displays sensible defaults even if backend is misconfigured
     return {
-      song_name: 'Unknown Title',
-      artist: 'Unknown Artist',
+      song_name: this._t('defaults.unknown_title'),
+      artist: this._t('defaults.unknown_artist'),
       year: '',
       entity_picture: '',
       url: ''
@@ -4657,7 +4695,7 @@ class SoundbeatsCard extends HTMLElement {
       const pointsDisplay = teamItem.querySelector('.team-points');
       
       if (nameDisplay) nameDisplay.textContent = team.name;
-      if (pointsDisplay) pointsDisplay.textContent = `${team.points} pts`;
+      if (pointsDisplay) pointsDisplay.textContent = `${team.points} ${this._t('defaults.points_suffix')}`;
       
       // Update betting button state and display when team.betting changes
       const betButton = teamItem.querySelector('.bet-button');
@@ -4668,11 +4706,11 @@ class SoundbeatsCard extends HTMLElement {
         // Update button class based on betting state
         if (team.betting) {
           betButton.classList.add('betting-active');
-          betButton.textContent = 'BETTING!';
+          betButton.textContent = this._t('betting.betting_active');
           betButton.setAttribute('aria-label', `Cancel bet for ${team.name}`);
         } else {
           betButton.classList.remove('betting-active');
-          betButton.textContent = 'Place Bet';
+          betButton.textContent = this._t('betting.place_bet');
           betButton.setAttribute('aria-label', `Place bet for ${team.name}`);
         }
         
@@ -4688,7 +4726,7 @@ class SoundbeatsCard extends HTMLElement {
           if (!existingBettingInfo) {
             const bettingInfoElement = document.createElement('div');
             bettingInfoElement.className = 'betting-info';
-            bettingInfoElement.textContent = 'Win: 20pts | Lose: 0pts';
+            bettingInfoElement.textContent = this._t('betting.win_lose_info');
             bettingSection.appendChild(bettingInfoElement);
           }
         } else {

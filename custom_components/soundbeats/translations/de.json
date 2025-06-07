@@ -1,0 +1,14 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Soundbeats Party-Spiel",
+        "description": "Richten Sie die Soundbeats-Integration für Ihr Party-Spiel ein.",
+        "data": {}
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Nur eine einzige Konfiguration von Soundbeats ist erlaubt."
+    }
+  }
+}
