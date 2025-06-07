@@ -44,9 +44,6 @@ class SoundbeatsCard extends HTMLElement {
     // Track if user has successfully launched from splash screen
     this._hasLaunchedFromSplash = false;
     
-    // Track if splash screen should be forced to show (e.g., when Start Game button is pressed)
-    this._forceShowSplash = false;
-    
     // Translation system
     this._currentLanguage = localStorage.getItem('soundbeats-language') || 'en';
     this._translations = null;
@@ -205,21 +202,9 @@ class SoundbeatsCard extends HTMLElement {
       return cached;
     }
     
-    // Show splash screen when:
-    // 1. Critical game variables are missing
-    // 2. Force flag is set (e.g., when "Start Game" button is pressed)
+    // Show splash screen when critical game variables are missing
     const missingVariables = this.getMissingGameVariables();
-    
-    let shouldShow = false;
-    
-    // Always show if variables are missing
-    if (missingVariables.length > 0) {
-      shouldShow = true;
-    }
-    // Show if force flag is set
-    else if (this._forceShowSplash) {
-      shouldShow = true;
-    }
+    const shouldShow = missingVariables.length > 0;
     
     // Cache the result
     this._setCached('shouldShowSplash', shouldShow);
@@ -529,7 +514,6 @@ class SoundbeatsCard extends HTMLElement {
       // with UI controls. Actual game logic (song start, scoring, etc.) is initiated
       // by explicit user actions on the game screen, not by this UI transition.
       this._hasLaunchedFromSplash = true;  // Mark that user has successfully launched
-      this._forceShowSplash = false;  // Clear force flag after successful launch
       this.clearValidationCache();  // Clear cache to ensure UI updates
       this.render();  // Re-render to transition from splash to main game UI
     } else {
@@ -3909,12 +3893,9 @@ class SoundbeatsCard extends HTMLElement {
       this.hass.callService('soundbeats', 'start_game', {});
     }
     
-    // Set force flag to show splash screen for new game setup
-    this._forceShowSplash = true;
-    // Trigger splash screen display for new game configuration
-    // This follows the zero-setup philosophy where UI transitions happen first
-    this.clearValidationCache();  // Clear cache to ensure fresh validation
-    this.render();  // Re-render to show splash screen
+    // Clear cache to ensure fresh validation and re-render
+    this.clearValidationCache();
+    this.render();
   }
 
   nextSong() {
