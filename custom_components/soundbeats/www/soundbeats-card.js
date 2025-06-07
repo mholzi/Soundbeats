@@ -2062,22 +2062,28 @@ class SoundbeatsCard extends HTMLElement {
           position: absolute;
           bottom: 8px;
           right: 8px;
-          background: rgba(255, 255, 255, 0.2);
+          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, #667eea 100%);
           border: 1px solid rgba(255, 255, 255, 0.3);
-          color: var(--primary-text-color);
-          padding: 4px 8px;
+          color: white;
+          padding: 4px 6px;
           border-radius: 4px;
           cursor: pointer;
           font-size: 0.8em;
           transition: background 0.3s;
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 2px;
+          min-width: 24px;
           min-height: 24px;
         }
 
         .song-next-button:hover {
-          background: rgba(255, 255, 255, 0.3);
+          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, #764ba2 100%);
+        }
+
+        .song-next-button ha-icon {
+          --mdc-icon-size: 16px;
         }
 
         .song-volume-buttons {
