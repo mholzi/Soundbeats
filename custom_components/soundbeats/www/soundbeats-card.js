@@ -2287,7 +2287,7 @@ class SoundbeatsCard extends HTMLElement {
         
         .highscore-display {
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           gap: 16px;
         }
         
