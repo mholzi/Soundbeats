@@ -106,7 +106,9 @@ class SoundbeatsCard extends HTMLElement {
             team_status: "Team Status",
             game_settings: "Game Settings",
             volume_up: "Volume Up",
-            volume_down: "Volume Down"
+            volume_down: "Volume Down",
+            play: "Play",
+            pause: "Pause"
           },
           settings: {
             number_of_teams: "Number of Teams",
@@ -233,7 +235,9 @@ class SoundbeatsCard extends HTMLElement {
             team_status: "Team-Status",
             game_settings: "Spiel-Einstellungen",
             volume_up: "Lautstärke erhöhen",
-            volume_down: "Lautstärke verringern"
+            volume_down: "Lautstärke verringern",
+            play: "Abspielen",
+            pause: "Pausieren"
           },
           settings: {
             number_of_teams: "Anzahl der Teams",
@@ -3249,11 +3253,14 @@ class SoundbeatsCard extends HTMLElement {
               <div class="song-year">${this.getCurrentSong().year}</div>
               ${isAdmin ? `
                 <div class="song-volume-buttons">
-                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeUp()" title="${this._t('ui.volume_up')}">
-                    <ha-icon icon="mdi:volume-plus"></ha-icon>
-                  </button>
                   <button class="song-volume-button" onclick="this.getRootNode().host.volumeDown()" title="${this._t('ui.volume_down')}">
                     <ha-icon icon="mdi:volume-minus"></ha-icon>
+                  </button>
+                  <button class="song-volume-button" onclick="this.getRootNode().host.togglePlayPause()" title="${this.getMediaPlayerState() === 'playing' ? this._t('ui.pause') : this._t('ui.play')}">
+                    <ha-icon icon="${this.getMediaPlayerState() === 'playing' ? 'mdi:pause' : 'mdi:play'}"></ha-icon>
+                  </button>
+                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeUp()" title="${this._t('ui.volume_up')}">
+                    <ha-icon icon="mdi:volume-plus"></ha-icon>
                   </button>
                 </div>
                 <button class="song-next-button" onclick="this.getRootNode().host.nextSong()">
@@ -4234,6 +4241,36 @@ class SoundbeatsCard extends HTMLElement {
         entity_id: selectedPlayer
       });
     }
+  }
+
+  togglePlayPause() {
+    // Check if audio player is selected first
+    const selectedPlayer = this.getSelectedAudioPlayer();
+    
+    if (!selectedPlayer) {
+      // Show alert banner if no audio player is selected
+      this.showAlertBanner();
+      return;
+    }
+    
+    // Call Home Assistant service to toggle play/pause
+    if (this.hass) {
+      this.hass.callService('media_player', 'media_play_pause', {
+        entity_id: selectedPlayer
+      });
+    }
+  }
+
+  getMediaPlayerState() {
+    // Get the current state of the selected media player
+    const selectedPlayer = this.getSelectedAudioPlayer();
+    
+    if (!selectedPlayer || !this.hass || !this.hass.states) {
+      return null;
+    }
+    
+    const entity = this.hass.states[selectedPlayer];
+    return entity ? entity.state : null;
   }
 
   showAlertBanner() {
