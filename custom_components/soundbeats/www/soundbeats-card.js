@@ -44,6 +44,11 @@ class SoundbeatsCard extends HTMLElement {
     
     // Track if splash screen should be forced to show (e.g., when Start Game button is pressed)
     this._forceShowSplash = false;
+    
+    // Translation system
+    this._currentLanguage = localStorage.getItem('soundbeats-language') || 'en';
+    this._translations = null;
+    this._loadTranslations();
   }
 
   setConfig(config) {
@@ -51,6 +56,101 @@ class SoundbeatsCard extends HTMLElement {
       throw new Error('Invalid configuration');
     }
     this.config = config;
+    this.render();
+  }
+
+  // Translation system methods
+  async _loadTranslations() {
+    if (this._translations) return;
+    try {
+      const response = await fetch('/local/community/soundbeats/translations.json');
+      this._translations = await response.json();
+    } catch (error) {
+      console.warn('Failed to load translations, using fallback:', error);
+      // Fallback translations
+      this._translations = {
+        en: {
+          splash: {
+            welcome: "Welcome to Soundbeats!",
+            subtitle: "🎵 The ultimate Home Assistant party game experience! 🎵",
+            ready_title: "🎉 Ready to Rock! 🎉",
+            ready_description: "All game settings are configured. Let's start the music!",
+            setup_title: "Let's Get Set Up!",
+            setup_description: "Configure the missing settings below to start the party:",
+            start_game: "Start Game",
+            launch_game: "Launch Game",
+            start_help: "Complete the settings above first"
+          },
+          ui: {
+            title: "Soundbeats Party Game",
+            description: "The ultimate Home Assistant party game experience!",
+            team_management: "Team Management",
+            select_audio_player: "Select an audio player...",
+            loading_audio_players: "Loading audio players...",
+            no_audio_players: "No audio players found",
+            select_user: "Select user...",
+            loading_users: "Loading users...",
+            qr_modal_title: "Home Assistant QR Code",
+            qr_code_alt: "QR Code",
+            qr_modal_description: "Scan this QR code with your mobile device to access Home Assistant from your phone.",
+            close: "Close",
+            language: "Language"
+          }
+        },
+        de: {
+          splash: {
+            welcome: "Willkommen bei Soundbeats!",
+            subtitle: "🎵 Das ultimative Home Assistant Party-Spiel-Erlebnis! 🎵",
+            ready_title: "🎉 Bereit zum Rocken! 🎉",
+            ready_description: "Alle Spieleinstellungen sind konfiguriert. Lasst uns die Musik starten!",
+            setup_title: "Lass uns einrichten!",
+            setup_description: "Konfiguriere die fehlenden Einstellungen unten, um die Party zu starten:",
+            start_game: "Spiel starten",
+            launch_game: "Spiel starten",
+            start_help: "Vervollständige zuerst die Einstellungen oben"
+          },
+          ui: {
+            title: "Soundbeats Party-Spiel",
+            description: "Das ultimative Home Assistant Party-Spiel-Erlebnis!",
+            team_management: "Team-Verwaltung",
+            select_audio_player: "Audio-Player auswählen...",
+            loading_audio_players: "Lade Audio-Player...",
+            no_audio_players: "Keine Audio-Player gefunden",
+            select_user: "Benutzer auswählen...",
+            loading_users: "Lade Benutzer...",
+            qr_modal_title: "Home Assistant QR-Code",
+            qr_code_alt: "QR-Code",
+            qr_modal_description: "Scannen Sie diesen QR-Code mit Ihrem Mobilgerät, um von Ihrem Telefon auf Home Assistant zuzugreifen.",
+            close: "Schließen",
+            language: "Sprache"
+          }
+        }
+      };
+    }
+  }
+
+  _t(key) {
+    if (!this._translations || !this._translations[this._currentLanguage]) {
+      return key;
+    }
+    
+    const keys = key.split('.');
+    let value = this._translations[this._currentLanguage];
+    
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k];
+      } else {
+        return key;
+      }
+    }
+    
+    return typeof value === 'string' ? value : key;
+  }
+
+  _toggleLanguage() {
+    this._currentLanguage = this._currentLanguage === 'en' ? 'de' : 'en';
+    localStorage.setItem('soundbeats-language', this._currentLanguage);
     this.render();
   }
 
@@ -202,6 +302,12 @@ class SoundbeatsCard extends HTMLElement {
     return `
       <div class="splash-screen">
         <div class="splash-header">
+          <div class="splash-language-toggle">
+            <button class="language-toggle-btn" onclick="this.getRootNode().host._toggleLanguage()" title="${this._t('ui.language')}">
+              <ha-icon icon="mdi:translate" class="language-icon"></ha-icon>
+              <span class="language-text">${this._currentLanguage.toUpperCase()}</span>
+            </button>
+          </div>
           <div class="splash-floating-notes">
             <div class="note note-1">♪</div>
             <div class="note note-2">♫</div>
@@ -211,9 +317,9 @@ class SoundbeatsCard extends HTMLElement {
           </div>
           <h1>
             <ha-icon icon="mdi:music-note" class="splash-icon"></ha-icon>
-            Welcome to Soundbeats!
+            ${this._t('splash.welcome')}
           </h1>
-          <p class="splash-subtitle">🎵 The ultimate Home Assistant party game experience! 🎵</p>
+          <p class="splash-subtitle">${this._t('splash.subtitle')}</p>
           <div class="splash-sound-waves">
             <div class="wave wave-1"></div>
             <div class="wave wave-2"></div>
@@ -227,16 +333,16 @@ class SoundbeatsCard extends HTMLElement {
           <div class="splash-ready">
             <div class="ready-message">
               <ha-icon icon="mdi:check-circle" class="ready-icon"></ha-icon>
-              <h2>🎉 Ready to Rock! 🎉</h2>
-              <p>All game settings are configured. Let's start the music!</p>
+              <h2>${this._t('splash.ready_title')}</h2>
+              <p>${this._t('splash.ready_description')}</p>
             </div>
           </div>
         ` : `
           <div class="splash-setup">
             <div class="setup-message">
               <ha-icon icon="mdi:cog" class="setup-icon"></ha-icon>
-              <h2>Let's Get Set Up!</h2>
-              <p>Configure the missing settings below to start the party:</p>
+              <h2>${this._t('splash.setup_title')}</h2>
+              <p>${this._t('splash.setup_description')}</p>
             </div>
             
             <div class="splash-settings">
@@ -250,9 +356,9 @@ class SoundbeatsCard extends HTMLElement {
           <button class="splash-start-button ${isReady ? 'ready' : 'not-ready'}" 
                   onclick="this.getRootNode().host.handleSplashStart()">
             <ha-icon icon="mdi:play-circle" class="icon"></ha-icon>
-            ${isReady ? 'Launch Game' : 'Start Game'}
+            ${isReady ? this._t('splash.launch_game') : this._t('splash.start_game')}
           </button>
-          ${isReady ? '' : '<p class="start-help">Complete the settings above first</p>'}
+          ${isReady ? '' : `<p class="start-help">${this._t('splash.start_help')}</p>`}
         </div>
       </div>
     `;
@@ -300,7 +406,7 @@ class SoundbeatsCard extends HTMLElement {
         </div>
         <p class="input-description">Select where music should play from</p>
         <select class="splash-audio-select" onchange="this.getRootNode().host.updateAudioPlayer(this.value)" ${isActuallyLoading ? 'disabled' : ''}>
-          <option value="">${isActuallyLoading ? 'Loading audio players...' : hasNoPlayers ? 'No audio players found' : 'Select an audio player...'}</option>
+          <option value="">${isActuallyLoading ? this._t('ui.loading_audio_players') : hasNoPlayers ? this._t('ui.no_audio_players') : this._t('ui.select_audio_player')}</option>
           ${mediaPlayers.map(player => 
             `<option value="${player.entity_id}" ${currentSelection === player.entity_id ? 'selected' : ''}>
               ${player.name}
@@ -344,7 +450,7 @@ class SoundbeatsCard extends HTMLElement {
             <select class="splash-team-select" 
                     onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
                     ${isLoadingUsers ? 'disabled' : ''}>
-              <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
+              <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
               ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
                 `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
                   ${user.name}
@@ -486,7 +592,7 @@ class SoundbeatsCard extends HTMLElement {
       startButton.className = `splash-start-button ${isReady ? 'ready' : 'not-ready'}`;
       startButton.innerHTML = `
         <ha-icon icon="mdi:play-circle" class="icon"></ha-icon>
-        ${isReady ? 'Launch Game' : 'Start Game'}
+        ${isReady ? this._t('splash.launch_game') : this._t('splash.start_game')}
       `;
     }
     
@@ -504,7 +610,8 @@ class SoundbeatsCard extends HTMLElement {
     // The highlighting is handled by CSS classes applied during re-render
   }
 
-  render() {
+  async render() {
+    await this._loadTranslations();
     const isAdmin = this.checkAdminPermissions();
     const showSplash = this.shouldShowSplashScreen();
     
@@ -651,6 +758,50 @@ class SoundbeatsCard extends HTMLElement {
         
         .qr-modal-close ha-icon {
           --mdc-icon-size: 24px;
+        }
+        
+        /* Language toggle styles */
+        .language-toggle-btn {
+          background: linear-gradient(45deg, #2196f3, #21cbf3);
+          color: white;
+          border: none;
+          padding: 8px 12px;
+          border-radius: 20px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.8em;
+          font-weight: bold;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .language-toggle-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .language-toggle-btn ha-icon {
+          --mdc-icon-size: 16px;
+        }
+        
+        .splash-language-toggle {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          z-index: 10;
+        }
+        
+        .qr-modal-controls {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .qr-language-toggle {
+          font-size: 0.7em;
+          padding: 6px 10px;
         }
         
         .qr-code-container {
@@ -2764,9 +2915,9 @@ class SoundbeatsCard extends HTMLElement {
           </div>
           <h2>
             <ha-icon icon="mdi:music-note" class="icon"></ha-icon>
-            Soundbeats Party Game
+            ${this._t('ui.title')}
           </h2>
-          <p>The ultimate Home Assistant party game experience!</p>
+          <p>${this._t('ui.description')}</p>
           <div class="sound-waves">
             <div class="wave wave-1"></div>
             <div class="wave wave-2"></div>
@@ -2899,7 +3050,7 @@ class SoundbeatsCard extends HTMLElement {
                     class="audio-player-select" 
                     onchange="this.getRootNode().host.updateAudioPlayer(this.value)"
                   >
-                    <option value="">Select an audio player...</option>
+                    <option value="">${this._t('ui.select_audio_player')}</option>
                     ${this.getMediaPlayers().map(player => 
                       `<option value="${player.entity_id}" ${this.getSelectedAudioPlayer() === player.entity_id ? 'selected' : ''}>
                         ${player.name}
@@ -2917,7 +3068,7 @@ class SoundbeatsCard extends HTMLElement {
           <div class="expandable-header" onclick="this.getRootNode().host.toggleTeamManagement()">
             <h3>
               <ha-icon icon="mdi:account-group-outline" class="icon"></ha-icon>
-              Team Management
+              ${this._t('ui.team_management')}
             </h3>
             <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.teamManagementExpanded ? 'expanded' : ''}"></ha-icon>
           </div>
@@ -2935,16 +3086,22 @@ class SoundbeatsCard extends HTMLElement {
       <div class="qr-modal" id="qr-modal">
         <div class="qr-modal-content">
           <div class="qr-modal-header">
-            <h3 class="qr-modal-title">Home Assistant QR Code</h3>
-            <button class="qr-modal-close" onclick="this.getRootNode().host.hideQrModal()">
-              <ha-icon icon="mdi:close"></ha-icon>
-            </button>
+            <h3 class="qr-modal-title">${this._t('ui.qr_modal_title')}</h3>
+            <div class="qr-modal-controls">
+              <button class="language-toggle-btn qr-language-toggle" onclick="this.getRootNode().host._toggleLanguage()" title="${this._t('ui.language')}">
+                <ha-icon icon="mdi:translate" class="language-icon"></ha-icon>
+                <span class="language-text">${this._currentLanguage.toUpperCase()}</span>
+              </button>
+              <button class="qr-modal-close" onclick="this.getRootNode().host.hideQrModal()">
+                <ha-icon icon="mdi:close"></ha-icon>
+              </button>
+            </div>
           </div>
           <div class="qr-code-container">
-            <img class="qr-code-image" id="qr-code-image" alt="QR Code" />
+            <img class="qr-code-image" id="qr-code-image" alt="${this._t('ui.qr_code_alt')}" />
           </div>
           <div class="qr-modal-description">
-            Scan this QR code with your mobile device to access Home Assistant from your phone.
+            ${this._t('ui.qr_modal_description')}
           </div>
           <div class="qr-url-display" id="qr-url-display"></div>
         </div>
@@ -3122,7 +3279,7 @@ class SoundbeatsCard extends HTMLElement {
               title="Assign user to team"
               ${isLoadingUsers ? 'disabled' : ''}
             >
-              <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
+              <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
               ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
                 `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
                   ${user.name}
@@ -4322,7 +4479,7 @@ class SoundbeatsCard extends HTMLElement {
     const mediaPlayers = this.getMediaPlayers();
     
     // Clear and rebuild options
-    select.innerHTML = '<option value="">Select an audio player...</option>';
+    select.innerHTML = `<option value="">${this._t('ui.select_audio_player')}</option>`;
     mediaPlayers.forEach(player => {
       const option = document.createElement('option');
       option.value = player.entity_id;
@@ -4407,7 +4564,7 @@ class SoundbeatsCard extends HTMLElement {
       const newOptions = ['', ...mediaPlayers.map(p => p.entity_id)].join(',');
       
       if (currentOptions !== newOptions) {
-        audioSelect.innerHTML = '<option value="">Select an audio player...</option>';
+        audioSelect.innerHTML = `<option value="">${this._t('ui.select_audio_player')}</option>`;
         mediaPlayers.forEach(player => {
           const option = document.createElement('option');
           option.value = player.entity_id;
@@ -4436,7 +4593,7 @@ class SoundbeatsCard extends HTMLElement {
         const newOptions = ['', ...users.filter(user => !user.name.startsWith('Home Assistant')).map(u => u.id)].join(',');
         
         if (currentOptions !== newOptions) {
-          select.innerHTML = '<option value="">Select user...</option>';
+          select.innerHTML = `<option value="">${this._t('ui.select_user')}</option>`;
           users.filter(user => !user.name.startsWith('Home Assistant')).forEach(user => {
             const option = document.createElement('option');
             option.value = user.id;
@@ -4500,7 +4657,7 @@ class SoundbeatsCard extends HTMLElement {
           
           // Update options
           select.innerHTML = `
-            <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
+            <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
             ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
               `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
                 ${user.name}

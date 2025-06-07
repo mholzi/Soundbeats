@@ -1,0 +1,64 @@
+{
+  "en": {
+    "splash": {
+      "welcome": "Welcome to Soundbeats!",
+      "subtitle": "🎵 The ultimate Home Assistant party game experience! 🎵",
+      "ready_title": "🎉 Ready to Rock! 🎉",
+      "ready_description": "All game settings are configured. Let's start the music!",
+      "setup_title": "Let's Get Set Up!",
+      "setup_description": "Configure the missing settings below to start the party:",
+      "start_game": "Start Game",
+      "launch_game": "Launch Game",
+      "start_help": "Complete the settings above first"
+    },
+    "ui": {
+      "title": "Soundbeats Party Game",
+      "description": "The ultimate Home Assistant party game experience!",
+      "team_management": "Team Management",
+      "select_audio_player": "Select an audio player...",
+      "loading_audio_players": "Loading audio players...",
+      "no_audio_players": "No audio players found",
+      "select_user": "Select user...",
+      "loading_users": "Loading users...",
+      "qr_modal_title": "Home Assistant QR Code",
+      "qr_code_alt": "QR Code",
+      "qr_modal_description": "Scan this QR code with your mobile device to access Home Assistant from your phone.",
+      "close": "Close",
+      "language": "Language"
+    },
+    "buttons": {
+      "close": "×"
+    }
+  },
+  "de": {
+    "splash": {
+      "welcome": "Willkommen bei Soundbeats!",
+      "subtitle": "🎵 Das ultimative Home Assistant Party-Spiel-Erlebnis! 🎵",
+      "ready_title": "🎉 Bereit zum Rocken! 🎉",
+      "ready_description": "Alle Spieleinstellungen sind konfiguriert. Lasst uns die Musik starten!",
+      "setup_title": "Lass uns einrichten!",
+      "setup_description": "Konfiguriere die fehlenden Einstellungen unten, um die Party zu starten:",
+      "start_game": "Spiel starten",
+      "launch_game": "Spiel starten",
+      "start_help": "Vervollständige zuerst die Einstellungen oben"
+    },
+    "ui": {
+      "title": "Soundbeats Party-Spiel",
+      "description": "Das ultimative Home Assistant Party-Spiel-Erlebnis!",
+      "team_management": "Team-Verwaltung",
+      "select_audio_player": "Audio-Player auswählen...",
+      "loading_audio_players": "Lade Audio-Player...",
+      "no_audio_players": "Keine Audio-Player gefunden",
+      "select_user": "Benutzer auswählen...",
+      "loading_users": "Lade Benutzer...",
+      "qr_modal_title": "Home Assistant QR-Code",
+      "qr_code_alt": "QR-Code",
+      "qr_modal_description": "Scannen Sie diesen QR-Code mit Ihrem Mobilgerät, um von Ihrem Telefon auf Home Assistant zuzugreifen.",
+      "close": "Schließen",
+      "language": "Sprache"
+    },
+    "buttons": {
+      "close": "×"
+    }
+  }
+}
