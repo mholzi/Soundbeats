@@ -444,34 +444,13 @@ class SoundbeatsCard extends HTMLElement {
     
     if (hasValidTeamCount) {
       // Show team assignment fields when valid team count is selected
-      const teams = this.getTeams();
-      const users = this.homeAssistantUsers || [];
-      const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
-      
       inputsHtml += `
         <p class="input-description">Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}</p>
         <div class="admin-warning">
           <ha-icon icon="mdi:shield-account" class="warning-icon"></ha-icon>
           <span><strong>Important:</strong> The user assigned to Team 1 will have admin privileges to manage game settings and teams.</span>
         </div>
-        ${Object.entries(teams).map(([teamId, team]) => `
-          <div class="splash-team-item">
-            <label class="team-label">Team ${teamId.split('_')[1]}:</label>
-            <input type="text" class="splash-team-input" placeholder="Team Name" 
-                   value="${team.name}" 
-                   oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
-            <select class="splash-team-select" 
-                    onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
-                    ${isLoadingUsers ? 'disabled' : ''}>
-              <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
-              ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
-                `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
-                  ${user.name}
-                </option>`
-              ).join('')}
-            </select>
-          </div>
-        `).join('')}
+        ${this.renderTeamsContent('splash')}
       `;
     } else {
       // Show prompt message when no valid team count is selected
@@ -3380,41 +3359,13 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   renderTeamManagement() {
+    // Use unified rendering logic from splash screen
     const teamCount = this.getSelectedTeamCount();
     const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
     
     if (hasValidTeamCount) {
-      // Generate teams HTML using splash screen logic
-      const teams = this.getTeams();
-      const users = this.homeAssistantUsers || [];
-      const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
-      
-      return Object.entries(teams).map(([teamId, team]) => `
-        <div class="team-management-item" data-team="${teamId}">
-          <div class="team-management-info">
-            <span class="team-management-label">Team ${teamId.split('_')[1]}:</span>
-          </div>
-          <div class="team-management-controls">
-            <input type="text" class="team-input" placeholder="Team Name" value="${team.name}" 
-                   oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
-            <select 
-              class="team-user-select" 
-              onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
-              title="Assign user to team"
-              ${isLoadingUsers ? 'disabled' : ''}
-            >
-              <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
-              ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
-                `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
-                  ${user.name}
-                </option>`
-              ).join('')}
-            </select>
-          </div>
-        </div>
-      `).join('');
+      return this.renderTeamsContent('management');
     } else {
-      // Show prompt message when no valid team count is selected
       return `
         <div class="team-management-prompt">
           <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
@@ -3425,6 +3376,7 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getTeamManagementDescription() {
+    // Use unified description logic 
     const teamCount = this.getSelectedTeamCount();
     const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
     
@@ -3513,10 +3465,15 @@ class SoundbeatsCard extends HTMLElement {
       }
       this.clearValidationCache();
       
-      // Trigger UI refresh after a brief delay to allow the service call to complete
+      // Trigger UI refresh in both splash screen and team management after a brief delay
       setTimeout(() => {
         if (this.shouldShowSplashScreen()) {
           this.updateSplashValidationState();
+        }
+        // Update team management section if it exists
+        const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
+        if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
+          this.updateSplashTeamsSection('management');
         }
       }, 50);
     }, 500); // Longer delay for text input
@@ -3563,12 +3520,17 @@ class SoundbeatsCard extends HTMLElement {
     }
     this._recentUserSelections[teamId] = { userId, timestamp: Date.now() };
     
-    // Trigger UI refresh after a brief delay to allow the service call to complete
+    // Trigger UI refresh in both splash screen and team management after a brief delay
     setTimeout(() => {
       if (this.shouldShowSplashScreen()) {
         this.updateSplashValidationState();
         // Also update splash screen dropdowns to reflect database state
         this.updateSplashScreenDropdowns();
+      }
+      // Update team management section if it exists
+      const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
+      if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
+        this.updateSplashTeamsSection('management');
       }
     }, 50); // Reduced delay since no debouncing
   }
@@ -4285,11 +4247,16 @@ class SoundbeatsCard extends HTMLElement {
       }
       this.clearValidationCache();
       
-      // Update splash screen to show correct number of team inputs
+      // Update both splash screen and team management to show correct number of team inputs
       setTimeout(() => {
         if (this.shouldShowSplashScreen()) {
-          this.updateSplashTeamsSection();
+          this.updateSplashTeamsSection('splash');
           this.updateSplashValidationState();
+        }
+        // Also update team management section if it exists
+        const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
+        if (teamManagementContainer) {
+          this.updateSplashTeamsSection('management');
         }
       }, 100);
     });
@@ -4618,63 +4585,129 @@ class SoundbeatsCard extends HTMLElement {
     });
   }
 
-  updateSplashTeamsSection() {
-    // Update the teams section in the splash screen without full re-render
-    const splashTeamsContainer = this.shadowRoot.querySelector('.splash-teams-container');
-    if (!splashTeamsContainer) return;
+  renderTeamsContent(context = 'splash') {
+    // Unified method to render team assignment content for both splash screen and team management
+    const teams = this.getTeams();
+    const users = this.homeAssistantUsers || [];
+    const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
+    
+    const itemClass = context === 'splash' ? 'splash-team-item' : 'team-management-item';
+    const labelClass = context === 'splash' ? 'team-label' : 'team-management-label';
+    const inputClass = context === 'splash' ? 'splash-team-input' : 'team-input';
+    const selectClass = context === 'splash' ? 'splash-team-select' : 'team-user-select';
+    
+    return Object.entries(teams).map(([teamId, team]) => {
+      if (context === 'splash') {
+        return `
+          <div class="${itemClass}">
+            <label class="${labelClass}">Team ${teamId.split('_')[1]}:</label>
+            <input type="text" class="${inputClass}" placeholder="Team Name" 
+                   value="${team.name}" 
+                   oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+            <select class="${selectClass}" 
+                    onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
+                    ${isLoadingUsers ? 'disabled' : ''}>
+              <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
+              ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+                `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
+                  ${user.name}
+                </option>`
+              ).join('')}
+            </select>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="${itemClass}" data-team="${teamId}">
+            <div class="team-management-info">
+              <span class="${labelClass}">Team ${teamId.split('_')[1]}:</span>
+            </div>
+            <div class="team-management-controls">
+              <input type="text" class="${inputClass}" placeholder="Team Name" value="${team.name}" 
+                     oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+              <select 
+                class="${selectClass}" 
+                onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
+                title="Assign user to team"
+                ${isLoadingUsers ? 'disabled' : ''}
+              >
+                <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
+                ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+                  `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
+                    ${user.name}
+                  </option>`
+                ).join('')}
+              </select>
+            </div>
+          </div>
+        `;
+      }
+    }).join('');
+  }
+
+  updateSplashTeamsSection(context = 'splash') {
+    // Update the teams section in either splash screen or team management without full re-render
+    const containerSelector = context === 'splash' ? '.splash-teams-container' : '.team-management-container';
+    const teamsContainer = this.shadowRoot.querySelector(containerSelector);
+    if (!teamsContainer) return;
     
     const teamCount = this.getSelectedTeamCount();
     const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
     
-    // Always show teams section
-    const teamsSection = splashTeamsContainer.closest('.splash-input-section');
-    if (teamsSection) {
-      teamsSection.style.display = 'block';
+    if (context === 'splash') {
+      // Always show teams section in splash
+      const teamsSection = teamsContainer.closest('.splash-input-section');
+      if (teamsSection) {
+        teamsSection.style.display = 'block';
+      }
     }
     
     if (hasValidTeamCount) {
-      // Update description and show team assignment fields
-      const description = teamsSection.querySelector('.input-description');
-      if (description) {
-        description.textContent = `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
+      // Update description for splash screen context
+      if (context === 'splash') {
+        const teamsSection = teamsContainer.closest('.splash-input-section');
+        const description = teamsSection.querySelector('.input-description');
+        if (description) {
+          description.textContent = `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
+        }
+      } else {
+        // Update description for team management context
+        const descriptionElement = this.shadowRoot.querySelector('.team-management-description');
+        if (descriptionElement) {
+          descriptionElement.textContent = `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
+        }
       }
       
-      // Generate teams HTML
-      const teams = this.getTeams();
-      const users = this.homeAssistantUsers || [];
-      const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
-      
-      splashTeamsContainer.innerHTML = Object.entries(teams).map(([teamId, team]) => `
-        <div class="splash-team-item">
-          <label class="team-label">Team ${teamId.split('_')[1]}:</label>
-          <input type="text" class="splash-team-input" placeholder="Team Name" 
-                 value="${team.name}" 
-                 oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
-          <select class="splash-team-select" 
-                  onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
-                  ${isLoadingUsers ? 'disabled' : ''}>
-            <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
-            ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
-              `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
-                ${user.name}
-              </option>`
-            ).join('')}
-          </select>
-        </div>
-      `).join('');
+      // Generate teams HTML using unified logic
+      teamsContainer.innerHTML = this.renderTeamsContent(context);
     } else {
       // Show prompt message when no valid team count is selected
-      const description = teamsSection.querySelector('.input-description');
-      if (description) {
-        description.textContent = 'Please select the number of teams above to set up team assignments';
+      if (context === 'splash') {
+        const teamsSection = teamsContainer.closest('.splash-input-section');
+        const description = teamsSection.querySelector('.input-description');
+        if (description) {
+          description.textContent = 'Please select the number of teams above to set up team assignments';
+        }
+        
+        teamsContainer.innerHTML = `
+          <div class="splash-teams-prompt">
+            <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
+            <span>Choose how many teams will play first</span>
+          </div>
+        `;
+      } else {
+        const descriptionElement = this.shadowRoot.querySelector('.team-management-description');
+        if (descriptionElement) {
+          descriptionElement.textContent = 'Please select the number of teams in Game Settings first to set up team assignments';
+        }
+        
+        teamsContainer.innerHTML = `
+          <div class="team-management-prompt">
+            <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
+            <span>Please select the number of teams in Game Settings first</span>
+          </div>
+        `;
       }
-      
-      splashTeamsContainer.innerHTML = `
-        <div class="splash-teams-prompt">
-          <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
-          <span>Choose how many teams will play first</span>
-        </div>
-      `;
     }
   }
 
@@ -4847,12 +4880,8 @@ class SoundbeatsCard extends HTMLElement {
       }
       
       if (teamManagementContainer) {
-        teamManagementContainer.innerHTML = this.renderTeamManagement();
-        // Update the description as well
-        const descriptionElement = this.shadowRoot.querySelector('.team-management-description');
-        if (descriptionElement) {
-          descriptionElement.textContent = this.getTeamManagementDescription();
-        }
+        // Use unified team rendering logic
+        this.updateSplashTeamsSection('management');
       }
       
       // Restore focus if possible
@@ -4901,12 +4930,8 @@ class SoundbeatsCard extends HTMLElement {
         // Only re-render team management if user is not currently editing it
         const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
         if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
-          teamManagementContainer.innerHTML = this.renderTeamManagement();
-          // Update the description as well
-          const descriptionElement = this.shadowRoot.querySelector('.team-management-description');
-          if (descriptionElement) {
-            descriptionElement.textContent = this.getTeamManagementDescription();
-          }
+          // Use unified team rendering logic
+          this.updateSplashTeamsSection('management');
         }
         
         // Re-render splash screen if it's currently shown to populate dropdowns
