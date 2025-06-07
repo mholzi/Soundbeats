@@ -331,7 +331,8 @@ class SoundbeatsGameService:
                     "song_id": song.get("id"),
                     "year": song.get("year"),
                     "url": song_url,
-                    "media_content_type": media_content_type
+                    "media_content_type": media_content_type,
+                    "fun_fact": song.get("fun_fact")
                 })
             
             return True

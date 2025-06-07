@@ -111,7 +111,8 @@ class SoundbeatsCard extends HTMLElement {
             pause: "Pause",
             next_song: "Next Song",
             countdown_timer_length: "Countdown Timer Length",
-            points_earned: "Points earned"
+            points_earned: "Points earned",
+            fun_fact: "Fun Fact"
           },
           settings: {
             number_of_teams: "Number of Teams",
@@ -244,7 +245,8 @@ class SoundbeatsCard extends HTMLElement {
             pause: "Pausieren",
             next_song: "Nächster Song",
             countdown_timer_length: "Countdown-Timer-Länge",
-            points_earned: "Punkte erhalten"
+            points_earned: "Punkte erhalten",
+            fun_fact: "Wissenswertes"
           },
           settings: {
             number_of_teams: "Anzahl der Teams",
@@ -2091,6 +2093,31 @@ class SoundbeatsCard extends HTMLElement {
           color: var(--primary-color, #03a9f4);
         }
 
+        .song-fun-fact {
+          margin: 16px 0;
+          padding: 12px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          border-left: 4px solid var(--primary-color, #03a9f4);
+        }
+
+        .song-fun-fact-label {
+          font-size: 0.9em;
+          font-weight: bold;
+          margin-bottom: 6px;
+          color: var(--primary-color, #03a9f4);
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .song-fun-fact-text {
+          font-size: 0.95em;
+          line-height: 1.4;
+          color: var(--primary-text-color);
+          font-style: italic;
+        }
+
         .song-next-button {
           position: absolute;
           bottom: 8px;
@@ -3312,6 +3339,12 @@ class SoundbeatsCard extends HTMLElement {
               <div class="song-name">${this.getCurrentSong().song_name}</div>
               <div class="song-artist">${this.getCurrentSong().artist}</div>
               <div class="song-year">${this.getCurrentSong().year}</div>
+              ${this.getCurrentSong().fun_fact ? `
+                <div class="song-fun-fact">
+                  <div class="song-fun-fact-label"><ha-icon icon="mdi:lightbulb"></ha-icon> ${this._t('ui.fun_fact')}:</div>
+                  <div class="song-fun-fact-text">${this.getCurrentSong().fun_fact}</div>
+                </div>
+              ` : ''}
               ${isAdmin ? `
                 <div class="song-volume-buttons">
                   <button class="song-volume-button" onclick="this.getRootNode().host.volumeDown()" title="${this._t('ui.volume_down')}">
@@ -4477,6 +4510,7 @@ class SoundbeatsCard extends HTMLElement {
         // Always get year and url from sensor attributes (exclusive source)
         const year = currentSongEntity.attributes.year || '';
         const url = currentSongEntity.attributes.url || '';
+        const fun_fact = currentSongEntity.attributes.fun_fact || '';
         
         // Get media player info if available
         let song_name = this._t('defaults.unknown_title');
@@ -4500,7 +4534,8 @@ class SoundbeatsCard extends HTMLElement {
           artist: artist,
           year: year,
           entity_picture: entity_picture,
-          url: url
+          url: url,
+          fun_fact: fun_fact
         };
       }
     }
@@ -4512,7 +4547,8 @@ class SoundbeatsCard extends HTMLElement {
       artist: this._t('defaults.unknown_artist'),
       year: '',
       entity_picture: '',
-      url: ''
+      url: '',
+      fun_fact: ''
     };
   }
 
@@ -4892,11 +4928,13 @@ class SoundbeatsCard extends HTMLElement {
         const songName = songSection.querySelector('.song-name');
         const songArtist = songSection.querySelector('.song-artist');
         const songYear = songSection.querySelector('.song-year');
+        const songFunFactText = songSection.querySelector('.song-fun-fact-text');
         
         if (songImage) songImage.src = currentSong.entity_picture;
         if (songName) songName.textContent = currentSong.song_name;
         if (songArtist) songArtist.textContent = currentSong.artist;
         if (songYear) songYear.textContent = currentSong.year;
+        if (songFunFactText) songFunFactText.textContent = currentSong.fun_fact;
       } else {
         songSection.classList.add('hidden');
       }
