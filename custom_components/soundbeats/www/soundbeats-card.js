@@ -10,6 +10,9 @@
  * scoring, etc.) are initiated by explicit user actions on the main game screen.
  */
 
+// Version constant - keep in sync with manifest.json
+const SOUNDBEATS_VERSION = "1.0.0";
+
 class SoundbeatsCard extends HTMLElement {
   constructor() {
     super();
@@ -359,6 +362,11 @@ class SoundbeatsCard extends HTMLElement {
             ${isReady ? this._t('splash.launch_game') : this._t('splash.start_game')}
           </button>
           ${isReady ? '' : `<p class="start-help">${this._t('splash.start_help')}</p>`}
+        </div>
+        
+        <!-- Version Footer -->
+        <div class="version-footer">
+          v${this.getVersion()}
         </div>
       </div>
     `;
@@ -2864,6 +2872,29 @@ class SoundbeatsCard extends HTMLElement {
             transform: rotate(360deg);
           }
         }
+        
+        /* Version Footer Styles */
+        .version-footer {
+          position: absolute;
+          bottom: 8px;
+          right: 8px;
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.5);
+          font-family: monospace;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+          pointer-events: none;
+          z-index: 1000;
+        }
+        
+        /* Version footer for main card */
+        .soundbeats-card {
+          position: relative;
+        }
+        
+        .soundbeats-card .version-footer {
+          color: var(--secondary-text-color, rgba(0, 0, 0, 0.5));
+          text-shadow: none;
+        }
       </style>
       
       <!-- Alert Banner for No Audio Player Selected -->
@@ -3080,6 +3111,11 @@ class SoundbeatsCard extends HTMLElement {
           </div>
         </div>
       </div>
+      
+      <!-- Version Footer -->
+      <div class="version-footer">
+        v${this.getVersion()}
+      </div>
       `}
       
       <!-- QR Code Modal -->
@@ -3107,6 +3143,10 @@ class SoundbeatsCard extends HTMLElement {
         </div>
       </div>
     `;
+  }
+
+  getVersion() {
+    return SOUNDBEATS_VERSION;
   }
 
   checkAdminPermissions() {
@@ -4866,7 +4906,7 @@ window.customCards.push({
 });
 
 console.info(
-  '%c  SOUNDBEATS-CARD  \n%c  Version 1.0.0   ',
+  '%c  SOUNDBEATS-CARD  \n%c  Version ' + SOUNDBEATS_VERSION + '   ',
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray'
 );
