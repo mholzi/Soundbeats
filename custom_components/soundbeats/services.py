@@ -11,6 +11,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 
 from .const import DOMAIN
+from .security import (
+    validate_entity_id,
+    validate_team_id_format,
+    validate_year_range,
+    validate_timer_length,
+    sanitize_team_name,
+    validate_points,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -395,13 +403,11 @@ class SoundbeatsTeamService:
 
     def _validate_team_id(self, team_id: str) -> int:
         """Validate and extract team number from team_id."""
-        if not team_id or not team_id.startswith("team_"):
+        if not validate_team_id_format(team_id):
             raise ServiceValidationError(f"Invalid team_id format: {team_id}")
         
         try:
             team_number = int(team_id.split('_')[-1])
-            if team_number < 1 or team_number > 5:
-                raise ServiceValidationError(f"Invalid team number: {team_number} (must be 1-5)")
             return team_number
         except (ValueError, IndexError) as e:
             raise ServiceValidationError(f"Invalid team_id format: {team_id}") from e
@@ -417,10 +423,20 @@ class SoundbeatsTeamService:
         team_number = self._validate_team_id(team_id)
         
         # Special validation for name attribute
-        if attribute_name == "name" and not value:
-            raise ServiceValidationError(f"Missing {attribute_name}")
+        if attribute_name == "name":
+            if not value:
+                raise ServiceValidationError(f"Missing {attribute_name}")
+            value = sanitize_team_name(value)
         elif attribute_name != "name" and value is None:
             raise ServiceValidationError(f"Missing {attribute_name}")
+        
+        # Additional validation for specific attributes
+        if attribute_name == "points" and not validate_points(value):
+            raise ServiceValidationError(f"Invalid points value: {value}")
+        elif attribute_name == "year_guess" and not validate_year_range(value):
+            raise ServiceValidationError(f"Invalid year guess: {value}")
+        elif attribute_name == "timer_length" and not validate_timer_length(value):
+            raise ServiceValidationError(f"Invalid timer length: {value}")
         
         unique_id = f"soundbeats_team_{team_number}"
         
@@ -480,7 +496,7 @@ class SoundbeatsConfigService:
         if timer_length is None:
             raise ServiceValidationError("Missing timer_length")
         
-        if timer_length < 5 or timer_length > 300:
+        if not validate_timer_length(timer_length):
             raise ServiceValidationError(f"Invalid timer_length: {timer_length} (must be 5-300 seconds)")
         
         try:
@@ -500,7 +516,7 @@ class SoundbeatsConfigService:
             raise ServiceValidationError("Missing audio_player")
         
         # Validate that the entity exists and is a media_player
-        if not audio_player.startswith("media_player."):
+        if not validate_entity_id(audio_player) or not audio_player.startswith("media_player."):
             raise ServiceValidationError(f"Invalid audio_player: {audio_player} (must be a media_player entity)")
         
         state_obj = self.hass.states.get(audio_player)
