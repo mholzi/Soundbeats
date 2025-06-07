@@ -133,6 +133,7 @@ class SoundbeatsCard extends HTMLElement {
             team_name_placeholder: "Team Name",
             default_team_name: "Team {number}",
             team_admin_label: "Team {number} (Admin)",
+            team_admin_suffix: "(Admin)",
             missing_team_users_name: "Team Users",
             missing_team_users_description: "Assign a user to every team ({missing} of {total} teams still need users assigned).",
             missing_team_count_name: "Number of Teams",
@@ -265,6 +266,7 @@ class SoundbeatsCard extends HTMLElement {
             team_name_placeholder: "Team-Name",
             default_team_name: "Team {number}",
             team_admin_label: "Team {number} (Admin)",
+            team_admin_suffix: "(Admin)",
             missing_team_users_name: "Team-Benutzer",
             missing_team_users_description: "Weisen Sie jedem Team einen Benutzer zu ({missing} von {total} Teams benötigen noch Benutzer).",
             missing_team_count_name: "Anzahl der Teams",
@@ -5075,8 +5077,9 @@ class SoundbeatsCard extends HTMLElement {
           <div class="${itemClass}" data-team="${teamId}">
             <div class="team-management-info">
               <span class="${labelClass}">${teamId === 'team_1' ? 
-                this._ts('settings.team_admin_label', { number: teamId.split('_')[1] }) : 
+                this._ts('settings.team_label', { number: teamId.split('_')[1] }) : 
                 this._ts('settings.team_label', { number: teamId.split('_')[1] })}</span>
+              ${teamId === 'team_1' ? `<br><span class="${labelClass} admin-suffix">${this._t('settings.team_admin_suffix')}</span>` : ''}
             </div>
             <div class="team-management-controls">
               <input type="text" class="${inputClass}" placeholder="${this._t('settings.team_name_placeholder')}" value="${team.name}" 
