@@ -10,8 +10,7 @@
  * scoring, etc.) are initiated by explicit user actions on the main game screen.
  */
 
-// Version constant - keep in sync with manifest.json
-const SOUNDBEATS_VERSION = "1.0.0";
+// Version will be dynamically fetched from Home Assistant integration registry
 
 class SoundbeatsCard extends HTMLElement {
   constructor() {
@@ -3146,7 +3145,75 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getVersion() {
-    return SOUNDBEATS_VERSION;
+    // Get version from Home Assistant integration registry
+    if (this.hass && this.hass.connection) {
+      // Try to get integration information from Home Assistant
+      try {
+        // Cache the version to avoid repeated calls
+        if (this._cachedVersion) {
+          return this._cachedVersion;
+        }
+        
+        // For now, return a placeholder while we fetch the version asynchronously
+        // This will be updated when the integration info is loaded
+        return this._integrationVersion || "1.0.0";
+      } catch (error) {
+        console.warn('Could not fetch integration version:', error);
+        return "1.0.0"; // Fallback version
+      }
+    }
+    return "1.0.0"; // Fallback when Home Assistant is not available
+  }
+
+  async _loadIntegrationVersion() {
+    // Load the integration version from Home Assistant
+    if (!this.hass || !this.hass.connection) {
+      return;
+    }
+
+    try {
+      // Call Home Assistant WebSocket API to get integration information
+      const integrationInfo = await this.hass.callWS({
+        type: 'config/integration_registry/get',
+        domain: 'soundbeats'
+      });
+      
+      if (integrationInfo && integrationInfo.version) {
+        this._integrationVersion = integrationInfo.version;
+        this._cachedVersion = integrationInfo.version;
+        // Re-render version display if it's currently shown
+        this._updateVersionDisplay();
+      }
+    } catch (error) {
+      console.warn('Could not fetch integration version from registry, trying manifest:', error);
+      
+      // Fallback: try to get version from integration manifest
+      try {
+        const manifestInfo = await this.hass.callWS({
+          type: 'manifest/get',
+          integration: 'soundbeats'
+        });
+        
+        if (manifestInfo && manifestInfo.version) {
+          this._integrationVersion = manifestInfo.version;
+          this._cachedVersion = manifestInfo.version;
+          this._updateVersionDisplay();
+        }
+      } catch (manifestError) {
+        console.warn('Could not fetch version from manifest either:', manifestError);
+        // Keep default fallback version
+        this._integrationVersion = "1.0.0";
+        this._cachedVersion = "1.0.0";
+      }
+    }
+  }
+
+  _updateVersionDisplay() {
+    // Update version display elements if they exist
+    const versionElements = this.shadowRoot.querySelectorAll('.version-footer');
+    versionElements.forEach(element => {
+      element.textContent = `v${this.getVersion()}`;
+    });
   }
 
   checkAdminPermissions() {
@@ -4796,6 +4863,12 @@ class SoundbeatsCard extends HTMLElement {
       this._clearCache(); // Clear all caches when hass changes
     }
     
+    // Load integration version when hass becomes available for the first time
+    if (hass && !this._versionLoaded) {
+      this._loadIntegrationVersion();
+      this._versionLoaded = true;
+    }
+    
     // Load users when hass becomes available for the first time
     if (hass && !this.usersLoaded) {
       this.loadHomeAssistantUsers().then(() => {
@@ -4906,7 +4979,7 @@ window.customCards.push({
 });
 
 console.info(
-  '%c  SOUNDBEATS-CARD  \n%c  Version ' + SOUNDBEATS_VERSION + '   ',
+  '%c  SOUNDBEATS-CARD  \n%c  Version loaded from Home Assistant   ',
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray'
 );
