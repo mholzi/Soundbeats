@@ -31,7 +31,9 @@
       "teams_overview": "Teams Overview",
       "highscores_after_round": "Highscores (after Round {round})",
       "team_status": "Team Status",
-      "game_settings": "Game Settings"
+      "game_settings": "Game Settings",
+      "volume_up": "Volume Up",
+      "volume_down": "Volume Down"
     },
     "settings": {
       "number_of_teams": "Number of Teams",
@@ -54,7 +56,13 @@
       "default_team_name": "Team {number}",
       "team_admin_label": "Team {number} (Admin)",
       "missing_team_users_name": "Team Users",
-      "missing_team_users_description": "Assign a user to every team ({missing} of {total} teams still need users assigned)."
+      "missing_team_users_description": "Assign a user to every team ({missing} of {total} teams still need users assigned).",
+      "missing_team_count_name": "Number of Teams",
+      "missing_team_count_description": "Select how many teams will participate in the game (1-5 teams).",
+      "missing_audio_player_name": "Audio Player",
+      "missing_audio_player_description": "Select a media player to play music during the game. This is where songs will be played from.",
+      "missing_countdown_timer_name": "Countdown Timer",
+      "missing_countdown_timer_description": "Set a countdown timer length (5-300 seconds) for how long teams have to guess each song."
     },
     "alerts": {
       "no_audio_player_title": "No Audio Player Selected",
@@ -101,7 +109,10 @@
     "betting": {
       "place_bet": "Place Bet",
       "betting_active": "BETTING!",
-      "win_lose_info": "Win: 20pts | Lose: 0pts"
+      "win_lose_info": "Win: 20pts | Lose: 0pts",
+      "cancel_bet_aria": "Cancel bet",
+      "place_bet_for_aria": "Place bet for {team}",
+      "cancel_bet_for_aria": "Cancel bet for {team}"
     },
     "defaults": {
       "unknown_title": "Unknown Title",
@@ -147,7 +158,9 @@
       "teams_overview": "Teams-Übersicht",
       "highscores_after_round": "Highscores (nach Runde {round})",
       "team_status": "Team-Status",
-      "game_settings": "Spiel-Einstellungen"
+      "game_settings": "Spiel-Einstellungen",
+      "volume_up": "Lautstärke erhöhen",
+      "volume_down": "Lautstärke verringern"
     },
     "settings": {
       "number_of_teams": "Anzahl der Teams",
@@ -170,7 +183,13 @@
       "default_team_name": "Team {number}",
       "team_admin_label": "Team {number} (Admin)",
       "missing_team_users_name": "Team-Benutzer",
-      "missing_team_users_description": "Weisen Sie jedem Team einen Benutzer zu ({missing} von {total} Teams benötigen noch Benutzer)."
+      "missing_team_users_description": "Weisen Sie jedem Team einen Benutzer zu ({missing} von {total} Teams benötigen noch Benutzer).",
+      "missing_team_count_name": "Anzahl der Teams",
+      "missing_team_count_description": "Wählen Sie aus, wie viele Teams am Spiel teilnehmen werden (1-5 Teams).",
+      "missing_audio_player_name": "Audio-Player",
+      "missing_audio_player_description": "Wählen Sie einen Media-Player aus, um Musik während des Spiels abzuspielen. Hier werden die Songs abgespielt.",
+      "missing_countdown_timer_name": "Countdown-Timer",
+      "missing_countdown_timer_description": "Stellen Sie eine Countdown-Timer-Länge ein (5-300 Sekunden), wie lange Teams zum Raten haben."
     },
     "alerts": {
       "no_audio_player_title": "Kein Audio-Player ausgewählt",
@@ -217,7 +236,10 @@
     "betting": {
       "place_bet": "Wette platzieren",
       "betting_active": "WETTET!",
-      "win_lose_info": "Gewinn: 20 Pkt | Verlust: 0 Pkt"
+      "win_lose_info": "Gewinn: 20 Pkt | Verlust: 0 Pkt",
+      "cancel_bet_aria": "Wette stornieren",
+      "place_bet_for_aria": "Wette platzieren für {team}",
+      "cancel_bet_for_aria": "Wette stornieren für {team}"
     },
     "defaults": {
       "unknown_title": "Unbekannter Titel",
