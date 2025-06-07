@@ -44,6 +44,9 @@ class SoundbeatsCard extends HTMLElement {
     // Track if user has successfully launched from splash screen
     this._hasLaunchedFromSplash = false;
     
+    // Track recent user interactions with dropdowns to prevent overriding selections
+    this._recentAudioPlayerInteractions = new Map();
+    
     // Translation system
     this._currentLanguage = localStorage.getItem('soundbeats-language') || 'en';
     this._translations = null;
@@ -504,7 +507,7 @@ class SoundbeatsCard extends HTMLElement {
           <h3>${this._t('settings.audio_player')}</h3>
         </div>
         <p class="input-description">${this._t('settings.audio_player_description')}</p>
-        <select class="splash-audio-select" onchange="this.getRootNode().host.updateAudioPlayer(this.value)" ${isActuallyLoading ? 'disabled' : ''}>
+        <select class="splash-audio-select" onchange="this.getRootNode().host.updateAudioPlayer(this.value)" onfocus="this.getRootNode().host._trackAudioPlayerInteraction('.splash-audio-select')" onmousedown="this.getRootNode().host._trackAudioPlayerInteraction('.splash-audio-select')" ${isActuallyLoading ? 'disabled' : ''}>
           <option value="">${isActuallyLoading ? this._t('ui.loading_audio_players') : hasNoPlayers ? this._t('ui.no_audio_players') : this._t('ui.select_audio_player')}</option>
           ${mediaPlayers.map(player => 
             `<option value="${player.entity_id}" ${currentSelection === player.entity_id ? 'selected' : ''}>
@@ -591,6 +594,24 @@ class SoundbeatsCard extends HTMLElement {
       callback();
       delete this._debounceTimers[key];
     }, delay);
+  }
+
+  // Track user interaction with audio player dropdowns
+  _trackAudioPlayerInteraction(selector) {
+    this._recentAudioPlayerInteractions.set(selector, Date.now());
+    // Clean up old interactions after 3 seconds
+    setTimeout(() => {
+      const timestamp = this._recentAudioPlayerInteractions.get(selector);
+      if (timestamp && Date.now() - timestamp >= 3000) {
+        this._recentAudioPlayerInteractions.delete(selector);
+      }
+    }, 3000);
+  }
+
+  // Check if user recently interacted with an audio player dropdown
+  _hasRecentAudioPlayerInteraction(selector) {
+    const timestamp = this._recentAudioPlayerInteractions.get(selector);
+    return timestamp && (Date.now() - timestamp < 3000); // 3 second window
   }
 
   // Clear validation errors cache when state changes
@@ -3179,6 +3200,8 @@ class SoundbeatsCard extends HTMLElement {
                   <select 
                     class="audio-player-select" 
                     onchange="this.getRootNode().host.updateAudioPlayer(this.value)"
+                    onfocus="this.getRootNode().host._trackAudioPlayerInteraction('.audio-player-select')"
+                    onmousedown="this.getRootNode().host._trackAudioPlayerInteraction('.audio-player-select')"
                   >
                     <option value="">${this._t('ui.select_audio_player')}</option>
                     ${this.getMediaPlayers().map(player => 
@@ -4348,6 +4371,10 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateAudioPlayer(audioPlayer) {
+    // Track this interaction to prevent updates from overriding user selection
+    this._trackAudioPlayerInteraction('.splash-audio-select');
+    this._trackAudioPlayerInteraction('.audio-player-select');
+    
     // Debounce the service call
     this.debouncedServiceCall('audioPlayer', () => {
       if (this.hass) {
@@ -4709,7 +4736,7 @@ class SoundbeatsCard extends HTMLElement {
 
   updateAudioPlayerOptions() {
     const select = this.shadowRoot.querySelector('.audio-player-select');
-    if (!select || document.activeElement === select) return;
+    if (!select || document.activeElement === select || this._hasRecentAudioPlayerInteraction('.audio-player-select')) return;
     
     const currentSelection = this.getSelectedAudioPlayer();
     const mediaPlayers = this.getMediaPlayers();
@@ -4852,12 +4879,19 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateSplashScreenDropdowns() {
+    // Debounce splash screen dropdown updates to prevent excessive rebuilding
+    this.debouncedServiceCall('splashDropdownUpdate', () => {
+      this._updateSplashScreenDropdownsInternal();
+    }, 50); // Short delay to batch multiple rapid updates
+  }
+  
+  _updateSplashScreenDropdownsInternal() {
     // Update splash screen dropdown options without full re-render
     // Only update if user is not actively focused on the dropdowns
     
     // Update audio player dropdown
     const audioSelect = this.shadowRoot.querySelector('.splash-audio-select');
-    if (audioSelect && document.activeElement !== audioSelect && !audioSelect.disabled) {
+    if (audioSelect && document.activeElement !== audioSelect && !audioSelect.disabled && !this._hasRecentAudioPlayerInteraction('.splash-audio-select')) {
       const currentSelection = this.getSelectedAudioPlayer();
       const mediaPlayers = this.getMediaPlayers();
       const isActuallyLoading = this._isLoadingMediaPlayers;
@@ -4870,6 +4904,9 @@ class SoundbeatsCard extends HTMLElement {
       const newFirstOptionText = isActuallyLoading ? this._t('ui.loading_audio_players') : hasNoPlayers ? this._t('ui.no_audio_players') : this._t('ui.select_audio_player');
       
       if (currentOptions !== newOptions || currentFirstOptionText !== newFirstOptionText) {
+        // Preserve current user selection if it exists
+        const currentUserSelection = audioSelect.value;
+        
         audioSelect.innerHTML = `<option value="">${newFirstOptionText}</option>`;
         mediaPlayers.forEach(player => {
           const option = document.createElement('option');
@@ -4878,6 +4915,11 @@ class SoundbeatsCard extends HTMLElement {
           option.selected = currentSelection === player.entity_id;
           audioSelect.appendChild(option);
         });
+        
+        // If user had a selection that's still valid, preserve it
+        if (currentUserSelection && mediaPlayers.some(p => p.entity_id === currentUserSelection)) {
+          audioSelect.value = currentUserSelection;
+        }
       }
     }
 
