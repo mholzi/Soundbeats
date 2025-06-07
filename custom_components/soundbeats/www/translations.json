@@ -24,7 +24,14 @@
       "qr_code_alt": "QR Code",
       "qr_modal_description": "Scan this QR code with your mobile device to access Home Assistant from your phone.",
       "close": "Close",
-      "language": "Language"
+      "language": "Language",
+      "assign_user_tooltip": "Assign user to team",
+      "song_timer": "Song Timer",
+      "current_song": "Current Song",
+      "teams_overview": "Teams Overview",
+      "highscores_after_round": "Highscores (after Round {round})",
+      "team_status": "Team Status",
+      "game_settings": "Game Settings"
     },
     "settings": {
       "number_of_teams": "Number of Teams",
@@ -41,7 +48,9 @@
       "countdown_description": "How long teams have to guess (5-300 seconds)",
       "team_label": "Team {number}:",
       "select_teams_for_assignments": "Please select the number of teams in Game Settings first",
-      "select_teams_for_assignments_full": "Please select the number of teams in Game Settings first to set up team assignments"
+      "select_teams_for_assignments_full": "Please select the number of teams in Game Settings first to set up team assignments",
+      "teams_count_option": "{count} Team{plural}",
+      "team_name_placeholder": "Team Name"
     },
     "alerts": {
       "no_audio_player_title": "No Audio Player Selected",
@@ -57,7 +66,13 @@
       "your_guess_vs_actual": "Your guess: {guess} | Actual year: {year}",
       "no_participating_teams": "No participating teams",
       "highscore_data_not_available": "Highscore data not available",
-      "highscore_avg_round": "Highscore (Avg/Round):"
+      "highscore_avg_round": "Highscore (Avg/Round):",
+      "perfect_guess_with_bet": "Perfect guess with bet!",
+      "years_off_bet_failed": "{difference} year{plural} off. Bet failed.",
+      "perfect_guess": "Perfect guess!",
+      "within_years_correct": "You were within {difference} year{plural} of the correct answer.",
+      "within_years_correct_exact": "You were within {difference} years of the correct answer.",
+      "more_than_five_years": "More than 5 years off ({difference} years)."
     },
     "diagnostics": {
       "ha_not_available": "Home Assistant instance not available",
@@ -89,7 +104,11 @@
       "unknown_artist": "Unknown Artist",
       "classic_mode": "Classic",
       "none_found": "None found",
-      "points_suffix": "pts"
+      "points_suffix": "pts",
+      "seconds_suffix": "s"
+    },
+    "highscore": {
+      "new_average_message": "New average highscore: {value} pts/round! 🏆"
     }
   },
   "de": {
@@ -117,7 +136,14 @@
       "qr_code_alt": "QR-Code",
       "qr_modal_description": "Scannen Sie diesen QR-Code mit Ihrem Mobilgerät, um von Ihrem Telefon auf Home Assistant zuzugreifen.",
       "close": "Schließen",
-      "language": "Sprache"
+      "language": "Sprache",
+      "assign_user_tooltip": "Benutzer zu Team zuweisen",
+      "song_timer": "Song-Timer",
+      "current_song": "Aktueller Song",
+      "teams_overview": "Teams-Übersicht",
+      "highscores_after_round": "Highscores (nach Runde {round})",
+      "team_status": "Team-Status",
+      "game_settings": "Spiel-Einstellungen"
     },
     "settings": {
       "number_of_teams": "Anzahl der Teams",
@@ -134,7 +160,9 @@
       "countdown_description": "Wie lange haben Teams zum Raten (5-300 Sekunden)",
       "team_label": "Team {number}:",
       "select_teams_for_assignments": "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen",
-      "select_teams_for_assignments_full": "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen, um Team-Zuweisungen einzurichten"
+      "select_teams_for_assignments_full": "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen, um Team-Zuweisungen einzurichten",
+      "teams_count_option": "{count} Team{plural}",
+      "team_name_placeholder": "Team-Name"
     },
     "alerts": {
       "no_audio_player_title": "Kein Audio-Player ausgewählt",
@@ -150,7 +178,13 @@
       "your_guess_vs_actual": "Ihr Tipp: {guess} | Tatsächliches Jahr: {year}",
       "no_participating_teams": "Keine teilnehmenden Teams",
       "highscore_data_not_available": "Highscore-Daten nicht verfügbar",
-      "highscore_avg_round": "Highscore (Durchschn./Runde):"
+      "highscore_avg_round": "Highscore (Durchschn./Runde):",
+      "perfect_guess_with_bet": "Perfekter Tipp mit Wette!",
+      "years_off_bet_failed": "{difference} Jahr{plural} daneben. Wette fehlgeschlagen.",
+      "perfect_guess": "Perfekter Tipp!",
+      "within_years_correct": "Sie lagen innerhalb von {difference} Jahr{plural} der richtigen Antwort.",
+      "within_years_correct_exact": "Sie lagen innerhalb von {difference} Jahren der richtigen Antwort.",
+      "more_than_five_years": "Mehr als 5 Jahre daneben ({difference} Jahre)."
     },
     "diagnostics": {
       "ha_not_available": "Home Assistant-Instanz nicht verfügbar",
@@ -182,7 +216,11 @@
       "unknown_artist": "Unbekannter Künstler",
       "classic_mode": "Klassisch",
       "none_found": "Keine gefunden",
-      "points_suffix": "Pkt"
+      "points_suffix": "Pkt",
+      "seconds_suffix": "s"
+    },
+    "highscore": {
+      "new_average_message": "Neuer Durchschnitts-Highscore: {value} Pkt/Runde! 🏆"
     }
   }
 }
