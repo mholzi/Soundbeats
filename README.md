@@ -172,6 +172,8 @@ The integration is now ready to use! Add the Soundbeats card to your dashboard a
 
 **Unified Backend**: Both the splash screen team assignment and the admin team management section use the exact same backend service (`soundbeats.update_team_user_id`), ensuring consistent behavior and immediate persistence across all interfaces.
 
+**Unified Frontend Architecture**: The Team Management area in the main gaming screen directly uses the same rendering and update methods (`renderSplashInputs` and `updateSplashTeamsSection`) as the Splashscreen, eliminating code duplication and ensuring consistent UI behavior. Both sections share identical logic for team/user assignment functionality, dropdown updates, and UI refreshes, meaning changes in either section are instantly and correctly reflected in both UI areas.
+
 **Zero-Setup Team Management**: Users can assign teams and users entirely from the UI with no manual setup required. All changes are instantly reflected in Home Assistant entities and persist across restarts, making team configuration completely seamless and reliable. **Important**: Before starting a game, every team (for your chosen team count) must have a user assigned—the Start Game button will only allow the transition once all teams are fully configured.
 
 ## ✨ Zero-Setup Experience with Interactive Splash Screen
