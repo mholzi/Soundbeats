@@ -4,21 +4,24 @@
     "year": 1975,
     "id": 1,
     "song": "Bohemian Rhapsody - Remastered 2011",
-    "artist": "Queen"
+    "artist": "Queen",
+    "fun_fact": "At nearly 6 minutes long, this opera-rock masterpiece was considered too long for radio - but became one of the greatest hits of all time!"
   },
   {
     "url": "https://open.spotify.com/track/2374M0fQpWi3dLnB54qaLX",
     "year": 1982,
     "id": 2,
     "song": "Africa",
-    "artist": "TOTO"
+    "artist": "TOTO",
+    "fun_fact": "The song was inspired by a documentary about Africa, and none of the band members had actually been to Africa when they wrote it!"
   },
   {
     "url": "https://open.spotify.com/track/1M2nd8jNUkkwrc1dgBPTJz",
     "year": 1997,
     "id": 3,
     "song": "Angels",
-    "artist": "Robbie Williams"
+    "artist": "Robbie Williams",
+    "fun_fact": "Robbie Williams wrote this song about feeling like an outcast, and it became his signature song that launched his solo career!"
   },
   {
     "url": "https://open.spotify.com/track/08mG3Y1vljYA6bvDt4Wqkj",

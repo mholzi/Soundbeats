@@ -38,7 +38,8 @@
       "pause": "Pause",
       "next_song": "Next Song",
       "countdown_timer_length": "Countdown Timer Length",
-      "points_earned": "Points earned"
+      "points_earned": "Points earned",
+      "fun_fact": "Fun Fact"
     },
     "settings": {
       "number_of_teams": "Number of Teams",
@@ -171,7 +172,8 @@
       "pause": "Pausieren",
       "next_song": "Nächster Song",
       "countdown_timer_length": "Countdown-Timer-Länge",
-      "points_earned": "Punkte erhalten"
+      "points_earned": "Punkte erhalten",
+      "fun_fact": "Wissenswertes"
     },
     "settings": {
       "number_of_teams": "Anzahl der Teams",

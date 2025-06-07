@@ -581,6 +581,7 @@ class SoundbeatsCurrentSongSensor(SensorEntity, RestoreEntity):
                 "year": self._current_song_data.get("year"),
                 "url": self._current_song_data.get("url"),
                 "media_content_type": self._current_song_data.get("media_content_type"),
+                "fun_fact": self._current_song_data.get("fun_fact"),
             })
         
         return attributes
