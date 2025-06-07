@@ -4648,8 +4648,8 @@ class SoundbeatsCard extends HTMLElement {
     const urlDisplay = this.shadowRoot.querySelector('#qr-url-display');
     
     if (modal && qrImage && urlDisplay) {
-      // Get the current Home Assistant URL
-      const baseUrl = window.location.origin;
+      // Use the specified Home Assistant URL
+      const baseUrl = 'http://homeassistant.local:8123/';
       
       // Generate QR code using qr-server.com API
       const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(baseUrl)}`;
