@@ -97,7 +97,14 @@ class SoundbeatsCard extends HTMLElement {
             qr_code_alt: "QR Code",
             qr_modal_description: "Scan this QR code with your mobile device to access Home Assistant from your phone.",
             close: "Close",
-            language: "Language"
+            language: "Language",
+            assign_user_tooltip: "Assign user to team",
+            song_timer: "Song Timer",
+            current_song: "Current Song",
+            teams_overview: "Teams Overview",
+            highscores_after_round: "Highscores (after Round {round})",
+            team_status: "Team Status",
+            game_settings: "Game Settings"
           },
           settings: {
             number_of_teams: "Number of Teams",
@@ -114,7 +121,9 @@ class SoundbeatsCard extends HTMLElement {
             countdown_description: "How long teams have to guess (5-300 seconds)",
             team_label: "Team {number}:",
             select_teams_for_assignments: "Please select the number of teams in Game Settings first",
-            select_teams_for_assignments_full: "Please select the number of teams in Game Settings first to set up team assignments"
+            select_teams_for_assignments_full: "Please select the number of teams in Game Settings first to set up team assignments",
+            teams_count_option: "{count} Team{plural}",
+            team_name_placeholder: "Team Name"
           },
           alerts: {
             no_audio_player_title: "No Audio Player Selected",
@@ -130,7 +139,13 @@ class SoundbeatsCard extends HTMLElement {
             your_guess_vs_actual: "Your guess: {guess} | Actual year: {year}",
             no_participating_teams: "No participating teams",
             highscore_data_not_available: "Highscore data not available",
-            highscore_avg_round: "Highscore (Avg/Round):"
+            highscore_avg_round: "Highscore (Avg/Round):",
+            perfect_guess_with_bet: "Perfect guess with bet!",
+            years_off_bet_failed: "{difference} year{plural} off. Bet failed.",
+            perfect_guess: "Perfect guess!",
+            within_years_correct: "You were within {difference} year{plural} of the correct answer.",
+            within_years_correct_exact: "You were within {difference} years of the correct answer.",
+            more_than_five_years: "More than 5 years off ({difference} years)."
           },
           diagnostics: {
             ha_not_available: "Home Assistant instance not available",
@@ -162,7 +177,11 @@ class SoundbeatsCard extends HTMLElement {
             unknown_artist: "Unknown Artist",
             classic_mode: "Classic",
             none_found: "None found",
-            points_suffix: "pts"
+            points_suffix: "pts",
+            seconds_suffix: "s"
+          },
+          highscore: {
+            new_average_message: "New average highscore: {value} pts/round! 🏆"
           }
         },
         de: {
@@ -190,7 +209,14 @@ class SoundbeatsCard extends HTMLElement {
             qr_code_alt: "QR-Code",
             qr_modal_description: "Scannen Sie diesen QR-Code mit Ihrem Mobilgerät, um von Ihrem Telefon auf Home Assistant zuzugreifen.",
             close: "Schließen",
-            language: "Sprache"
+            language: "Sprache",
+            assign_user_tooltip: "Benutzer zu Team zuweisen",
+            song_timer: "Song-Timer",
+            current_song: "Aktueller Song",
+            teams_overview: "Teams-Übersicht",
+            highscores_after_round: "Highscores (nach Runde {round})",
+            team_status: "Team-Status",
+            game_settings: "Spiel-Einstellungen"
           },
           settings: {
             number_of_teams: "Anzahl der Teams",
@@ -207,7 +233,9 @@ class SoundbeatsCard extends HTMLElement {
             countdown_description: "Wie lange haben Teams zum Raten (5-300 Sekunden)",
             team_label: "Team {number}:",
             select_teams_for_assignments: "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen",
-            select_teams_for_assignments_full: "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen, um Team-Zuweisungen einzurichten"
+            select_teams_for_assignments_full: "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen, um Team-Zuweisungen einzurichten",
+            teams_count_option: "{count} Team{plural}",
+            team_name_placeholder: "Team-Name"
           },
           alerts: {
             no_audio_player_title: "Kein Audio-Player ausgewählt",
@@ -223,7 +251,13 @@ class SoundbeatsCard extends HTMLElement {
             your_guess_vs_actual: "Ihr Tipp: {guess} | Tatsächliches Jahr: {year}",
             no_participating_teams: "Keine teilnehmenden Teams",
             highscore_data_not_available: "Highscore-Daten nicht verfügbar",
-            highscore_avg_round: "Highscore (Durchschn./Runde):"
+            highscore_avg_round: "Highscore (Durchschn./Runde):",
+            perfect_guess_with_bet: "Perfekter Tipp mit Wette!",
+            years_off_bet_failed: "{difference} Jahr{plural} daneben. Wette fehlgeschlagen.",
+            perfect_guess: "Perfekter Tipp!",
+            within_years_correct: "Sie lagen innerhalb von {difference} Jahr{plural} der richtigen Antwort.",
+            within_years_correct_exact: "Sie lagen innerhalb von {difference} Jahren der richtigen Antwort.",
+            more_than_five_years: "Mehr als 5 Jahre daneben ({difference} Jahre)."
           },
           diagnostics: {
             ha_not_available: "Home Assistant-Instanz nicht verfügbar",
@@ -255,7 +289,11 @@ class SoundbeatsCard extends HTMLElement {
             unknown_artist: "Unbekannter Künstler",
             classic_mode: "Klassisch",
             none_found: "Keine gefunden",
-            points_suffix: "Pkt"
+            points_suffix: "Pkt",
+            seconds_suffix: "s"
+          },
+          highscore: {
+            new_average_message: "Neuer Durchschnitts-Highscore: {value} Pkt/Runde! 🏆"
           }
         }
       };
@@ -526,7 +564,7 @@ class SoundbeatsCard extends HTMLElement {
           <option value="">${this._t('settings.select_teams_placeholder')}</option>
           ${[1, 2, 3, 4, 5].map(count => 
             `<option value="${count}" ${currentTeamCount === count ? 'selected' : ''}>
-              ${count} Team${count > 1 ? 's' : ''}
+              ${this._ts('settings.teams_count_option', { count: count, plural: count > 1 ? 's' : '' })}
             </option>`
           ).join('')}
         </select>
@@ -617,8 +655,8 @@ class SoundbeatsCard extends HTMLElement {
           <div class="splash-timer-control">
             <input type="range" class="splash-timer-slider" min="5" max="300" step="5" 
                    value="${currentTimer}"
-                   oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + 's';">
-            <span class="splash-timer-value">${currentTimer}s</span>
+                   oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + this.getRootNode().host._t('defaults.seconds_suffix');">
+            <span class="splash-timer-value">${currentTimer}${this._t('defaults.seconds_suffix')}</span>
           </div>
         </div>
       `;
@@ -3137,7 +3175,7 @@ class SoundbeatsCard extends HTMLElement {
         <div class="section countdown-section ${this.getCountdownCurrent() > 0 ? '' : 'hidden'}">
           <h3>
             <ha-icon icon="mdi:timer-sand" class="icon"></ha-icon>
-            Song Timer
+            ${this._t('ui.song_timer')}
           </h3>
           <div class="countdown-timer">${this.getCountdownCurrent()}s</div>
           <div class="countdown-progress">
@@ -3149,7 +3187,7 @@ class SoundbeatsCard extends HTMLElement {
         <div class="section song-section ${this.getCountdownCurrent() === 0 && this.getCurrentSong() && this.getRoundCounter() > 0 ? '' : 'hidden'}">
           <h3>
             <ha-icon icon="mdi:music" class="icon"></ha-icon>
-            Current Song
+            ${this._t('ui.current_song')}
           </h3>
           ${this.getCurrentSong() ? `
             <div class="song-card">
@@ -3179,7 +3217,7 @@ class SoundbeatsCard extends HTMLElement {
         <div class="section teams-overview-section">
           <h3>
             <ha-icon icon="mdi:podium" class="icon"></ha-icon>
-            Teams Overview
+            ${this._t('ui.teams_overview')}
           </h3>
           
           <div class="teams-overview-container">
@@ -3191,7 +3229,7 @@ class SoundbeatsCard extends HTMLElement {
         <div class="section highscore-section">
           <h3>
             <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
-            Highscores (after Round ${this.getRoundCounter()})
+            ${this._ts('ui.highscores_after_round', { round: this.getRoundCounter() })}
           </h3>
           ${this.renderHighscores()}
         </div>
@@ -3200,7 +3238,7 @@ class SoundbeatsCard extends HTMLElement {
         <div class="section team-section">
           <h3>
             <ha-icon icon="mdi:account-group" class="icon"></ha-icon>
-            Team Status
+            ${this._t('ui.team_status')}
           </h3>
           
           <div class="teams-container">
@@ -3213,7 +3251,7 @@ class SoundbeatsCard extends HTMLElement {
           <div class="expandable-header" onclick="this.getRootNode().host.toggleGameSettings()">
             <h3>
               <ha-icon icon="mdi:cog" class="icon"></ha-icon>
-              Game Settings
+              ${this._t('ui.game_settings')}
             </h3>
             <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.gameSettingsExpanded ? 'expanded' : ''}"></ha-icon>
           </div>
@@ -3238,15 +3276,15 @@ class SoundbeatsCard extends HTMLElement {
                     max="300" 
                     step="5" 
                     value="${this.getCountdownTimerLength()}"
-                    oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + 's';"
+                    oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + this.getRootNode().host._t('defaults.seconds_suffix');"
                   />
-                  <span class="timer-value">${this.getCountdownTimerLength()}s</span>
+                  <span class="timer-value">${this.getCountdownTimerLength()}${this._t('defaults.seconds_suffix')}</span>
                 </div>
               </div>
               <div class="setting-item">
                 <div class="setting-label">
                   <ha-icon icon="mdi:speaker" class="icon"></ha-icon>
-                  Audio Player
+                  ${this._t('settings.audio_player')}
                 </div>
                 <div class="setting-control">
                   <select 
@@ -3597,7 +3635,7 @@ class SoundbeatsCard extends HTMLElement {
     const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
     
     if (hasValidTeamCount) {
-      return `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
+      return this._ts('settings.team_assignment_description', { count: teamCount, plural: teamCount > 1 ? 's' : '' });
     } else {
       return this._t('settings.select_teams_for_assignments_full');
     }
@@ -3631,7 +3669,7 @@ class SoundbeatsCard extends HTMLElement {
             <ha-icon icon="${rankIcon}"></ha-icon>
           </div>
           <span class="team-name">${team.name}</span>
-          <span class="team-points">${team.points} pts</span>
+          <span class="team-points">${team.points} ${this._t('defaults.points_suffix')}</span>
         </div>
         <div class="team-content">
           ${isCountdownRunning ? `
@@ -3800,25 +3838,25 @@ class SoundbeatsCard extends HTMLElement {
       // Betting logic: 20 points if exact match, 0 points otherwise
       if (yearDifference === 0) {
         pointsEarned = 20;
-        explanation = 'Perfect guess with bet!';
+        explanation = this._t('game.perfect_guess_with_bet');
       } else {
         pointsEarned = 0;
-        explanation = `${yearDifference} year${yearDifference === 1 ? '' : 's'} off. Bet failed.`;
+        explanation = this._ts('game.years_off_bet_failed', { difference: yearDifference, plural: yearDifference === 1 ? '' : 's' });
       }
     } else {
       // Normal scoring logic
       if (yearDifference === 0) {
         pointsEarned = 20;
-        explanation = 'Perfect guess!';
+        explanation = this._t('game.perfect_guess');
       } else if (yearDifference <= 2) {
         pointsEarned = 10;
-        explanation = `You were within ${yearDifference} year${yearDifference === 1 ? '' : 's'} of the correct answer.`;
+        explanation = this._ts('game.within_years_correct', { difference: yearDifference, plural: yearDifference === 1 ? '' : 's' });
       } else if (yearDifference <= 5) {
         pointsEarned = 5;
-        explanation = `You were within ${yearDifference} years of the correct answer.`;
+        explanation = this._ts('game.within_years_correct_exact', { difference: yearDifference });
       } else {
         pointsEarned = 0;
-        explanation = `More than 5 years off (${yearDifference} years).`;
+        explanation = this._ts('game.more_than_five_years', { difference: yearDifference });
       }
     }
     
@@ -3882,13 +3920,13 @@ class SoundbeatsCard extends HTMLElement {
             <ha-icon icon="${rankIcon}"></ha-icon>
           </div>
           <div class="overview-team-info">
-            <span class="overview-team-points">${team.points} pts</span>
+            <span class="overview-team-points">${team.points} ${this._t('defaults.points_suffix')}</span>
             <span class="overview-team-name">${team.name}</span>
           </div>
           <div class="overview-team-points-container">
             ${!isCountdownRunning && currentRound > 0 ? `
               <div class="overview-points-badge ${team.last_round_points > 0 ? 'points-earned' : 'no-points'}">
-                ${team.last_round_points}pts
+                ${team.last_round_points}${this._t('defaults.points_suffix')}
               </div>
             ` : ''}
           </div>
@@ -3954,7 +3992,7 @@ class SoundbeatsCard extends HTMLElement {
             <ha-icon icon="mdi:crown" class="icon crown-icon"></ha-icon>
             <span class="highscore-label">${this._t('game.highscore_avg_round')}</span>
           </div>
-          <div class="highscore-value">${this.formatPointsValue(globalAverageHighscore)} pts</div>
+          <div class="highscore-value">${this.formatPointsValue(globalAverageHighscore)} ${this._t('defaults.points_suffix')}</div>
         </div>
         ${currentRound > 1 && userAverage !== null ? `
           <div class="user-average">
@@ -3962,7 +4000,7 @@ class SoundbeatsCard extends HTMLElement {
               <ha-icon icon="mdi:account" class="icon"></ha-icon>
               <span class="highscore-label">${this._t('game.your_average')}</span>
             </div>
-            <div class="highscore-value">${this.formatPointsValue(userAverage)} pts</div>
+            <div class="highscore-value">${this.formatPointsValue(userAverage)} ${this._t('defaults.points_suffix')}</div>
           </div>
         ` : ''}
       </div>
@@ -4201,7 +4239,7 @@ class SoundbeatsCard extends HTMLElement {
     
     // Check for new average highscore
     if (this._lastAbsoluteHighscore !== null && currentAbsolute > this._lastAbsoluteHighscore && currentAbsolute > 0) {
-      this.showHighscoreBanner(`New average highscore: ${this.formatPointsValue(currentAbsolute)} pts/round! 🏆`);
+      this.showHighscoreBanner(this._ts('highscore.new_average_message', { value: this.formatPointsValue(currentAbsolute) }));
     }
     
     // Check for new round highscores
@@ -4847,7 +4885,7 @@ class SoundbeatsCard extends HTMLElement {
         return `
           <div class="${itemClass}">
             <label class="${labelClass}">${this._ts('settings.team_label', { number: teamId.split('_')[1] })}</label>
-            <input type="text" class="${inputClass}" placeholder="Team Name" 
+            <input type="text" class="${inputClass}" placeholder="${this._t('settings.team_name_placeholder')}" 
                    value="${team.name}" 
                    oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
             <select class="${selectClass}" 
@@ -4869,12 +4907,12 @@ class SoundbeatsCard extends HTMLElement {
               <span class="${labelClass}">${this._ts('settings.team_label', { number: teamId.split('_')[1] })}</span>
             </div>
             <div class="team-management-controls">
-              <input type="text" class="${inputClass}" placeholder="Team Name" value="${team.name}" 
+              <input type="text" class="${inputClass}" placeholder="${this._t('settings.team_name_placeholder')}" value="${team.name}" 
                      oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
               <select 
                 class="${selectClass}" 
                 onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
-                title="Assign user to team"
+                title="${this._t('ui.assign_user_tooltip')}"
                 ${isLoadingUsers ? 'disabled' : ''}
               >
                 <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
@@ -4929,13 +4967,13 @@ class SoundbeatsCard extends HTMLElement {
         const teamsSection = teamsContainer.closest('.splash-input-section');
         const description = teamsSection.querySelector('.input-description');
         if (description) {
-          description.textContent = `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
+          description.textContent = this._ts('settings.team_assignment_description', { count: teamCount, plural: teamCount > 1 ? 's' : '' });
         }
       } else {
         // Update description for team management context
         const descriptionElement = this.shadowRoot.querySelector('.team-management-description');
         if (descriptionElement) {
-          descriptionElement.textContent = `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
+          descriptionElement.textContent = this._ts('settings.team_assignment_description', { count: teamCount, plural: teamCount > 1 ? 's' : '' });
         }
       }
       
