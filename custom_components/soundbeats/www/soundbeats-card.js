@@ -123,7 +123,11 @@ class SoundbeatsCard extends HTMLElement {
             select_teams_for_assignments: "Please select the number of teams in Game Settings first",
             select_teams_for_assignments_full: "Please select the number of teams in Game Settings first to set up team assignments",
             teams_count_option: "{count} Team{plural}",
-            team_name_placeholder: "Team Name"
+            team_name_placeholder: "Team Name",
+            default_team_name: "Team {number}",
+            team_admin_label: "Team {number} (Admin)",
+            missing_team_users_name: "Team Users",
+            missing_team_users_description: "Assign a user to every team ({missing} of {total} teams still need users assigned)."
           },
           alerts: {
             no_audio_player_title: "No Audio Player Selected",
@@ -235,7 +239,11 @@ class SoundbeatsCard extends HTMLElement {
             select_teams_for_assignments: "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen",
             select_teams_for_assignments_full: "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen, um Team-Zuweisungen einzurichten",
             teams_count_option: "{count} Team{plural}",
-            team_name_placeholder: "Team-Name"
+            team_name_placeholder: "Team-Name",
+            default_team_name: "Team {number}",
+            team_admin_label: "Team {number} (Admin)",
+            missing_team_users_name: "Team-Benutzer",
+            missing_team_users_description: "Weisen Sie jedem Team einen Benutzer zu ({missing} von {total} Teams benötigen noch Benutzer)."
           },
           alerts: {
             no_audio_player_title: "Kein Audio-Player ausgewählt",
@@ -457,8 +465,8 @@ class SoundbeatsCard extends HTMLElement {
       if (teamsWithoutUsers.length > 0) {
         missing.push({
           key: 'teams',
-          name: 'Team Users',
-          description: `Assign a user to every team (${teamsWithoutUsers.length} of ${teamCount} teams still need users assigned).`
+          name: this._t('settings.missing_team_users_name'),
+          description: this._ts('settings.missing_team_users_description', { missing: teamsWithoutUsers.length, total: teamCount })
         });
       }
     }
@@ -3527,7 +3535,7 @@ class SoundbeatsCard extends HTMLElement {
         } else {
           // Fallback to default if entity doesn't exist yet
           teams[teamKey] = {
-            name: `Team ${i}`,
+            name: this._ts('settings.default_team_name', { number: i }),
             points: 0,
             participating: true,
             year_guess: 1990,
@@ -3545,7 +3553,7 @@ class SoundbeatsCard extends HTMLElement {
     for (let i = 1; i <= teamCount; i++) {
       const teamKey = `team_${i}`;
       defaultTeams[teamKey] = {
-        name: `Team ${i}`,
+        name: this._ts('settings.default_team_name', { number: i }),
         points: 0,
         participating: true,
         year_guess: 1990,
@@ -4891,7 +4899,7 @@ class SoundbeatsCard extends HTMLElement {
             <select class="${selectClass}" 
                     onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
                     ${isLoadingUsers ? 'disabled' : ''}>
-              <option value="">${isLoadingUsers ? 'Loading users...' : 'Select user...'}</option>
+              <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
               ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
                 `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
                   ${user.name}
@@ -4904,7 +4912,9 @@ class SoundbeatsCard extends HTMLElement {
         return `
           <div class="${itemClass}" data-team="${teamId}">
             <div class="team-management-info">
-              <span class="${labelClass}">${this._ts('settings.team_label', { number: teamId.split('_')[1] })}</span>
+              <span class="${labelClass}">${teamId === 'team_1' ? 
+                this._ts('settings.team_admin_label', { number: teamId.split('_')[1] }) : 
+                this._ts('settings.team_label', { number: teamId.split('_')[1] })}</span>
             </div>
             <div class="team-management-controls">
               <input type="text" class="${inputClass}" placeholder="${this._t('settings.team_name_placeholder')}" value="${team.name}" 
@@ -4985,7 +4995,7 @@ class SoundbeatsCard extends HTMLElement {
         const teamsSection = teamsContainer.closest('.splash-input-section');
         const description = teamsSection.querySelector('.input-description');
         if (description) {
-          description.textContent = 'Please select the number of teams above to set up team assignments';
+          description.textContent = this._t('settings.select_teams_first');
         }
         
         teamsContainer.innerHTML = `

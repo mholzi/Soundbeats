@@ -50,7 +50,11 @@
       "select_teams_for_assignments": "Please select the number of teams in Game Settings first",
       "select_teams_for_assignments_full": "Please select the number of teams in Game Settings first to set up team assignments",
       "teams_count_option": "{count} Team{plural}",
-      "team_name_placeholder": "Team Name"
+      "team_name_placeholder": "Team Name",
+      "default_team_name": "Team {number}",
+      "team_admin_label": "Team {number} (Admin)",
+      "missing_team_users_name": "Team Users",
+      "missing_team_users_description": "Assign a user to every team ({missing} of {total} teams still need users assigned)."
     },
     "alerts": {
       "no_audio_player_title": "No Audio Player Selected",
@@ -162,7 +166,11 @@
       "select_teams_for_assignments": "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen",
       "select_teams_for_assignments_full": "Bitte wählen Sie zuerst die Anzahl der Teams in den Spieleinstellungen, um Team-Zuweisungen einzurichten",
       "teams_count_option": "{count} Team{plural}",
-      "team_name_placeholder": "Team-Name"
+      "team_name_placeholder": "Team-Name",
+      "default_team_name": "Team {number}",
+      "team_admin_label": "Team {number} (Admin)",
+      "missing_team_users_name": "Team-Benutzer",
+      "missing_team_users_description": "Weisen Sie jedem Team einen Benutzer zu ({missing} von {total} Teams benötigen noch Benutzer)."
     },
     "alerts": {
       "no_audio_player_title": "Kein Audio-Player ausgewählt",
