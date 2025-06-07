@@ -3187,9 +3187,9 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   getVersion() {
-    // Get version from Home Assistant integration registry
+    // Get version from HACS (GitHub release), then Home Assistant integration registry
     if (this.hass && this.hass.connection) {
-      // Try to get integration information from Home Assistant
+      // Try to get integration information (prioritizing HACS/GitHub release version)
       try {
         // Cache the version to avoid repeated calls
         if (this._cachedVersion) {
@@ -3208,13 +3208,38 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   async _loadIntegrationVersion() {
-    // Load the integration version from Home Assistant
+    // Load the integration version from HACS (GitHub release), then Home Assistant
     if (!this.hass || !this.hass.connection) {
       return;
     }
 
     try {
-      // Call Home Assistant WebSocket API to get integration information
+      // First, try to get version from HACS repository data (GitHub release version)
+      const hacsRepositories = await this.hass.callWS({
+        type: 'hacs/repositories'
+      });
+      
+      if (hacsRepositories && Array.isArray(hacsRepositories)) {
+        const soundbeatsRepo = hacsRepositories.find(repo => 
+          repo.name === 'Soundbeats' || 
+          repo.full_name === 'mholzi/Soundbeats' ||
+          repo.id === 'mholzi/Soundbeats'
+        );
+        
+        if (soundbeatsRepo && soundbeatsRepo.installed_version) {
+          this._integrationVersion = soundbeatsRepo.installed_version;
+          this._cachedVersion = soundbeatsRepo.installed_version;
+          this._updateVersionDisplay();
+          console.info('Using HACS version:', soundbeatsRepo.installed_version);
+          return;
+        }
+      }
+    } catch (hacsError) {
+      console.warn('Could not fetch version from HACS, trying integration registry:', hacsError);
+    }
+
+    try {
+      // Fallback 1: Call Home Assistant WebSocket API to get integration information
       const integrationInfo = await this.hass.callWS({
         type: 'config/integration_registry/get',
         domain: 'soundbeats'
@@ -3225,29 +3250,35 @@ class SoundbeatsCard extends HTMLElement {
         this._cachedVersion = integrationInfo.version;
         // Re-render version display if it's currently shown
         this._updateVersionDisplay();
+        console.info('Using integration registry version:', integrationInfo.version);
+        return;
       }
     } catch (error) {
       console.warn('Could not fetch integration version from registry, trying manifest:', error);
-      
-      // Fallback: try to get version from integration manifest
-      try {
-        const manifestInfo = await this.hass.callWS({
-          type: 'manifest/get',
-          integration: 'soundbeats'
-        });
-        
-        if (manifestInfo && manifestInfo.version) {
-          this._integrationVersion = manifestInfo.version;
-          this._cachedVersion = manifestInfo.version;
-          this._updateVersionDisplay();
-        }
-      } catch (manifestError) {
-        console.warn('Could not fetch version from manifest either:', manifestError);
-        // Keep default fallback version
-        this._integrationVersion = "1.0.0";
-        this._cachedVersion = "1.0.0";
-      }
     }
+    
+    // Fallback 2: try to get version from integration manifest
+    try {
+      const manifestInfo = await this.hass.callWS({
+        type: 'manifest/get',
+        integration: 'soundbeats'
+      });
+      
+      if (manifestInfo && manifestInfo.version) {
+        this._integrationVersion = manifestInfo.version;
+        this._cachedVersion = manifestInfo.version;
+        this._updateVersionDisplay();
+        console.info('Using manifest version:', manifestInfo.version);
+        return;
+      }
+    } catch (manifestError) {
+      console.warn('Could not fetch version from manifest either:', manifestError);
+    }
+    
+    // Final fallback
+    console.warn('Using fallback version 1.0.0');
+    this._integrationVersion = "1.0.0";
+    this._cachedVersion = "1.0.0";
   }
 
   _updateVersionDisplay() {
