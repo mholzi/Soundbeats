@@ -45,7 +45,8 @@ class SoundbeatsCard extends HTMLElement {
     this._hasLaunchedFromSplash = false;
     
     // Track recent user interactions with dropdowns to prevent overriding selections
-    this._recentAudioPlayerInteractions = new Map();
+    // (using same pattern as _recentUserSelections for consistency)
+    this._recentAudioPlayerInteractions = {};
     
     // Translation system
     this._currentLanguage = localStorage.getItem('soundbeats-language') || 'en';
@@ -598,20 +599,24 @@ class SoundbeatsCard extends HTMLElement {
 
   // Track user interaction with audio player dropdowns
   _trackAudioPlayerInteraction(selector) {
-    this._recentAudioPlayerInteractions.set(selector, Date.now());
+    if (!this._recentAudioPlayerInteractions) {
+      this._recentAudioPlayerInteractions = {};
+    }
+    this._recentAudioPlayerInteractions[selector] = { timestamp: Date.now() };
+    
     // Clean up old interactions after 3 seconds
     setTimeout(() => {
-      const timestamp = this._recentAudioPlayerInteractions.get(selector);
-      if (timestamp && Date.now() - timestamp >= 3000) {
-        this._recentAudioPlayerInteractions.delete(selector);
+      const interaction = this._recentAudioPlayerInteractions[selector];
+      if (interaction && Date.now() - interaction.timestamp >= 3000) {
+        delete this._recentAudioPlayerInteractions[selector];
       }
     }, 3000);
   }
 
   // Check if user recently interacted with an audio player dropdown
   _hasRecentAudioPlayerInteraction(selector) {
-    const timestamp = this._recentAudioPlayerInteractions.get(selector);
-    return timestamp && (Date.now() - timestamp < 3000); // 3 second window
+    const interaction = this._recentAudioPlayerInteractions && this._recentAudioPlayerInteractions[selector];
+    return interaction && (Date.now() - interaction.timestamp < 3000); // 3 second window
   }
 
   // Clear validation errors cache when state changes
