@@ -2032,6 +2032,17 @@ class SoundbeatsCard extends HTMLElement {
           width: auto;
         }
         
+        .overview-team-points-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+          position: absolute;
+          top: 4px;
+          left: 4px;
+          width: auto;
+        }
+        
         .overview-bet-badge {
           background: var(--warning-color, #ff9800);
           color: white;
@@ -3577,6 +3588,13 @@ class SoundbeatsCard extends HTMLElement {
             <span class="overview-team-points">${team.points} pts</span>
             <span class="overview-team-name">${team.name}</span>
           </div>
+          <div class="overview-team-points-container">
+            ${!isCountdownRunning && currentRound > 0 ? `
+              <div class="overview-points-badge ${team.last_round_points > 0 ? 'points-earned' : 'no-points'}">
+                ${team.last_round_points}pts
+              </div>
+            ` : ''}
+          </div>
           <div class="overview-team-badges">
             ${isCountdownRunning && team.betting ? `
               <div class="overview-bet-badge">
@@ -3586,9 +3604,6 @@ class SoundbeatsCard extends HTMLElement {
             ${!isCountdownRunning && currentRound > 0 ? `
               <div class="overview-year-badge ${team.last_round_points > 0 ? 'points-earned' : 'no-points'}">
                 ${team.year_guess}
-              </div>
-              <div class="overview-points-badge ${team.last_round_points > 0 ? 'points-earned' : 'no-points'}">
-                ${team.last_round_points}pts
               </div>
             ` : ''}
           </div>
