@@ -3076,7 +3076,7 @@ class SoundbeatsCard extends HTMLElement {
           <div class="section highscore-section">
             <h3>
               <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
-              Highscores
+              Highscores${this.getHighscoreRoundInfo() > 0 ? ` (after Round ${this.getHighscoreRoundInfo()})` : ''}
             </h3>
             ${this.renderHighscores()}
           </div>
@@ -3804,6 +3804,15 @@ class SoundbeatsCard extends HTMLElement {
     }).join('');
   }
 
+  getHighscoreRoundInfo() {
+    // Helper method to get round information from highscore entity
+    const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
+    if (highscoreEntity && highscoreEntity.attributes) {
+      return highscoreEntity.attributes.total_rounds || 0;
+    }
+    return 0;
+  }
+
   renderHighscores() {
     const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
     
@@ -3827,7 +3836,6 @@ class SoundbeatsCard extends HTMLElement {
     
     // Get global average highscore (stored as average points per round)
     const globalAverageHighscore = parseFloat(highscoreEntity.state);
-    const totalRounds = highscoreEntity.attributes?.total_rounds || 0;
     
     // Calculate user's average score per round
     const currentRound = this.getRoundCounter();
@@ -3838,13 +3846,13 @@ class SoundbeatsCard extends HTMLElement {
         <div class="global-highscore">
           <ha-icon icon="mdi:crown" class="icon crown-icon"></ha-icon>
           <span class="highscore-label">Highscore:</span>
-          <span class="highscore-value">${globalAverageHighscore.toFixed(1)} average points per round${totalRounds > 0 ? ` (after Round ${totalRounds})` : ''}</span>
+          <span class="highscore-value">${globalAverageHighscore.toFixed(1)} average points per round</span>
         </div>
         ${currentRound > 1 && userAverage !== null ? `
           <div class="user-average">
             <ha-icon icon="mdi:account" class="icon"></ha-icon>
             <span class="highscore-label">Your Average:</span>
-            <span class="highscore-value">${userAverage.toFixed(1)} average points per round (after Round ${currentRound})</span>
+            <span class="highscore-value">${userAverage.toFixed(1)} average points per round</span>
           </div>
         ` : ''}
       </div>
@@ -4086,9 +4094,7 @@ class SoundbeatsCard extends HTMLElement {
     
     // Check for new average highscore
     if (this._lastAbsoluteHighscore !== null && currentAbsolute > this._lastAbsoluteHighscore && currentAbsolute > 0) {
-      const totalRounds = currentAttributes.total_rounds || 0;
-      const roundInfo = totalRounds > 0 ? ` (after Round ${totalRounds})` : '';
-      this.showHighscoreBanner(`New highscore: ${currentAbsolute.toFixed(1)} average points per round${roundInfo}! 🏆`);
+      this.showHighscoreBanner(`New highscore: ${currentAbsolute.toFixed(1)} average points per round! 🏆`);
     }
     
     // Check for new round highscores
