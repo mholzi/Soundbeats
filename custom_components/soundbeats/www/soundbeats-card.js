@@ -2552,6 +2552,7 @@ class SoundbeatsCard extends HTMLElement {
           display: flex;
           flex-direction: row;
           gap: 16px;
+          align-items: stretch;
         }
         
         .global-highscore {
@@ -2565,12 +2566,15 @@ class SoundbeatsCard extends HTMLElement {
           border-radius: 8px;
           border: 2px solid rgba(255, 215, 0, 0.4);
           flex: 1;
+          justify-content: space-between;
         }
         
         .highscore-header {
           display: flex;
           align-items: center;
           gap: 8px;
+          min-height: 2em;
+          justify-content: center;
         }
         
         .crown-icon {
@@ -2587,6 +2591,7 @@ class SoundbeatsCard extends HTMLElement {
           font-size: 1.4em;
           font-weight: bold;
           color: #ff8c00;
+          margin-top: auto;
         }
         
         .user-average {
@@ -2601,6 +2606,7 @@ class SoundbeatsCard extends HTMLElement {
           border: 2px solid rgba(100, 149, 237, 0.2);
           font-weight: bold;
           flex: 1;
+          justify-content: space-between;
         }
         
         .user-average .icon {
@@ -4713,6 +4719,9 @@ class SoundbeatsCard extends HTMLElement {
     // Update team display values (but not input fields)
     this.updateTeamDisplayValues();
     
+    // Update highscore display
+    this.updateHighscoreDisplay();
+    
     // Update team management dropdowns if users are loaded
     if (this.usersLoaded) {
       this.updateTeamManagementDropdowns();
@@ -4930,6 +4939,56 @@ class SoundbeatsCard extends HTMLElement {
         }
       }
     });
+  }
+
+  updateHighscoreDisplay() {
+    // Update highscore display values without full re-render
+    const highscoreSection = this.shadowRoot.querySelector('.highscore-section');
+    if (!highscoreSection) return;
+
+    const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
+    if (!highscoreEntity) {
+      // If highscore entity is not available, replace with empty message
+      highscoreSection.innerHTML = `
+        <h3>
+          <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
+          ${this._ts('ui.highscores_after_round', { round: this.getRoundCounter() })}
+        </h3>
+        <div class="highscore-empty">${this._t('game.highscore_data_not_available')}</div>
+      `;
+      return;
+    }
+
+    // Get current values
+    const globalAverageHighscore = parseFloat(highscoreEntity.state);
+    const currentRound = this.getRoundCounter();
+    const userAverage = this.calculateUserAverageScore(currentRound);
+
+    // Update the highscore content
+    highscoreSection.innerHTML = `
+      <h3>
+        <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
+        ${this._ts('ui.highscores_after_round', { round: currentRound })}
+      </h3>
+      <div class="highscore-display">
+        <div class="global-highscore">
+          <div class="highscore-header">
+            <ha-icon icon="mdi:crown" class="icon crown-icon"></ha-icon>
+            <span class="highscore-label">${this._t('game.highscore_avg_round')}</span>
+          </div>
+          <div class="highscore-value">${this.formatPointsValue(globalAverageHighscore)} ${this._t('defaults.points_suffix')}</div>
+        </div>
+        ${currentRound > 1 && userAverage !== null ? `
+          <div class="user-average">
+            <div class="highscore-header">
+              <ha-icon icon="mdi:account" class="icon"></ha-icon>
+              <span class="highscore-label">${this._t('game.your_average')}</span>
+            </div>
+            <div class="highscore-value">${this.formatPointsValue(userAverage)} ${this._t('defaults.points_suffix')}</div>
+          </div>
+        ` : ''}
+      </div>
+    `;
   }
 
   updateTeamsOverviewDisplay() {
