@@ -1,8 +1,5 @@
 """The Soundbeats integration."""
-import json
 import logging
-import os
-import random
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -11,6 +8,7 @@ from homeassistant.helpers.typing import ConfigType
 from homeassistant.components.http import StaticPathConfig
 
 from .const import DOMAIN
+from .services import SoundbeatsGameService, SoundbeatsTeamService, SoundbeatsConfigService
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,431 +69,95 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def _register_services(hass: HomeAssistant) -> None:
     """Register all `soundbeats.*` services (start_game, stop_game, etc.)."""
-
-    def _get_entities():
-        """Get entity references from hass data."""
-        return hass.data.get(DOMAIN, {}).get("entities", {})
     
-    async def _update_team_attribute(call, attribute_name, method_name, value_transform=None, state_attribute=None, fallback_state_value=None):
-        """Generic helper for updating team attributes."""
-        team_id = call.data.get("team_id")
-        value = call.data.get(attribute_name)
-        
-        # Special validation for different attributes
-        if attribute_name == "name" and (not team_id or not value):
-            _LOGGER.error("Missing team_id or %s", attribute_name)
-            return
-        elif attribute_name != "name" and (not team_id or value is None):
-            _LOGGER.error("Missing team_id or %s", attribute_name)
-            return
-        
-        # Extract team number from team_id (e.g., "team_1" -> "1")
-        team_number = team_id.split('_')[-1]
-        unique_id = f"soundbeats_team_{team_number}"
-        
-        # Find the team sensor entity and call its update method
-        entities = _get_entities()
-        team_sensors = entities.get("team_sensors", {})
-        team_sensor = team_sensors.get(unique_id)
-        
-        # Transform value if needed
-        if value_transform:
-            value = value_transform(value)
-        
-        if team_sensor and hasattr(team_sensor, method_name):
-            _LOGGER.debug("Updating team %s %s via entity method", team_number, attribute_name)
-            getattr(team_sensor, method_name)(value)
-        else:
-            # Fallback to direct state setting
-            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
-            entity_id = f"sensor.soundbeats_team_{team_number}"
-            state_obj = hass.states.get(entity_id)
-            if state_obj:
-                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
-                if state_attribute:
-                    attrs[state_attribute] = value
-                    # Keep original state value unless fallback is specified
-                    state_value = fallback_state_value if fallback_state_value is not None else state_obj.state
-                    hass.states.async_set(entity_id, state_value, attrs)
-                else:
-                    # For name updates, the value becomes the state
-                    hass.states.async_set(entity_id, value, attrs)
+    # Initialize service classes
+    game_service = SoundbeatsGameService(hass)
+    team_service = SoundbeatsTeamService(hass)
+    config_service = SoundbeatsConfigService(hass)
 
     async def start_game(call):
-        _LOGGER.info("Starting Soundbeats game")
-        entities = _get_entities()
-        
-        # Set game status to playing
-        main_sensor = entities.get("main_sensor")
-        if main_sensor and hasattr(main_sensor, 'set_state'):
-            main_sensor.set_state("playing")
-        else:
-            hass.states.async_set("sensor.soundbeats_game_status", "playing")
-        
-        # Stop any countdown timer
-        countdown_current_sensor = entities.get("countdown_current_sensor")
-        if countdown_current_sensor and hasattr(countdown_current_sensor, 'stop_countdown'):
-            countdown_current_sensor.stop_countdown()
-        else:
-            hass.states.async_set("sensor.soundbeats_countdown_current", 0)
-        
-        # Reset round counter to 0
-        round_counter_sensor = entities.get("round_counter_sensor")
-        if round_counter_sensor and hasattr(round_counter_sensor, 'reset_round_counter'):
-            round_counter_sensor.reset_round_counter()
-        else:
-            hass.states.async_set("sensor.soundbeats_round_counter", 0)
-        
-        # Reset played songs list
-        played_songs_sensor = entities.get("played_songs_sensor")
-        if played_songs_sensor and hasattr(played_songs_sensor, 'reset_played_songs'):
-            played_songs_sensor.reset_played_songs()
-        else:
-            hass.states.async_set("sensor.soundbeats_played_songs", 0, {"played_song_ids": []})
-        
-        # Reset teams based on current team count
-        team_sensors = entities.get("team_sensors", {})
-        main_sensor = entities.get("main_sensor")
-        team_count = 5  # Default to all teams if we can't get the setting
-        
-        # Try to get current team count from main sensor
-        if main_sensor and hasattr(main_sensor, '_team_count'):
-            team_count = main_sensor._team_count
-        else:
-            # Fallback: check state attributes
-            state_obj = hass.states.get("sensor.soundbeats_game_status")
-            if state_obj and state_obj.attributes and 'team_count' in state_obj.attributes:
-                team_count = int(state_obj.attributes['team_count'])
-        
-        # Reset active teams to default names and 0 points (preserve user assignments)
-        for i in range(1, team_count + 1):
-            team_key = f"soundbeats_team_{i}"
-            team_sensor = team_sensors.get(team_key)
-            if team_sensor:
-                team_sensor.update_team_name(f"Team {i}")
-                team_sensor.update_team_points(0)
-                team_sensor.update_team_participating(True)
-                if hasattr(team_sensor, 'update_team_betting'):
-                    team_sensor.update_team_betting(False)
-                if hasattr(team_sensor, '_last_round_betting'):
-                    team_sensor._last_round_betting = False
-                    team_sensor.async_write_ha_state()
-                # Note: Preserve user_id assignments during game start
-            else:
-                # Fallback to direct state setting
-                team_entity_id = f"sensor.soundbeats_team_{i}"
-                hass.states.async_set(team_entity_id, f"Team {i}", {
-                    "points": 0,
-                    "participating": True,
-                    "team_number": i
-                })
-        
-        # Disable any teams beyond the current team count
-        for i in range(team_count + 1, 6):
-            team_key = f"soundbeats_team_{i}"
-            team_sensor = team_sensors.get(team_key)
-            if team_sensor:
-                team_sensor.update_team_participating(False)
-            else:
-                # Fallback to direct state setting
-                team_entity_id = f"sensor.soundbeats_team_{i}"
-                hass.states.async_set(team_entity_id, f"Team {i}", {
-                    "points": 0,
-                    "participating": False,
-                    "team_number": i
-                })
+        """Start a new Soundbeats game session."""
+        await game_service.start_game()
 
     async def stop_game(call):
-        _LOGGER.info("Stopping Soundbeats game")
-        entities = _get_entities()
-        main_sensor = entities.get("main_sensor")
-        if main_sensor and hasattr(main_sensor, 'set_state'):
-            main_sensor.set_state("stopped")
-        else:
-            hass.states.async_set("sensor.soundbeats_game_status", "stopped")
+        """Stop the current Soundbeats game session."""
+        await game_service.stop_game()
 
     async def reset_game(call):
-        _LOGGER.info("Resetting Soundbeats game")
-        entities = _get_entities()
-        
-        # Reset game status
-        main_sensor = entities.get("main_sensor")
-        if main_sensor and hasattr(main_sensor, 'set_state'):
-            main_sensor.set_state("ready")
-        else:
-            hass.states.async_set("sensor.soundbeats_game_status", "ready")
-        
-        # Reset all teams
-        team_sensors = entities.get("team_sensors", {})
-        for i in range(1, 6):
-            team_key = f"soundbeats_team_{i}"
-            team_sensor = team_sensors.get(team_key)
-            if team_sensor:
-                team_sensor.update_team_name(f"Team {i}")
-                team_sensor.update_team_points(0)
-                team_sensor.update_team_participating(True)
-                if hasattr(team_sensor, 'update_team_betting'):
-                    team_sensor.update_team_betting(False)
-                if hasattr(team_sensor, '_last_round_betting'):
-                    team_sensor._last_round_betting = False
-                    team_sensor.async_write_ha_state()
-                if hasattr(team_sensor, 'update_team_user_id'):
-                    team_sensor.update_team_user_id(None)
-            else:
-                # Fallback to direct state setting
-                team_entity_id = f"sensor.soundbeats_team_{i}"
-                hass.states.async_set(team_entity_id, f"Team {i}", {
-                    "points": 0,
-                    "participating": True,
-                    "team_number": i,
-                    "user_id": None
-                })
+        """Reset the Soundbeats game to initial state."""
+        await game_service.reset_game()
 
     async def next_song(call):
-        _LOGGER.info("Skipping to next song")
-        
-        # Start countdown timer from configured timer length
-        entities = _get_entities()
-        countdown_sensor = entities.get("countdown_sensor")
-        countdown_current_sensor = entities.get("countdown_current_sensor")
-        current_song_sensor = entities.get("current_song_sensor")
-        
-        # Get the selected audio player from current song sensor
-        selected_player = None
-        if current_song_sensor and hasattr(current_song_sensor, 'state'):
-            selected_player = current_song_sensor.state
-            if selected_player == "None":
-                selected_player = None
-            _LOGGER.debug("Got selected player from current_song_sensor: %s", selected_player)
-        else:
-            # Fallback to reading from current song sensor state directly
-            current_song_entity = hass.states.get("sensor.soundbeats_current_song")
-            if current_song_entity and current_song_entity.state != "None":
-                selected_player = current_song_entity.state
-                _LOGGER.debug("Got selected player from current song entity state: %s", selected_player)
-            else:
-                _LOGGER.debug("No current song entity found or state is None. Entity: %s", current_song_entity)
-        
-        if not selected_player:
-            _LOGGER.warning("No audio player selected. Please select one in the settings.")
-            # Clear the current song sensor
-            if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
-                current_song_sensor.clear_current_song()
-        else:
-            # Randomly select a song from songs.json that hasn't been played yet
-            try:
-                songs_file = os.path.join(os.path.dirname(__file__), "songs.json")
-                
-                def _load_songs_file():
-                    with open(songs_file, 'r') as f:
-                        return json.load(f)
-                
-                songs = await hass.async_add_executor_job(_load_songs_file)
-                
-                if songs:
-                    # Get played songs sensor to check which songs have been played
-                    played_songs_sensor = entities.get("played_songs_sensor")
-                    played_song_ids = []
-                    
-                    if played_songs_sensor and hasattr(played_songs_sensor, 'extra_state_attributes'):
-                        played_song_ids = played_songs_sensor.extra_state_attributes.get("played_song_ids", [])
-                    
-                    # Filter out already played songs
-                    unplayed_songs = [song for song in songs if song.get("id") not in played_song_ids]
-                    
-                    if unplayed_songs:
-                        # Select random song from unplayed songs
-                        selected_song = random.choice(unplayed_songs)
-                        song_id = selected_song.get("id")
-                        
-                        _LOGGER.info("Selected unplayed song with ID %s from year %s (%d unplayed songs remaining)", 
-                                   song_id, selected_song.get("year"), len(unplayed_songs) - 1)
-                        
-                        # Add song to played list
-                        if played_songs_sensor and hasattr(played_songs_sensor, 'add_played_song'):
-                            played_songs_sensor.add_played_song(song_id)
-                    else:
-                        # All songs have been played
-                        _LOGGER.warning("All songs have been played! Total songs: %d", len(songs))
-                        selected_song = None
-                        
-                        # Clear the current song sensor to trigger warning display
-                        if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
-                            current_song_sensor.clear_current_song()
-                        
-                        # We'll handle the warning display in the frontend
-                        return
-                    
-                    if selected_song:
-                        # Play the song on the selected media player
-                        try:
-                            song_url = selected_song.get("url")
-                            _LOGGER.info("Attempting to play song URL '%s' on media player '%s'", song_url, selected_player)
-                            
-                            # Check if URL is a Spotify URL and adjust media_content_type accordingly
-                            media_content_type = "music"
-                            if song_url and "spotify.com" in song_url:
-                                media_content_type = "spotify"
-                                _LOGGER.info("Detected Spotify URL, setting media_content_type to 'spotify'")
-                            
-                            await hass.services.async_call(
-                                "media_player",
-                                "play_media",
-                                {
-                                    "entity_id": selected_player,
-                                    "media_content_id": song_url,
-                                    "media_content_type": media_content_type
-                                }
-                            )
-                            _LOGGER.info("Successfully called media_player.play_media service for %s", selected_player)
-                            
-            # Update the current song sensor with the media player entity ID and song details
-                            if current_song_sensor and hasattr(current_song_sensor, 'update_current_song'):
-                                current_song_sensor.update_current_song({
-                                    "media_player": selected_player,
-                                    "song_id": selected_song.get("id"),
-                                    "year": selected_song.get("year"),
-                                    "url": selected_song.get("url"),
-                                    "media_content_type": media_content_type
-                                })
-                        except Exception as e:
-                            _LOGGER.error("Failed to play song on media player %s: %s", selected_player, e)
-                            # Clear the current song sensor on error
-                            if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
-                                current_song_sensor.clear_current_song()
-                else:
-                    _LOGGER.warning("No songs found in songs.json")
-                    if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
-                        current_song_sensor.clear_current_song()
-            except Exception as e:
-                _LOGGER.error("Failed to select random song: %s", e)
-                if current_song_sensor and hasattr(current_song_sensor, 'clear_current_song'):
-                    current_song_sensor.clear_current_song()
-        
-        if countdown_sensor and countdown_current_sensor:
-            # Get the configured timer length
-            timer_length = int(countdown_sensor.state) if (hasattr(countdown_sensor, 'state') and countdown_sensor.state is not None) else 30
-            
-            # Start the countdown
-            if hasattr(countdown_current_sensor, 'start_countdown'):
-                countdown_current_sensor.start_countdown(timer_length)
-            else:
-                # Fallback to direct state setting
-                hass.states.async_set("sensor.soundbeats_countdown_current", timer_length)
-        else:
-            # Fallback: get timer length from sensor state and start countdown
-            timer_entity = hass.states.get("sensor.soundbeats_countdown_timer")
-            timer_length = int(timer_entity.state) if (timer_entity and timer_entity.state is not None) else 30
-            
-            # Try to find the countdown current sensor entity and start countdown
-            countdown_current_sensor = None
-            
-            # Check all config entries for the entity
-            for config_entry_data in hass.data.get(DOMAIN, {}).values():
-                if isinstance(config_entry_data, dict) and "entities" in config_entry_data:
-                    countdown_current_sensor = config_entry_data["entities"].get("countdown_current_sensor")
-                    if countdown_current_sensor:
-                        break
-            
-            # If not found in config entries, check the global entities dict
-            if not countdown_current_sensor:
-                entities = hass.data.get(DOMAIN, {}).get("entities", {})
-                countdown_current_sensor = entities.get("countdown_current_sensor")
-            
-            if countdown_current_sensor and hasattr(countdown_current_sensor, 'start_countdown'):
-                countdown_current_sensor.start_countdown(timer_length)
-            else:
-                # Final fallback: just set the state (countdown won't auto-decrement)
-                hass.states.async_set("sensor.soundbeats_countdown_current", timer_length)
-        
-        # Keep the game status unchanged but trigger an update
-        state_obj = hass.states.get("sensor.soundbeats_game_status")
-        if state_obj:
-            hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, state_obj.attributes)
+        """Skip to the next song and start the countdown timer."""
+        await game_service.next_song()
 
     async def update_team_name(call):
-        await _update_team_attribute(call, "name", "update_team_name")
+        """Update the name of a team."""
+        team_id = call.data.get("team_id")
+        name = call.data.get("name")
+        await team_service.update_team_attribute(
+            team_id, "name", name, "update_team_name"
+        )
 
     async def update_team_points(call):
-        await _update_team_attribute(call, "points", "update_team_points", 
-                                   value_transform=int, state_attribute="points")
+        """Update the points of a team."""
+        team_id = call.data.get("team_id")
+        points = call.data.get("points")
+        await team_service.update_team_attribute(
+            team_id, "points", points, "update_team_points", 
+            value_transform=int, state_attribute="points"
+        )
 
     async def update_team_participating(call):
-        await _update_team_attribute(call, "participating", "update_team_participating", 
-                                   value_transform=bool, state_attribute="participating")
-
-    async def update_countdown_timer_length(call):
-        length = call.data.get("timer_length")
-        if length is None:
-            _LOGGER.error("Missing timer_length")
-            return
-        
-        entities = _get_entities()
-        timer_sensor = entities.get("countdown_sensor")
-        if timer_sensor and hasattr(timer_sensor, 'update_timer_length'):
-            timer_sensor.update_timer_length(int(length))
-        else:
-            hass.states.async_set("sensor.soundbeats_countdown_timer", int(length))
-
-    async def update_audio_player(call):
-        player = call.data.get("audio_player")
-        if not player:
-            _LOGGER.error("Missing audio_player")
-            return
-        
-        entities = _get_entities()
-        current_song_sensor = entities.get("current_song_sensor")
-        if current_song_sensor and hasattr(current_song_sensor, 'update_selected_media_player'):
-            current_song_sensor.update_selected_media_player(player)
-        else:
-            # Fallback to direct state setting
-            hass.states.async_set("sensor.soundbeats_current_song", player)
-
-    async def update_team_count(call):
-        team_count = call.data.get("team_count")
-        if team_count is None:
-            _LOGGER.error("Missing team_count")
-            return
-        
-        # Validate team count is between 1 and 5
-        team_count = int(team_count)
-        if team_count < 1 or team_count > 5:
-            _LOGGER.error("Invalid team_count: %s (must be 1-5)", team_count)
-            return
-            
-        entities = _get_entities()
-        main_sensor = entities.get("main_sensor")
-        if main_sensor and hasattr(main_sensor, 'set_team_count'):
-            main_sensor.set_team_count(team_count)
-        else:
-            # Update the game status entity with team_count attribute
-            state_obj = hass.states.get("sensor.soundbeats_game_status")
-            if state_obj:
-                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
-                attrs["team_count"] = team_count
-                hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, attrs)
-            else:
-                # Create the entity if it doesn't exist
-                hass.states.async_set("sensor.soundbeats_game_status", "ready", {"team_count": team_count})
+        """Update whether a team is participating in the game."""
+        team_id = call.data.get("team_id")
+        participating = call.data.get("participating")
+        await team_service.update_team_attribute(
+            team_id, "participating", participating, "update_team_participating", 
+            value_transform=bool, state_attribute="participating"
+        )
 
     async def update_team_year_guess(call):
-        await _update_team_attribute(call, "year_guess", "update_team_year_guess", 
-                                   value_transform=int, state_attribute="year_guess")
+        """Update the year guess of a team."""
+        team_id = call.data.get("team_id")
+        year_guess = call.data.get("year_guess")
+        await team_service.update_team_attribute(
+            team_id, "year_guess", year_guess, "update_team_year_guess", 
+            value_transform=int, state_attribute="year_guess"
+        )
 
     async def update_team_betting(call):
-        await _update_team_attribute(call, "betting", "update_team_betting", 
-                                   value_transform=bool, state_attribute="betting")
+        """Update whether a team is betting on their guess."""
+        team_id = call.data.get("team_id")
+        betting = call.data.get("betting")
+        await team_service.update_team_attribute(
+            team_id, "betting", betting, "update_team_betting", 
+            value_transform=bool, state_attribute="betting"
+        )
 
     async def update_team_user_id(call):
-        # Special case for user_id - it can be None, so we don't need the standard validation
+        """Update the assigned user ID for a team."""
         team_id = call.data.get("team_id")
         user_id = call.data.get("user_id")
-        if not team_id:
-            _LOGGER.error("Missing team_id")
-            return
-        
-        await _update_team_attribute(call, "user_id", "update_team_user_id", 
-                                   state_attribute="user_id")
+        await team_service.update_team_attribute(
+            team_id, "user_id", user_id, "update_team_user_id", 
+            state_attribute="user_id"
+        )
+
+    async def update_countdown_timer_length(call):
+        """Update the countdown timer length in seconds."""
+        timer_length = call.data.get("timer_length")
+        await config_service.update_countdown_timer_length(timer_length)
+
+    async def update_audio_player(call):
+        """Update the selected audio player for the game."""
+        audio_player = call.data.get("audio_player")
+        await config_service.update_audio_player(audio_player)
+
+    async def update_team_count(call):
+        """Update the number of teams participating in the game."""
+        team_count = call.data.get("team_count")
+        await config_service.update_team_count(team_count)
 
     # Register all services under the "soundbeats" domain
     hass.services.async_register(DOMAIN, "start_game", start_game)

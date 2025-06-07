@@ -198,23 +198,48 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
 
     def _update_attribute(self, attribute_name: str, value) -> None:
         """Generic helper for updating team attributes."""
+        if not hasattr(self, f"_{attribute_name}"):
+            _LOGGER.warning("Attribute %s does not exist on team %d", attribute_name, self._team_number)
+            return
         setattr(self, f"_{attribute_name}", value)
         self.async_write_ha_state()
 
     def update_team_name(self, name: str) -> None:
         """Update the team's name."""
+        if not name or not isinstance(name, str):
+            _LOGGER.error("Invalid team name for team %d: %s", self._team_number, name)
+            return
         self._update_attribute("team_name", name)
 
     def update_team_points(self, points: int) -> None:
         """Update the team's points."""
+        try:
+            points = int(points)
+            if points < 0:
+                _LOGGER.warning("Negative points for team %d: %d", self._team_number, points)
+        except (ValueError, TypeError):
+            _LOGGER.error("Invalid points for team %d: %s", self._team_number, points)
+            return
         self._update_attribute("points", points)
 
     def update_team_participating(self, participating: bool) -> None:
         """Update the team's participating status."""
+        try:
+            participating = bool(participating)
+        except (ValueError, TypeError):
+            _LOGGER.error("Invalid participating status for team %d: %s", self._team_number, participating)
+            return
         self._update_attribute("participating", participating)
 
     def update_team_year_guess(self, year_guess: int) -> None:
         """Update the team's year guess."""
+        try:
+            year_guess = int(year_guess)
+            if not (1950 <= year_guess <= 2030):
+                _LOGGER.warning("Year guess out of reasonable range for team %d: %d", self._team_number, year_guess)
+        except (ValueError, TypeError):
+            _LOGGER.error("Invalid year guess for team %d: %s", self._team_number, year_guess)
+            return
         self._update_attribute("year_guess", year_guess)
 
     def update_team_betting(self, betting: bool) -> None:
@@ -261,6 +286,14 @@ class SoundbeatsCountdownTimerSensor(SensorEntity, RestoreEntity):
 
     def update_timer_length(self, timer_length: int) -> None:
         """Update the countdown timer length."""
+        try:
+            timer_length = int(timer_length)
+            if not (5 <= timer_length <= 300):
+                _LOGGER.warning("Timer length out of reasonable range: %d seconds", timer_length)
+                return
+        except (ValueError, TypeError):
+            _LOGGER.error("Invalid timer length: %s", timer_length)
+            return
         self._timer_length = timer_length
         self.async_write_ha_state()
 
