@@ -3283,7 +3283,10 @@ class SoundbeatsCard extends HTMLElement {
             <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.teamManagementExpanded ? 'expanded' : ''}"></ha-icon>
           </div>
           <div class="expandable-content ${this.teamManagementExpanded ? 'expanded' : 'collapsed'}">
-            ${this.renderTeamManagementContent()}
+            <p class="team-management-description">${this.getTeamManagementDescription()}</p>
+            <div class="team-management-container">
+              ${this.renderTeamManagement()}
+            </div>
           </div>
         </div>
       </div>
@@ -3579,55 +3582,6 @@ class SoundbeatsCard extends HTMLElement {
         </div>
       `;
     }
-  }
-
-  renderTeamManagementContent() {
-    // Team Count dropdown and heading (copied from splash screen)
-    const currentTeamCount = this.getSelectedTeamCount();
-    let contentHtml = `
-      <div class="splash-input-section ${this.hasValidationError('teamCount') ? 'error' : ''}">
-        <div class="splash-input-header">
-          <ha-icon icon="mdi:account-group" class="input-icon"></ha-icon>
-          <h3>${this._t('settings.number_of_teams')}</h3>
-        </div>
-        <p class="input-description">${this._t('settings.teams_description')}</p>
-        <select class="splash-team-count-select" onchange="this.getRootNode().host.updateTeamCount(this.value)">
-          <option value="">${this._t('settings.select_teams_placeholder')}</option>
-          ${[1, 2, 3, 4, 5].map(count => 
-            `<option value="${count}" ${currentTeamCount === count ? 'selected' : ''}>
-              ${count} Team${count > 1 ? 's' : ''}
-            </option>`
-          ).join('')}
-        </select>
-      </div>
-    `;
-
-    // Team management description and admin warning
-    const teamCount = this.getSelectedTeamCount();
-    const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
-    
-    if (hasValidTeamCount) {
-      contentHtml += `
-        <p class="team-management-description">${this.getTeamManagementDescription()}</p>
-        <div class="admin-warning">
-          <ha-icon icon="mdi:shield-account" class="warning-icon"></ha-icon>
-          <span><strong>Important:</strong> ${this._t('settings.team_admin_notice')}</span>
-        </div>
-      `;
-    } else {
-      contentHtml += `
-        <p class="team-management-description">${this.getTeamManagementDescription()}</p>
-      `;
-    }
-
-    // Team management container
-    contentHtml += `
-      <div class="team-management-container">
-        ${this.renderTeamManagement()}
-      </div>
-    `;
-
-    return contentHtml;
   }
 
   getTeamManagementDescription() {
@@ -4917,17 +4871,7 @@ class SoundbeatsCard extends HTMLElement {
 
   updateSplashTeamsSection(context = 'splash') {
     // Update the teams section in either splash screen or team management without full re-render
-    if (context === 'management') {
-      // For team management, update the entire expandable content to include admin warning
-      const expandableContent = this.shadowRoot.querySelector('.section.admin-section .expandable-content');
-      if (expandableContent) {
-        expandableContent.innerHTML = this.renderTeamManagementContent();
-      }
-      return;
-    }
-    
-    // Handle splash screen context (existing logic)
-    const containerSelector = '.splash-teams-container';
+    const containerSelector = context === 'splash' ? '.splash-teams-container' : '.team-management-container';
     const teamsContainer = this.shadowRoot.querySelector(containerSelector);
     if (!teamsContainer) return;
     
@@ -4949,36 +4893,60 @@ class SoundbeatsCard extends HTMLElement {
     const teamCount = this.getSelectedTeamCount();
     const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
     
-    // Always show teams section in splash
-    const teamsSection = teamsContainer.closest('.splash-input-section');
-    if (teamsSection) {
-      teamsSection.style.display = 'block';
+    if (context === 'splash') {
+      // Always show teams section in splash
+      const teamsSection = teamsContainer.closest('.splash-input-section');
+      if (teamsSection) {
+        teamsSection.style.display = 'block';
+      }
     }
     
     if (hasValidTeamCount) {
       // Update description for splash screen context
-      const teamsSection = teamsContainer.closest('.splash-input-section');
-      const description = teamsSection.querySelector('.input-description');
-      if (description) {
-        description.textContent = `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
+      if (context === 'splash') {
+        const teamsSection = teamsContainer.closest('.splash-input-section');
+        const description = teamsSection.querySelector('.input-description');
+        if (description) {
+          description.textContent = `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
+        }
+      } else {
+        // Update description for team management context
+        const descriptionElement = this.shadowRoot.querySelector('.team-management-description');
+        if (descriptionElement) {
+          descriptionElement.textContent = `Assign users to your ${teamCount} team${teamCount > 1 ? 's' : ''}`;
+        }
       }
       
       // Generate teams HTML using unified logic
       teamsContainer.innerHTML = this.renderTeamsContent(context);
     } else {
       // Show prompt message when no valid team count is selected
-      const teamsSection = teamsContainer.closest('.splash-input-section');
-      const description = teamsSection.querySelector('.input-description');
-      if (description) {
-        description.textContent = 'Please select the number of teams above to set up team assignments';
+      if (context === 'splash') {
+        const teamsSection = teamsContainer.closest('.splash-input-section');
+        const description = teamsSection.querySelector('.input-description');
+        if (description) {
+          description.textContent = 'Please select the number of teams above to set up team assignments';
+        }
+        
+        teamsContainer.innerHTML = `
+          <div class="splash-teams-prompt">
+            <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
+            <span>${this._t('settings.choose_teams_first')}</span>
+          </div>
+        `;
+      } else {
+        const descriptionElement = this.shadowRoot.querySelector('.team-management-description');
+        if (descriptionElement) {
+          descriptionElement.textContent = this._t('settings.select_teams_for_assignments_full');
+        }
+        
+        teamsContainer.innerHTML = `
+          <div class="team-management-prompt">
+            <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
+            <span>${this._t('settings.select_teams_for_assignments')}</span>
+          </div>
+        `;
       }
-      
-      teamsContainer.innerHTML = `
-        <div class="splash-teams-prompt">
-          <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
-          <span>${this._t('settings.choose_teams_first')}</span>
-        </div>
-      `;
     }
   }
 
