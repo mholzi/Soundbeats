@@ -2384,6 +2384,7 @@ class SoundbeatsCard extends HTMLElement {
           background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%);
           border-radius: 8px;
           border: 2px solid rgba(255, 215, 0, 0.4);
+          flex: 1;
         }
         
         .crown-icon {
@@ -2407,11 +2408,12 @@ class SoundbeatsCard extends HTMLElement {
           align-items: center;
           justify-content: center;
           gap: 8px;
-          padding: 12px;
+          padding: 16px;
           background: rgba(100, 149, 237, 0.1);
-          border-radius: 6px;
-          border: 1px solid rgba(100, 149, 237, 0.2);
+          border-radius: 8px;
+          border: 2px solid rgba(100, 149, 237, 0.2);
           font-weight: bold;
+          flex: 1;
         }
         
         .user-average .icon {
@@ -3118,7 +3120,7 @@ class SoundbeatsCard extends HTMLElement {
         <div class="section highscore-section">
           <h3>
             <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
-            Highscores
+            Highscores (after Round ${this.getRoundCounter()})
           </h3>
           ${this.renderHighscores()}
         </div>
