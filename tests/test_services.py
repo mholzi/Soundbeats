@@ -20,6 +20,7 @@ def hass():
     hass.data = {DOMAIN: {"entities": {}}}
     hass.states = MagicMock()
     hass.services = MagicMock()
+    hass.services.async_call = AsyncMock()
     hass.async_add_executor_job = AsyncMock()
     return hass
 
@@ -142,10 +143,16 @@ class TestSoundbeatsGameService:
             # Test
             await game_service.next_song()
             
-            # Verify media player service was called
+            # Verify media player service was called with blocking=True
             hass.services.async_call.assert_called()
             call_args = hass.services.async_call.call_args
-            assert call_args[0] == ("media_player", "play_media")
+            assert call_args[0][0] == "media_player"
+            assert call_args[0][1] == "play_media"
+            assert call_args[0][2]["entity_id"] == "media_player.test_player"
+            assert call_args[0][2]["media_content_id"] == "http://example.com/song1.mp3"
+            assert call_args[0][2]["media_content_type"] == "music"
+            # Verify blocking=True is passed
+            assert call_args[1]["blocking"] == True
 
 
 class TestSoundbeatsTeamService:

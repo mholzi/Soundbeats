@@ -319,7 +319,8 @@ class SoundbeatsGameService:
                     "entity_id": selected_player,
                     "media_content_id": song_url,
                     "media_content_type": media_content_type
-                }
+                },
+                blocking=True
             )
             _LOGGER.info("Successfully called media_player.play_media service for %s", selected_player)
             
