@@ -3948,6 +3948,16 @@ class SoundbeatsCard extends HTMLElement {
     }).join('');
   }
 
+  formatPointsValue(value) {
+    // If the value is a whole number (no meaningful decimal), show without decimal
+    // Otherwise show with 1 decimal place
+    if (value % 1 === 0) {
+      return value.toString();
+    } else {
+      return value.toFixed(1);
+    }
+  }
+
   renderHighscores() {
     const highscoreEntity = this.hass?.states['sensor.soundbeats_highscore'];
     
@@ -3979,15 +3989,19 @@ class SoundbeatsCard extends HTMLElement {
     return `
       <div class="highscore-display">
         <div class="global-highscore">
-          <ha-icon icon="mdi:crown" class="icon crown-icon"></ha-icon>
-          <span class="highscore-label">${this._t('game.highscore_avg_round')}</span>
-          <span class="highscore-value">${globalAverageHighscore.toFixed(1)} pts</span>
+          <div class="highscore-header">
+            <ha-icon icon="mdi:crown" class="icon crown-icon"></ha-icon>
+            <span class="highscore-label">${this._t('game.highscore_avg_round')}</span>
+          </div>
+          <div class="highscore-value">${this.formatPointsValue(globalAverageHighscore)} pts</div>
         </div>
         ${currentRound > 1 && userAverage !== null ? `
           <div class="user-average">
-            <ha-icon icon="mdi:account" class="icon"></ha-icon>
-            <span class="highscore-label">${this._t('game.your_average')}</span>
-            <span class="highscore-value">${userAverage.toFixed(1)} pts</span>
+            <div class="highscore-header">
+              <ha-icon icon="mdi:account" class="icon"></ha-icon>
+              <span class="highscore-label">${this._t('game.your_average')}</span>
+            </div>
+            <div class="highscore-value">${this.formatPointsValue(userAverage)} pts</div>
           </div>
         ` : ''}
       </div>
@@ -4226,7 +4240,7 @@ class SoundbeatsCard extends HTMLElement {
     
     // Check for new average highscore
     if (this._lastAbsoluteHighscore !== null && currentAbsolute > this._lastAbsoluteHighscore && currentAbsolute > 0) {
-      this.showHighscoreBanner(`New average highscore: ${currentAbsolute.toFixed(1)} pts/round! 🏆`);
+      this.showHighscoreBanner(`New average highscore: ${this.formatPointsValue(currentAbsolute)} pts/round! 🏆`);
     }
     
     // Check for new round highscores
@@ -4235,7 +4249,7 @@ class SoundbeatsCard extends HTMLElement {
         const lastValue = this._lastRoundHighscores[key];
         if (lastValue !== undefined && value > lastValue && value > 0) {
           const roundNumber = key.replace('round_', '');
-          this.showHighscoreBanner(`New Round ${roundNumber} record: ${value} points! 🎯`);
+          this.showHighscoreBanner(`New Round ${roundNumber} record: ${this.formatPointsValue(value)} points! 🎯`);
         }
       }
     });
