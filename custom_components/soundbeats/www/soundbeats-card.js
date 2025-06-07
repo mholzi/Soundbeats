@@ -48,6 +48,10 @@ class SoundbeatsCard extends HTMLElement {
     // (using same pattern as _recentUserSelections for consistency)
     this._recentAudioPlayerInteractions = {};
     
+    // Song reveal animation state tracking  
+    this._lastCountdownValue = null;
+    this._yearRevealAnimationActive = false;
+    
     // Translation system
     this._currentLanguage = localStorage.getItem('soundbeats-language') || 'en';
     this._translations = null;
@@ -2089,6 +2093,60 @@ class SoundbeatsCard extends HTMLElement {
           font-weight: bold;
           margin: 8px 0;
           color: var(--primary-color, #03a9f4);
+          position: relative;
+          overflow: hidden;
+          min-height: 1.5em;
+        }
+        
+        .song-year.slot-machine-reveal {
+          animation: slotMachineReveal 2s ease-out forwards;
+        }
+        
+        .song-year.slot-machine-spinning::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(to bottom, transparent 0%, var(--primary-color, #03a9f4) 50%, transparent 100%);
+          animation: slotMachineSpinning 0.1s linear infinite;
+        }
+        
+        .song-year-content {
+          display: inline-block;
+          transition: transform 0.3s ease;
+        }
+        
+        .song-year.slot-machine-reveal .song-year-content {
+          animation: yearSlideIn 0.5s ease-out 1.5s forwards;
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        
+        @keyframes slotMachineSpinning {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100%); }
+        }
+        
+        @keyframes slotMachineReveal {
+          0% { background-color: rgba(0, 0, 0, 0.1); }
+          75% { background-color: rgba(0, 0, 0, 0.1); }
+          100% { background-color: transparent; }
+        }
+        
+        @keyframes yearSlideIn {
+          0% { 
+            opacity: 0; 
+            transform: translateY(-20px) scale(0.8);
+          }
+          50% {
+            transform: translateY(5px) scale(1.1);
+          }
+          100% { 
+            opacity: 1; 
+            transform: translateY(0) scale(1);
+          }
         }
 
         .song-next-button {
@@ -3311,7 +3369,7 @@ class SoundbeatsCard extends HTMLElement {
               <img src="${this.getCurrentSong().entity_picture}" alt="Song Cover" class="song-image" />
               <div class="song-name">${this.getCurrentSong().song_name}</div>
               <div class="song-artist">${this.getCurrentSong().artist}</div>
-              <div class="song-year">${this.getCurrentSong().year}</div>
+              <div class="song-year"><span class="song-year-content">${this.getCurrentSong().year}</span></div>
               ${isAdmin ? `
                 <div class="song-volume-buttons">
                   <button class="song-volume-button" onclick="this.getRootNode().host.volumeDown()" title="${this._t('ui.volume_down')}">
@@ -4882,6 +4940,10 @@ class SoundbeatsCard extends HTMLElement {
     const currentCountdown = this.getCountdownCurrent();
     const currentSong = this.getCurrentSong();
     
+    // Detect countdown transition from >0 to 0 (moment of reveal)
+    const countdownJustFinished = this._lastCountdownValue > 0 && currentCountdown === 0;
+    this._lastCountdownValue = currentCountdown;
+    
     // Show/hide song section based on whether countdown is 0 and song is available
     if (songSection) {
       if (currentCountdown === 0 && currentSong) {
@@ -4896,11 +4958,48 @@ class SoundbeatsCard extends HTMLElement {
         if (songImage) songImage.src = currentSong.entity_picture;
         if (songName) songName.textContent = currentSong.song_name;
         if (songArtist) songArtist.textContent = currentSong.artist;
-        if (songYear) songYear.textContent = currentSong.year;
+        
+        // Handle year reveal with animation
+        if (songYear) {
+          if (countdownJustFinished && !this._yearRevealAnimationActive) {
+            // Trigger slot machine animation for year reveal
+            this._yearRevealAnimationActive = true;
+            this._animateYearReveal(songYear, currentSong.year);
+          } else if (!countdownJustFinished) {
+            // Normal update (not the initial reveal moment)
+            const yearContent = songYear.querySelector('.song-year-content');
+            if (yearContent) {
+              yearContent.textContent = currentSong.year;
+            } else {
+              songYear.innerHTML = `<span class="song-year-content">${currentSong.year}</span>`;
+            }
+          }
+        }
       } else {
         songSection.classList.add('hidden');
+        // Reset animation state when song section is hidden
+        this._yearRevealAnimationActive = false;
       }
     }
+  }
+  
+  _animateYearReveal(songYearElement, actualYear) {
+    // Start with spinning animation
+    songYearElement.classList.add('slot-machine-spinning');
+    songYearElement.innerHTML = '<span class="song-year-content">????</span>';
+    
+    // After 1.5 seconds, stop spinning and reveal the year
+    setTimeout(() => {
+      songYearElement.classList.remove('slot-machine-spinning');
+      songYearElement.classList.add('slot-machine-reveal');
+      songYearElement.innerHTML = `<span class="song-year-content">${actualYear}</span>`;
+      
+      // Reset animation state after animation completes
+      setTimeout(() => {
+        songYearElement.classList.remove('slot-machine-reveal');
+        this._yearRevealAnimationActive = false;
+      }, 2000); // Match the animation duration
+    }, 1500); // 1.5 seconds of spinning
   }
 
   updateTeamDisplayValues() {
