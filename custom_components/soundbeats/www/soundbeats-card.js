@@ -1899,6 +1899,37 @@ class SoundbeatsCard extends HTMLElement {
           min-width: 0;
         }
         
+        .team-management-section {
+          margin-bottom: 20px;
+          padding-bottom: 20px;
+          border-bottom: 1px solid var(--divider-color, #e0e0e0);
+        }
+        
+        .team-management-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 12px;
+        }
+        
+        .team-management-header h4 {
+          margin: 0;
+          font-size: 1.1em;
+          font-weight: 500;
+          color: var(--primary-text-color);
+        }
+        
+        .team-management-count-select {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid var(--divider-color, #ccc);
+          border-radius: 4px;
+          background: var(--card-background-color, white);
+          color: var(--primary-text-color);
+          font-size: 14px;
+          max-width: 300px;
+        }
+        
         .participation-control {
           display: flex;
           align-items: center;
@@ -3706,16 +3737,36 @@ class SoundbeatsCard extends HTMLElement {
     const teamCount = this.getSelectedTeamCount();
     const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
     
+    // Always show team count dropdown at the top
+    let html = `
+      <div class="team-management-section">
+        <div class="team-management-header">
+          <ha-icon icon="mdi:account-group" class="input-icon"></ha-icon>
+          <h4>${this._t('settings.number_of_teams')}</h4>
+        </div>
+        <select class="team-management-count-select" onchange="this.getRootNode().host.updateTeamCount(this.value)">
+          <option value="">${this._t('settings.select_teams_placeholder')}</option>
+          ${[1, 2, 3, 4, 5].map(count => 
+            `<option value="${count}" ${teamCount === count ? 'selected' : ''}>
+              ${this._ts('settings.teams_count_option', { count: count, plural: count > 1 ? 's' : '' })}
+            </option>`
+          ).join('')}
+        </select>
+      </div>
+    `;
+    
     if (hasValidTeamCount) {
-      return this.renderTeamsContent('management');
+      html += this.renderTeamsContent('management');
     } else {
-      return `
+      html += `
         <div class="team-management-prompt">
           <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
           <span>${this._t('settings.select_teams_for_assignments')}</span>
         </div>
       `;
     }
+    
+    return html;
   }
 
   getTeamManagementDescription() {
