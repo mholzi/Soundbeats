@@ -12,6 +12,8 @@
       "start_help": "Complete the settings above first"
     },
     "ui": {
+      "title": "Soundbeats Party Game",
+      "description": "The ultimate Home Assistant party game experience!",
       "team_management": "Team Management",
       "select_audio_player": "Select an audio player...",
       "loading_audio_players": "Loading audio players...",
@@ -41,6 +43,8 @@
       "start_help": "Vervollständige zuerst die Einstellungen oben"
     },
     "ui": {
+      "title": "Soundbeats Party-Spiel",
+      "description": "Das ultimative Home Assistant Party-Spiel-Erlebnis!",
       "team_management": "Team-Verwaltung",
       "select_audio_player": "Audio-Player auswählen...",
       "loading_audio_players": "Lade Audio-Player...",

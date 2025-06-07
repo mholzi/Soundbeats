@@ -82,6 +82,8 @@ class SoundbeatsCard extends HTMLElement {
             start_help: "Complete the settings above first"
           },
           ui: {
+            title: "Soundbeats Party Game",
+            description: "The ultimate Home Assistant party game experience!",
             team_management: "Team Management",
             select_audio_player: "Select an audio player...",
             loading_audio_players: "Loading audio players...",
@@ -108,6 +110,8 @@ class SoundbeatsCard extends HTMLElement {
             start_help: "Vervollständige zuerst die Einstellungen oben"
           },
           ui: {
+            title: "Soundbeats Party-Spiel",
+            description: "Das ultimative Home Assistant Party-Spiel-Erlebnis!",
             team_management: "Team-Verwaltung",
             select_audio_player: "Audio-Player auswählen...",
             loading_audio_players: "Lade Audio-Player...",
@@ -588,7 +592,7 @@ class SoundbeatsCard extends HTMLElement {
       startButton.className = `splash-start-button ${isReady ? 'ready' : 'not-ready'}`;
       startButton.innerHTML = `
         <ha-icon icon="mdi:play-circle" class="icon"></ha-icon>
-        ${isReady ? 'Launch Game' : 'Start Game'}
+        ${isReady ? this._t('splash.launch_game') : this._t('splash.start_game')}
       `;
     }
     
@@ -2911,9 +2915,9 @@ class SoundbeatsCard extends HTMLElement {
           </div>
           <h2>
             <ha-icon icon="mdi:music-note" class="icon"></ha-icon>
-            Soundbeats Party Game
+            ${this._t('ui.title')}
           </h2>
-          <p>The ultimate Home Assistant party game experience!</p>
+          <p>${this._t('ui.description')}</p>
           <div class="sound-waves">
             <div class="wave wave-1"></div>
             <div class="wave wave-2"></div>
