@@ -75,6 +75,51 @@ async def _register_services(hass: HomeAssistant) -> None:
     def _get_entities():
         """Get entity references from hass data."""
         return hass.data.get(DOMAIN, {}).get("entities", {})
+    
+    async def _update_team_attribute(call, attribute_name, method_name, value_transform=None, state_attribute=None, fallback_state_value=None):
+        """Generic helper for updating team attributes."""
+        team_id = call.data.get("team_id")
+        value = call.data.get(attribute_name)
+        
+        # Special validation for different attributes
+        if attribute_name == "name" and (not team_id or not value):
+            _LOGGER.error("Missing team_id or %s", attribute_name)
+            return
+        elif attribute_name != "name" and (not team_id or value is None):
+            _LOGGER.error("Missing team_id or %s", attribute_name)
+            return
+        
+        # Extract team number from team_id (e.g., "team_1" -> "1")
+        team_number = team_id.split('_')[-1]
+        unique_id = f"soundbeats_team_{team_number}"
+        
+        # Find the team sensor entity and call its update method
+        entities = _get_entities()
+        team_sensors = entities.get("team_sensors", {})
+        team_sensor = team_sensors.get(unique_id)
+        
+        # Transform value if needed
+        if value_transform:
+            value = value_transform(value)
+        
+        if team_sensor and hasattr(team_sensor, method_name):
+            _LOGGER.debug("Updating team %s %s via entity method", team_number, attribute_name)
+            getattr(team_sensor, method_name)(value)
+        else:
+            # Fallback to direct state setting
+            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
+            entity_id = f"sensor.soundbeats_team_{team_number}"
+            state_obj = hass.states.get(entity_id)
+            if state_obj:
+                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
+                if state_attribute:
+                    attrs[state_attribute] = value
+                    # Keep original state value unless fallback is specified
+                    state_value = fallback_state_value if fallback_state_value is not None else state_obj.state
+                    hass.states.async_set(entity_id, state_value, attrs)
+                else:
+                    # For name updates, the value becomes the state
+                    hass.states.async_set(entity_id, value, attrs)
 
     async def start_game(call):
         _LOGGER.info("Starting Soundbeats game")
@@ -369,90 +414,15 @@ async def _register_services(hass: HomeAssistant) -> None:
             hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, state_obj.attributes)
 
     async def update_team_name(call):
-        team_id = call.data.get("team_id")
-        name = call.data.get("name")
-        if not team_id or not name:
-            _LOGGER.error("Missing team_id or name")
-            return
-        
-        # Extract team number from team_id (e.g., "team_1" -> "1")
-        team_number = team_id.split('_')[-1]
-        unique_id = f"soundbeats_team_{team_number}"
-        
-        # Find the team sensor entity and call its update method
-        entities = _get_entities()
-        team_sensors = entities.get("team_sensors", {})
-        team_sensor = team_sensors.get(unique_id)
-        
-        if team_sensor and hasattr(team_sensor, 'update_team_name'):
-            _LOGGER.debug("Updating team %s name to '%s' via entity method", team_number, name)
-            team_sensor.update_team_name(name)
-        else:
-            # Fallback to direct state setting
-            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
-            entity_id = f"sensor.soundbeats_team_{team_number}"
-            state_obj = hass.states.get(entity_id)
-            if state_obj:
-                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
-                hass.states.async_set(entity_id, name, attrs)
+        await _update_team_attribute(call, "name", "update_team_name")
 
     async def update_team_points(call):
-        team_id = call.data.get("team_id")
-        points = call.data.get("points")
-        if not team_id or points is None:
-            _LOGGER.error("Missing team_id or points")
-            return
-        
-        # Extract team number from team_id (e.g., "team_1" -> "1")
-        team_number = team_id.split('_')[-1]
-        unique_id = f"soundbeats_team_{team_number}"
-        
-        # Find the team sensor entity and call its update method
-        entities = _get_entities()
-        team_sensors = entities.get("team_sensors", {})
-        team_sensor = team_sensors.get(unique_id)
-        
-        if team_sensor and hasattr(team_sensor, 'update_team_points'):
-            _LOGGER.debug("Updating team %s points to %d via entity method", team_number, points)
-            team_sensor.update_team_points(int(points))
-        else:
-            # Fallback to direct state setting
-            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
-            entity_id = f"sensor.soundbeats_team_{team_number}"
-            state_obj = hass.states.get(entity_id)
-            if state_obj:
-                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
-                attrs["points"] = int(points)
-                hass.states.async_set(entity_id, state_obj.state, attrs)
+        await _update_team_attribute(call, "points", "update_team_points", 
+                                   value_transform=int, state_attribute="points")
 
     async def update_team_participating(call):
-        team_id = call.data.get("team_id")
-        participating = call.data.get("participating")
-        if not team_id or participating is None:
-            _LOGGER.error("Missing team_id or participating")
-            return
-        
-        # Extract team number from team_id (e.g., "team_1" -> "1")
-        team_number = team_id.split('_')[-1]
-        unique_id = f"soundbeats_team_{team_number}"
-        
-        # Find the team sensor entity and call its update method
-        entities = _get_entities()
-        team_sensors = entities.get("team_sensors", {})
-        team_sensor = team_sensors.get(unique_id)
-        
-        if team_sensor and hasattr(team_sensor, 'update_team_participating'):
-            _LOGGER.debug("Updating team %s participating to %s via entity method", team_number, participating)
-            team_sensor.update_team_participating(bool(participating))
-        else:
-            # Fallback to direct state setting
-            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
-            entity_id = f"sensor.soundbeats_team_{team_number}"
-            state_obj = hass.states.get(entity_id)
-            if state_obj:
-                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
-                attrs["participating"] = bool(participating)
-                hass.states.async_set(entity_id, state_obj.state, attrs)
+        await _update_team_attribute(call, "participating", "update_team_participating", 
+                                   value_transform=bool, state_attribute="participating")
 
     async def update_countdown_timer_length(call):
         length = call.data.get("timer_length")
@@ -509,91 +479,23 @@ async def _register_services(hass: HomeAssistant) -> None:
                 hass.states.async_set("sensor.soundbeats_game_status", "ready", {"team_count": team_count})
 
     async def update_team_year_guess(call):
-        team_id = call.data.get("team_id")
-        year_guess = call.data.get("year_guess")
-        if not team_id or year_guess is None:
-            _LOGGER.error("Missing team_id or year_guess")
-            return
-        
-        # Extract team number from team_id (e.g., "team_1" -> "1")
-        team_number = team_id.split('_')[-1]
-        unique_id = f"soundbeats_team_{team_number}"
-        
-        # Find the team sensor entity and call its update method
-        entities = _get_entities()
-        team_sensors = entities.get("team_sensors", {})
-        team_sensor = team_sensors.get(unique_id)
-        
-        if team_sensor and hasattr(team_sensor, 'update_team_year_guess'):
-            _LOGGER.debug("Updating team %s year guess to %d via entity method", team_number, year_guess)
-            team_sensor.update_team_year_guess(int(year_guess))
-        else:
-            # Fallback to direct state setting
-            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
-            entity_id = f"sensor.soundbeats_team_{team_number}"
-            state_obj = hass.states.get(entity_id)
-            if state_obj:
-                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
-                attrs["year_guess"] = int(year_guess)
-                hass.states.async_set(entity_id, state_obj.state, attrs)
+        await _update_team_attribute(call, "year_guess", "update_team_year_guess", 
+                                   value_transform=int, state_attribute="year_guess")
 
     async def update_team_betting(call):
-        team_id = call.data.get("team_id")
-        betting = call.data.get("betting")
-        if not team_id or betting is None:
-            _LOGGER.error("Missing team_id or betting")
-            return
-        
-        # Extract team number from team_id (e.g., "team_1" -> "1")
-        team_number = team_id.split('_')[-1]
-        unique_id = f"soundbeats_team_{team_number}"
-        
-        # Find the team sensor entity and call its update method
-        entities = _get_entities()
-        team_sensors = entities.get("team_sensors", {})
-        team_sensor = team_sensors.get(unique_id)
-        
-        if team_sensor and hasattr(team_sensor, 'update_team_betting'):
-            _LOGGER.debug("Updating team %s betting to %s via entity method", team_number, betting)
-            team_sensor.update_team_betting(bool(betting))
-        else:
-            # Fallback to direct state setting
-            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
-            entity_id = f"sensor.soundbeats_team_{team_number}"
-            state_obj = hass.states.get(entity_id)
-            if state_obj:
-                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
-                attrs["betting"] = bool(betting)
-                hass.states.async_set(entity_id, state_obj.state, attrs)
+        await _update_team_attribute(call, "betting", "update_team_betting", 
+                                   value_transform=bool, state_attribute="betting")
 
     async def update_team_user_id(call):
+        # Special case for user_id - it can be None, so we don't need the standard validation
         team_id = call.data.get("team_id")
         user_id = call.data.get("user_id")
         if not team_id:
             _LOGGER.error("Missing team_id")
             return
         
-        # Extract team number from team_id (e.g., "team_1" -> "1")
-        team_number = team_id.split('_')[-1]
-        unique_id = f"soundbeats_team_{team_number}"
-        
-        # Find the team sensor entity and call its update method
-        entities = _get_entities()
-        team_sensors = entities.get("team_sensors", {})
-        team_sensor = team_sensors.get(unique_id)
-        
-        if team_sensor and hasattr(team_sensor, 'update_team_user_id'):
-            _LOGGER.debug("Updating team %s user_id to %s via entity method", team_number, user_id)
-            team_sensor.update_team_user_id(user_id)
-        else:
-            # Fallback to direct state setting
-            _LOGGER.warning("Could not find team sensor entity %s, using fallback", unique_id)
-            entity_id = f"sensor.soundbeats_team_{team_number}"
-            state_obj = hass.states.get(entity_id)
-            if state_obj:
-                attrs = dict(state_obj.attributes) if state_obj.attributes else {}
-                attrs["user_id"] = user_id
-                hass.states.async_set(entity_id, state_obj.state, attrs)
+        await _update_team_attribute(call, "user_id", "update_team_user_id", 
+                                   state_attribute="user_id")
 
     # Register all services under the "soundbeats" domain
     hass.services.async_register(DOMAIN, "start_game", start_game)
