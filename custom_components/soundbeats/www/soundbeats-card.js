@@ -1521,7 +1521,7 @@ class SoundbeatsCard extends HTMLElement {
         
         .bet-result.bet-win {
           background: var(--success-color, #4caf50);
-          color: white;
+          color: black;
         }
         
         .bet-result.bet-loss {
@@ -1553,7 +1553,7 @@ class SoundbeatsCard extends HTMLElement {
         
         .result-info-positive {
           background: var(--success-color, #4caf50);
-          color: white;
+          color: black;
         }
         
         .result-info-neutral {
@@ -2101,7 +2101,7 @@ class SoundbeatsCard extends HTMLElement {
         .overview-year-badge.points-earned,
         .overview-points-badge.points-earned {
           background: #4caf50;
-          color: white;
+          color: black;
         }
         
         .overview-year-badge.no-points,
