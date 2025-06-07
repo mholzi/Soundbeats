@@ -1910,26 +1910,6 @@ class SoundbeatsCard extends HTMLElement {
           margin-top: 0;
         }
         
-        /* Horizontal Sections Container */
-        .horizontal-sections-container {
-          display: flex;
-          gap: 16px;
-          margin-bottom: 16px;
-        }
-        
-        /* Make sections inside horizontal container take equal width */
-        .horizontal-sections-container .section {
-          flex: 1;
-          margin-bottom: 0; /* Remove bottom margin since container handles spacing */
-        }
-        
-        /* Responsive design - stack vertically on smaller screens */
-        @media (max-width: 768px) {
-          .horizontal-sections-container {
-            flex-direction: column;
-          }
-        }
-        
         /* Teams Overview Section Styles */
         .teams-overview-section {
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -3037,28 +3017,25 @@ class SoundbeatsCard extends HTMLElement {
           ` : ''}
         </div>
         
-        <!-- Teams Overview and Highscore Section - Horizontal Layout -->
-        <div class="horizontal-sections-container">
-          <!-- Teams Overview Section - Always visible -->
-          <div class="section teams-overview-section">
-            <h3>
-              <ha-icon icon="mdi:trophy-outline" class="icon"></ha-icon>
-              Teams Overview
-            </h3>
-            
-            <div class="teams-overview-container">
-              ${this.renderOtherTeamsOverview()}
-            </div>
-          </div>
+        <!-- Teams Overview Section - Always visible -->
+        <div class="section teams-overview-section">
+          <h3>
+            <ha-icon icon="mdi:trophy-outline" class="icon"></ha-icon>
+            Teams Overview
+          </h3>
           
-          <!-- Highscore Section - Always visible -->
-          <div class="section highscore-section">
-            <h3>
-              <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
-              Highscores
-            </h3>
-            ${this.renderHighscores()}
+          <div class="teams-overview-container">
+            ${this.renderOtherTeamsOverview()}
           </div>
+        </div>
+        
+        <!-- Highscore Section - Always visible -->
+        <div class="section highscore-section">
+          <h3>
+            <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
+            Highscores
+          </h3>
+          ${this.renderHighscores()}
         </div>
         
         <!-- Team Section - Always visible -->
