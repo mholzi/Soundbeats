@@ -3626,6 +3626,12 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateTeamName(teamId, name) {
+    // Track recent team name changes to prevent UI from overriding them
+    if (!this._recentTeamNameChanges) {
+      this._recentTeamNameChanges = {};
+    }
+    this._recentTeamNameChanges[teamId] = { name: name.trim(), timestamp: Date.now() };
+    
     // Debounce team name updates
     this.debouncedServiceCall(`teamName_${teamId}`, () => {
       if (this.hass && name.trim()) {
@@ -3647,7 +3653,7 @@ class SoundbeatsCard extends HTMLElement {
           this.updateSplashTeamsSection('management');
         }
       }, 10);
-    }, 150); // Reduced delay for more responsive text input
+    }, 50); // Further reduced delay for more responsive text input
   }
 
   updateTeamPoints(teamId, points) {
@@ -4701,7 +4707,13 @@ class SoundbeatsCard extends HTMLElement {
           const participatingInput = managementItem.querySelector('input[type="checkbox"]');
           
           if (nameInput && document.activeElement !== nameInput) {
-            nameInput.value = team.name;
+            // Check if there's a recent team name change to avoid overriding user input
+            const recentChange = this._recentTeamNameChanges && this._recentTeamNameChanges[teamId];
+            const isRecentChange = recentChange && (Date.now() - recentChange.timestamp < 1000); // 1 second window
+            
+            if (!isRecentChange) {
+              nameInput.value = team.name;
+            }
           }
           if (participatingInput && document.activeElement !== participatingInput) {
             participatingInput.checked = team.participating;
@@ -4825,6 +4837,21 @@ class SoundbeatsCard extends HTMLElement {
     const teamsContainer = this.shadowRoot.querySelector(containerSelector);
     if (!teamsContainer) return;
     
+    // Check if user is currently editing team management - prevent updates if so
+    if (context === 'management' && this.isUserEditingTeamManagement()) {
+      return;
+    }
+    
+    // Check if there are recent team name changes - prevent full HTML regeneration if so
+    const hasRecentTeamNameChanges = this._recentTeamNameChanges && 
+      Object.values(this._recentTeamNameChanges).some(change => 
+        Date.now() - change.timestamp < 1000 // 1 second window
+      );
+    
+    if (hasRecentTeamNameChanges) {
+      return; // Don't regenerate HTML while user has pending team name changes
+    }
+
     const teamCount = this.getSelectedTeamCount();
     const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
     
