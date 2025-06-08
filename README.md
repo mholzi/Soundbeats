@@ -102,6 +102,8 @@ Here’s how to set it up:
 
 > **Pro-Tip**: To help friends connect easily, the user with admin rights (assigned to Team 1) can click the QR code icon in the top-left of the card. This will display a QR code that other players can scan with their phones to instantly open your Home Assistant address in their browser.
 
+> **Note**: In the Teams Management section, Team 1 is visually distinguished with its admin status clearly displayed. The team label appears as "Team 1:" on the first line, followed by "(Admin)" on a separate line directly beneath it, making it easy to identify which team has administrative privileges.
+
 ---
 
 ## 🏆 The Highscore System

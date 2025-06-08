@@ -1961,6 +1961,12 @@ class SoundbeatsCard extends HTMLElement {
           color: var(--primary-text-color);
         }
         
+        .team-label-container {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        
         .team-management-controls {
           display: flex;
           gap: 12px;
@@ -5242,10 +5248,14 @@ class SoundbeatsCard extends HTMLElement {
         return `
           <div class="${itemClass}" data-team="${teamId}">
             <div class="team-management-info">
-              <span class="${labelClass}">${teamId === 'team_1' ? 
-                this._ts('settings.team_label', { number: teamId.split('_')[1] }) : 
-                this._ts('settings.team_label', { number: teamId.split('_')[1] })}</span>
-              ${teamId === 'team_1' ? `<br><span class="${labelClass} admin-suffix">${this._t('settings.team_admin_suffix')}</span>` : ''}
+              ${teamId === 'team_1' ? `
+                <div class="team-label-container">
+                  <span class="${labelClass}">${this._ts('settings.team_label', { number: teamId.split('_')[1] })}</span>
+                  <span class="${labelClass} admin-suffix">${this._t('settings.team_admin_suffix')}</span>
+                </div>
+              ` : `
+                <span class="${labelClass}">${this._ts('settings.team_label', { number: teamId.split('_')[1] })}</span>
+              `}
             </div>
             <div class="team-management-controls">
               <input type="text" class="${inputClass}" placeholder="${this._t('settings.team_name_placeholder')}" value="${team.name}" 
