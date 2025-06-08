@@ -222,6 +222,91 @@ class TestSoundbeatsGameService:
         assert call_args[0][2]["splash_override"] == False
         assert "splash_testing_mode" not in call_args[0][2]
 
+    async def test_sensor_toggle_splash_three_state_cycle(self):
+        """Test the sensor's direct toggle_splash_override method implements three-state cycle."""
+        from custom_components.soundbeats.sensor import SoundbeatsSensor
+        
+        # Create sensor instance
+        sensor = SoundbeatsSensor()
+        
+        # Mock async_write_ha_state to avoid requiring hass
+        sensor.async_write_ha_state = lambda: None
+        
+        # Initial state
+        assert sensor._splash_override == False
+        assert sensor._splash_testing_mode == False
+        
+        # First toggle: Enable testing mode
+        sensor.toggle_splash_override()
+        assert sensor._splash_override == True
+        assert sensor._splash_testing_mode == True
+        
+        # Second toggle: Keep override but disable testing mode
+        sensor.toggle_splash_override()
+        assert sensor._splash_override == True
+        assert sensor._splash_testing_mode == False
+        
+        # Third toggle: Disable override completely
+        sensor.toggle_splash_override()
+        assert sensor._splash_override == False
+        assert sensor._splash_testing_mode == False
+        
+        # Verify it cycles back to the beginning
+        sensor.toggle_splash_override()
+        assert sensor._splash_override == True
+        assert sensor._splash_testing_mode == True
+
+    async def test_sensor_extra_state_attributes_splash_testing_mode(self):
+        """Test that extra_state_attributes includes splash_testing_mode when appropriate."""
+        from custom_components.soundbeats.sensor import SoundbeatsSensor
+        
+        sensor = SoundbeatsSensor()
+        
+        # Mock async_write_ha_state to avoid requiring hass
+        sensor.async_write_ha_state = lambda: None
+        
+        # Initially, splash_testing_mode should not be included
+        attrs = sensor.extra_state_attributes
+        assert "splash_testing_mode" not in attrs
+        assert attrs["splash_override"] == False
+        
+        # First toggle: both should be in attributes
+        sensor.toggle_splash_override()
+        attrs = sensor.extra_state_attributes
+        assert attrs["splash_override"] == True
+        assert attrs["splash_testing_mode"] == True
+        
+        # Second toggle: splash_testing_mode should still be included but False
+        sensor.toggle_splash_override()
+        attrs = sensor.extra_state_attributes
+        assert attrs["splash_override"] == True
+        assert attrs["splash_testing_mode"] == False
+        
+        # Third toggle: splash_testing_mode should not be included when override is False
+        sensor.toggle_splash_override()
+        attrs = sensor.extra_state_attributes
+        assert attrs["splash_override"] == False
+        assert "splash_testing_mode" not in attrs
+
+    async def test_sensor_clear_splash_override(self):
+        """Test that clear_splash_override resets both attributes."""
+        from custom_components.soundbeats.sensor import SoundbeatsSensor
+        
+        sensor = SoundbeatsSensor()
+        
+        # Mock async_write_ha_state to avoid requiring hass
+        sensor.async_write_ha_state = lambda: None
+        
+        # Set to testing mode
+        sensor.toggle_splash_override()
+        assert sensor._splash_override == True
+        assert sensor._splash_testing_mode == True
+        
+        # Clear should reset both
+        sensor.clear_splash_override()
+        assert sensor._splash_override == False
+        assert sensor._splash_testing_mode == False
+
 
 class TestSoundbeatsTeamService:
     """Test the SoundbeatsTeamService class."""
