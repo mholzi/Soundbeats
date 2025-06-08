@@ -3427,10 +3427,10 @@ class SoundbeatsCard extends HTMLElement {
               <div class="song-artist">${this.getCurrentSong().artist}</div>
               <div class="song-year">${this.getCurrentSong().year}</div>
               ${this.getCurrentSong().fun_fact ? `
-                <div class="song-fun-fact">
+                <div class="song-fun-fact" role="complementary" aria-label="${this._t('ui.fun_fact')}">
                   <div class="song-fun-fact-content">
                     <div class="song-fun-fact-label">
-                      <ha-icon icon="mdi:brain"></ha-icon> 
+                      <ha-icon icon="mdi:brain" aria-hidden="true"></ha-icon> 
                       ${this._t('ui.fun_fact')}
                     </div>
                     <div class="song-fun-fact-text">${this.getCurrentSong().fun_fact}</div>
