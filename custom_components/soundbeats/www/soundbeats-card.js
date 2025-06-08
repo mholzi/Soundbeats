@@ -4958,7 +4958,7 @@ class SoundbeatsCard extends HTMLElement {
                     onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
                     ${isLoadingUsers ? 'disabled' : ''}>
               <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
-              ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+              ${users.filter(user => !user.name.startsWith('Home Assistant') && !user.name.startsWith('Supervisor')).map(user => 
                 `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
                   ${user.name}
                 </option>`
@@ -4989,7 +4989,7 @@ class SoundbeatsCard extends HTMLElement {
                 ${isLoadingUsers ? 'disabled' : ''}
               >
                 <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
-                ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+                ${users.filter(user => !user.name.startsWith('Home Assistant') && !user.name.startsWith('Supervisor')).map(user => 
                   `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
                     ${user.name}
                   </option>`
@@ -5143,11 +5143,11 @@ class SoundbeatsCard extends HTMLElement {
         
         // Only update if users have changed
         const currentOptions = Array.from(select.options).map(opt => opt.value).join(',');
-        const newOptions = ['', ...users.filter(user => !user.name.startsWith('Home Assistant')).map(u => u.id)].join(',');
+        const newOptions = ['', ...users.filter(user => !user.name.startsWith('Home Assistant') && !user.name.startsWith('Supervisor')).map(u => u.id)].join(',');
         
         if (currentOptions !== newOptions) {
           select.innerHTML = `<option value="">${this._t('ui.select_user')}</option>`;
-          users.filter(user => !user.name.startsWith('Home Assistant')).forEach(user => {
+          users.filter(user => !user.name.startsWith('Home Assistant') && !user.name.startsWith('Supervisor')).forEach(user => {
             const option = document.createElement('option');
             option.value = user.id;
             option.textContent = user.name;
@@ -5211,7 +5211,7 @@ class SoundbeatsCard extends HTMLElement {
           // Update options
           select.innerHTML = `
             <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
-            ${users.filter(user => !user.name.startsWith('Home Assistant')).map(user => 
+            ${users.filter(user => !user.name.startsWith('Home Assistant') && !user.name.startsWith('Supervisor')).map(user => 
               `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
                 ${user.name}
               </option>`
