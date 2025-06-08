@@ -176,15 +176,51 @@ class TestSoundbeatsGameService:
         hass.states.get.return_value = state_obj
         hass.states.async_set = MagicMock()
         
-        # Test
+        # Test first toggle (should enable testing mode)
         await game_service.toggle_splash()
         
-        # Verify state was updated with toggled splash_override
+        # Verify state was updated with splash_override and splash_testing_mode
         hass.states.async_set.assert_called_once()
         call_args = hass.states.async_set.call_args
         assert call_args[0][0] == "sensor.soundbeats_game_status"
         assert call_args[0][1] == "ready"
         assert call_args[0][2]["splash_override"] == True
+        assert call_args[0][2]["splash_testing_mode"] == True
+        
+    async def test_toggle_splash_three_state_cycle(self, game_service, hass):
+        """Test the three-state toggle cycle for splash screen."""
+        # Setup mock state object
+        state_obj = MagicMock()
+        state_obj.state = "ready"
+        state_obj.attributes = {"splash_override": False}
+        hass.states.get.return_value = state_obj
+        hass.states.async_set = MagicMock()
+        
+        # First toggle: Enable testing mode
+        await game_service.toggle_splash()
+        call_args = hass.states.async_set.call_args
+        assert call_args[0][2]["splash_override"] == True
+        assert call_args[0][2]["splash_testing_mode"] == True
+        
+        # Update state for second toggle
+        state_obj.attributes = {"splash_override": True, "splash_testing_mode": True}
+        hass.states.async_set.reset_mock()
+        
+        # Second toggle: Keep override but disable testing mode
+        await game_service.toggle_splash()
+        call_args = hass.states.async_set.call_args
+        assert call_args[0][2]["splash_override"] == True
+        assert call_args[0][2]["splash_testing_mode"] == False
+        
+        # Update state for third toggle
+        state_obj.attributes = {"splash_override": True, "splash_testing_mode": False}
+        hass.states.async_set.reset_mock()
+        
+        # Third toggle: Disable override completely
+        await game_service.toggle_splash()
+        call_args = hass.states.async_set.call_args
+        assert call_args[0][2]["splash_override"] == False
+        assert "splash_testing_mode" not in call_args[0][2]
 
 
 class TestSoundbeatsTeamService:

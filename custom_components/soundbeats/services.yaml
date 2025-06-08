@@ -180,5 +180,5 @@ update_team_user_id:
 
 toggle_splash:
   name: Toggle Splash Screen
-  description: Toggle the splash screen display for testing purposes - will show splash screen regardless of configuration state until toggled off or game is started
+  description: Toggle the splash screen display for testing purposes. Cycles through three states - first call shows splash with missing variable simulation, second call shows splash in ready state, third call disables splash override
   fields: {}

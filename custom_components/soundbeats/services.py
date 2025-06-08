@@ -406,7 +406,21 @@ class SoundbeatsGameService:
                 state_obj = self.hass.states.get("sensor.soundbeats_game_status")
                 if state_obj:
                     current_attributes = dict(state_obj.attributes)
-                    current_attributes["splash_override"] = not current_attributes.get("splash_override", False)
+                    current_override = current_attributes.get("splash_override", False)
+                    
+                    if not current_override:
+                        # First toggle: Enable splash override with testing mode (simulate missing variables)
+                        current_attributes["splash_override"] = True
+                        current_attributes["splash_testing_mode"] = True
+                    elif current_attributes.get("splash_testing_mode", False):
+                        # Second toggle: Keep splash override but disable testing mode (show ready state)
+                        current_attributes["splash_override"] = True
+                        current_attributes["splash_testing_mode"] = False
+                    else:
+                        # Third toggle: Disable splash override completely
+                        current_attributes["splash_override"] = False
+                        current_attributes.pop("splash_testing_mode", None)
+                    
                     self.hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, current_attributes)
                 else:
                     _LOGGER.warning("Could not find main game status sensor for splash toggle")
