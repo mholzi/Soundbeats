@@ -76,109 +76,96 @@ async def _register_services(hass: HomeAssistant) -> None:
     team_service = SoundbeatsTeamService(hass)
     config_service = SoundbeatsConfigService(hass)
 
-    async def start_game(call):
-        """Start a new Soundbeats game session."""
-        await game_service.start_game()
+    # Define service configurations
+    # Format: service_name -> (handler_function, call_data_params, extra_kwargs)
+    simple_services = {
+        # Simple game services that don't need call data
+        "start_game": game_service.start_game,
+        "stop_game": game_service.stop_game, 
+        "reset_game": game_service.reset_game,
+        "next_song": game_service.next_song,
+        "toggle_splash": game_service.toggle_splash,
+    }
+    
+    # Services that extract a single parameter from call data
+    parameter_services = {
+        "update_countdown_timer_length": (config_service.update_countdown_timer_length, "timer_length"),
+        "update_audio_player": (config_service.update_audio_player, "audio_player"),
+        "update_team_count": (config_service.update_team_count, "team_count"),
+    }
+    
+    # Team services that use update_team_attribute
+    team_services = {
+        "update_team_name": {
+            "attribute": "name",
+            "method": "update_team_name",
+        },
+        "update_team_points": {
+            "attribute": "points", 
+            "method": "update_team_points",
+            "value_transform": int,
+            "state_attribute": "points",
+        },
+        "update_team_participating": {
+            "attribute": "participating",
+            "method": "update_team_participating", 
+            "value_transform": bool,
+            "state_attribute": "participating",
+        },
+        "update_team_year_guess": {
+            "attribute": "year_guess",
+            "method": "update_team_year_guess",
+            "value_transform": int,
+            "state_attribute": "year_guess",
+        },
+        "update_team_betting": {
+            "attribute": "betting",
+            "method": "update_team_betting",
+            "value_transform": bool,
+            "state_attribute": "betting",
+        },
+        "update_team_user_id": {
+            "attribute": "user_id",
+            "method": "update_team_user_id",
+            "state_attribute": "user_id",
+        },
+    }
 
-    async def stop_game(call):
-        """Stop the current Soundbeats game session."""
-        await game_service.stop_game()
+    # Create wrapper functions and register simple services
+    for service_name, handler in simple_services.items():
+        async def service_wrapper(call, bound_handler=handler):
+            await bound_handler()
+        hass.services.async_register(DOMAIN, service_name, service_wrapper)
 
-    async def reset_game(call):
-        """Reset the Soundbeats game to initial state."""
-        await game_service.reset_game()
+    # Create wrapper functions and register parameter services
+    for service_name, (handler, param_name) in parameter_services.items():
+        async def service_wrapper(call, bound_handler=handler, param=param_name):
+            value = call.data.get(param)
+            await bound_handler(value)
+        hass.services.async_register(DOMAIN, service_name, service_wrapper)
 
-    async def next_song(call):
-        """Skip to the next song and start the countdown timer."""
-        await game_service.next_song()
-
-    async def update_team_name(call):
-        """Update the name of a team."""
-        team_id = call.data.get("team_id")
-        name = call.data.get("name")
-        await team_service.update_team_attribute(
-            team_id, "name", name, "update_team_name"
-        )
-
-    async def update_team_points(call):
-        """Update the points of a team."""
-        team_id = call.data.get("team_id")
-        points = call.data.get("points")
-        await team_service.update_team_attribute(
-            team_id, "points", points, "update_team_points", 
-            value_transform=int, state_attribute="points"
-        )
-
-    async def update_team_participating(call):
-        """Update whether a team is participating in the game."""
-        team_id = call.data.get("team_id")
-        participating = call.data.get("participating")
-        await team_service.update_team_attribute(
-            team_id, "participating", participating, "update_team_participating", 
-            value_transform=bool, state_attribute="participating"
-        )
-
-    async def update_team_year_guess(call):
-        """Update the year guess of a team."""
-        team_id = call.data.get("team_id")
-        year_guess = call.data.get("year_guess")
-        await team_service.update_team_attribute(
-            team_id, "year_guess", year_guess, "update_team_year_guess", 
-            value_transform=int, state_attribute="year_guess"
-        )
-
-    async def update_team_betting(call):
-        """Update whether a team is betting on their guess."""
-        team_id = call.data.get("team_id")
-        betting = call.data.get("betting")
-        await team_service.update_team_attribute(
-            team_id, "betting", betting, "update_team_betting", 
-            value_transform=bool, state_attribute="betting"
-        )
-
-    async def update_team_user_id(call):
-        """Update the assigned user ID for a team."""
-        team_id = call.data.get("team_id")
-        user_id = call.data.get("user_id")
-        await team_service.update_team_attribute(
-            team_id, "user_id", user_id, "update_team_user_id", 
-            state_attribute="user_id"
-        )
-
-    async def update_countdown_timer_length(call):
-        """Update the countdown timer length in seconds."""
-        timer_length = call.data.get("timer_length")
-        await config_service.update_countdown_timer_length(timer_length)
-
-    async def update_audio_player(call):
-        """Update the selected audio player for the game."""
-        audio_player = call.data.get("audio_player")
-        await config_service.update_audio_player(audio_player)
-
-    async def update_team_count(call):
-        """Update the number of teams participating in the game."""
-        team_count = call.data.get("team_count")
-        await config_service.update_team_count(team_count)
-
-    async def toggle_splash(call):
-        """Toggle the splash screen override for testing purposes."""
-        await game_service.toggle_splash()
-
-    # Register all services under the "soundbeats" domain
-    hass.services.async_register(DOMAIN, "start_game", start_game)
-    hass.services.async_register(DOMAIN, "stop_game", stop_game)
-    hass.services.async_register(DOMAIN, "reset_game", reset_game)
-    hass.services.async_register(DOMAIN, "next_song", next_song)
-    hass.services.async_register(DOMAIN, "update_team_name", update_team_name)
-    hass.services.async_register(DOMAIN, "update_team_points", update_team_points)
-    hass.services.async_register(DOMAIN, "update_team_participating", update_team_participating)
-    hass.services.async_register(DOMAIN, "update_team_year_guess", update_team_year_guess)
-    hass.services.async_register(DOMAIN, "update_team_betting", update_team_betting)
-    hass.services.async_register(DOMAIN, "update_team_user_id", update_team_user_id)
-    hass.services.async_register(DOMAIN, "update_countdown_timer_length", update_countdown_timer_length)
-    hass.services.async_register(DOMAIN, "update_audio_player", update_audio_player)
-    hass.services.async_register(DOMAIN, "update_team_count", update_team_count)
-    hass.services.async_register(DOMAIN, "toggle_splash", toggle_splash)
+    # Create wrapper functions and register team services
+    for service_name, config in team_services.items():
+        async def service_wrapper(call, service_config=config):
+            team_id = call.data.get("team_id")
+            value = call.data.get(service_config["attribute"])
+            
+            kwargs = {
+                "team_id": team_id,
+                "attribute_name": service_config["attribute"],
+                "value": value,
+                "method_name": service_config["method"],
+            }
+            
+            # Add optional parameters if present
+            if "value_transform" in service_config:
+                kwargs["value_transform"] = service_config["value_transform"]
+            if "state_attribute" in service_config:
+                kwargs["state_attribute"] = service_config["state_attribute"]
+                
+            await team_service.update_team_attribute(**kwargs)
+            
+        hass.services.async_register(DOMAIN, service_name, service_wrapper)
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry and remove services if no entries remain."""

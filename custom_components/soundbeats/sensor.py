@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Dict, Callable, Optional
 
 from homeassistant.components.sensor import SensorEntity, RestoreEntity
 from homeassistant.config_entries import ConfigEntry
@@ -18,6 +18,32 @@ from .security import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class SoundbeatsRestoreSensorMixin:
+    """Mixin that provides common state restoration functionality for Soundbeats sensors."""
+    
+    async def async_added_to_hass(self) -> None:
+        """Called when entity is added to hass."""
+        await super().async_added_to_hass()
+        
+        # Restore previous state if available
+        if (last_state := await self.async_get_last_state()) is not None:
+            await self._restore_state(last_state)
+    
+    async def _restore_state(self, last_state) -> None:
+        """Restore state from last known state. Should be overridden by subclasses."""
+        try:
+            # Call the restore method if it exists
+            if hasattr(self, '_restore_from_state'):
+                self._restore_from_state(last_state)
+        except (ValueError, TypeError, KeyError) as e:
+            # Call the fallback method if it exists  
+            if hasattr(self, '_restore_fallback'):
+                self._restore_fallback(e)
+            else:
+                _LOGGER.warning("Could not restore %s state: %s, using defaults", 
+                              getattr(self, '_attr_name', 'sensor'), e)
 
 
 async def async_setup_entry(
@@ -125,7 +151,7 @@ class SoundbeatsSensor(SensorEntity):
         _LOGGER.debug("Updating Soundbeats main sensor")
 
 
-class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
+class SoundbeatsTeamSensor(SoundbeatsRestoreSensorMixin, SensorEntity, RestoreEntity):
     """Representation of a Soundbeats team sensor."""
 
     def __init__(self, team_number: int) -> None:
@@ -143,57 +169,53 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
         self._last_round_points = 0
         self._user_id = None
 
-    async def async_added_to_hass(self) -> None:
-        """Called when entity is added to hass."""
-        await super().async_added_to_hass()
+    def _restore_from_state(self, last_state) -> None:
+        """Restore team state from last known state."""
+        # Restore team name from the state
+        self._team_name = last_state.state
+        _LOGGER.debug("Restored team %d name: %s", self._team_number, self._team_name)
         
-        # Restore previous state if available
-        if (last_state := await self.async_get_last_state()) is not None:
-            try:
-                # Restore team name from the state
-                self._team_name = last_state.state
-                _LOGGER.debug("Restored team %d name: %s", self._team_number, self._team_name)
-                
-                # Restore attributes if available
-                if last_state.attributes:
-                    if "points" in last_state.attributes:
-                        self._points = int(last_state.attributes["points"])
-                        _LOGGER.debug("Restored team %d points: %d", self._team_number, self._points)
-                    
-                    if "participating" in last_state.attributes:
-                        self._participating = bool(last_state.attributes["participating"])
-                        _LOGGER.debug("Restored team %d participating: %s", self._team_number, self._participating)
-                    
-                    if "year_guess" in last_state.attributes:
-                        self._year_guess = int(last_state.attributes["year_guess"])
-                        _LOGGER.debug("Restored team %d year guess: %d", self._team_number, self._year_guess)
-                    
-                    if "betting" in last_state.attributes:
-                        self._betting = bool(last_state.attributes["betting"])
-                        _LOGGER.debug("Restored team %d betting: %s", self._team_number, self._betting)
-                    
-                    if "last_round_betting" in last_state.attributes:
-                        self._last_round_betting = bool(last_state.attributes["last_round_betting"])
-                        _LOGGER.debug("Restored team %d last round betting: %s", self._team_number, self._last_round_betting)
-                    
-                    if "last_round_points" in last_state.attributes:
-                        self._last_round_points = int(last_state.attributes["last_round_points"])
-                        _LOGGER.debug("Restored team %d last round points: %s", self._team_number, self._last_round_points)
-                    
-                    if "user_id" in last_state.attributes:
-                        self._user_id = last_state.attributes["user_id"]
-                        _LOGGER.debug("Restored team %d user_id: %s", self._team_number, self._user_id)
-                        
-            except (ValueError, TypeError, KeyError) as e:
-                _LOGGER.warning("Could not restore team %d state: %s, using defaults", self._team_number, e)
-                self._team_name = f"Team {self._team_number}"
-                self._points = 0
-                self._participating = True
-                self._year_guess = 1990
-                self._betting = False
-                self._last_round_betting = False
-                self._last_round_points = 0
-                self._user_id = None
+        # Restore attributes if available
+        if last_state.attributes:
+            if "points" in last_state.attributes:
+                self._points = int(last_state.attributes["points"])
+                _LOGGER.debug("Restored team %d points: %d", self._team_number, self._points)
+            
+            if "participating" in last_state.attributes:
+                self._participating = bool(last_state.attributes["participating"])
+                _LOGGER.debug("Restored team %d participating: %s", self._team_number, self._participating)
+            
+            if "year_guess" in last_state.attributes:
+                self._year_guess = int(last_state.attributes["year_guess"])
+                _LOGGER.debug("Restored team %d year guess: %d", self._team_number, self._year_guess)
+            
+            if "betting" in last_state.attributes:
+                self._betting = bool(last_state.attributes["betting"])
+                _LOGGER.debug("Restored team %d betting: %s", self._team_number, self._betting)
+            
+            if "last_round_betting" in last_state.attributes:
+                self._last_round_betting = bool(last_state.attributes["last_round_betting"])
+                _LOGGER.debug("Restored team %d last round betting: %s", self._team_number, self._last_round_betting)
+            
+            if "last_round_points" in last_state.attributes:
+                self._last_round_points = int(last_state.attributes["last_round_points"])
+                _LOGGER.debug("Restored team %d last round points: %s", self._team_number, self._last_round_points)
+            
+            if "user_id" in last_state.attributes:
+                self._user_id = last_state.attributes["user_id"]
+                _LOGGER.debug("Restored team %d user_id: %s", self._team_number, self._user_id)
+
+    def _restore_fallback(self, error) -> None:
+        """Fallback to defaults if restoration fails."""
+        _LOGGER.warning("Could not restore team %d state: %s, using defaults", self._team_number, error)
+        self._team_name = f"Team {self._team_number}"
+        self._points = 0
+        self._participating = True
+        self._year_guess = 1990
+        self._betting = False
+        self._last_round_betting = False
+        self._last_round_points = 0
+        self._user_id = None
 
     @property
     def state(self) -> str:
@@ -267,7 +289,7 @@ class SoundbeatsTeamSensor(SensorEntity, RestoreEntity):
         _LOGGER.debug("Updating Soundbeats team %d sensor", self._team_number)
 
 
-class SoundbeatsCountdownTimerSensor(SensorEntity, RestoreEntity):
+class SoundbeatsCountdownTimerSensor(SoundbeatsRestoreSensorMixin, SensorEntity, RestoreEntity):
     """Representation of a Soundbeats countdown timer sensor."""
 
     def __init__(self) -> None:
@@ -278,18 +300,15 @@ class SoundbeatsCountdownTimerSensor(SensorEntity, RestoreEntity):
         self._attr_unit_of_measurement = "s"
         self._timer_length = 30
 
-    async def async_added_to_hass(self) -> None:
-        """Called when entity is added to hass."""
-        await super().async_added_to_hass()
-        
-        # Restore previous state if available
-        if (last_state := await self.async_get_last_state()) is not None:
-            try:
-                self._timer_length = int(last_state.state)
-                _LOGGER.debug("Restored countdown timer length: %d", self._timer_length)
-            except (ValueError, TypeError):
-                _LOGGER.warning("Could not restore countdown timer state, using default")
-                self._timer_length = 30
+    def _restore_from_state(self, last_state) -> None:
+        """Restore countdown timer state from last known state."""
+        self._timer_length = int(last_state.state)
+        _LOGGER.debug("Restored countdown timer length: %d", self._timer_length)
+
+    def _restore_fallback(self, error) -> None:
+        """Fallback to defaults if restoration fails."""
+        _LOGGER.warning("Could not restore countdown timer state, using default")
+        self._timer_length = 30
 
     @property
     def state(self) -> int:
@@ -548,7 +567,7 @@ class SoundbeatsGameModeSensor(SensorEntity):
         _LOGGER.debug("Updating Soundbeats game mode sensor")
 
 
-class SoundbeatsCurrentSongSensor(SensorEntity, RestoreEntity):
+class SoundbeatsCurrentSongSensor(SoundbeatsRestoreSensorMixin, SensorEntity, RestoreEntity):
     """Representation of a Soundbeats current song sensor."""
 
     def __init__(self) -> None:
@@ -559,17 +578,13 @@ class SoundbeatsCurrentSongSensor(SensorEntity, RestoreEntity):
         self._current_song_data = None
         self._selected_media_player = None
 
-    async def async_added_to_hass(self) -> None:
-        """Called when entity is added to hass."""
-        await super().async_added_to_hass()
-        
-        # Restore previous state if available
-        if (last_state := await self.async_get_last_state()) is not None:
-            if last_state.state != "None":
-                self._selected_media_player = last_state.state
-                _LOGGER.debug("Restored selected media player: %s", self._selected_media_player)
-            else:
-                _LOGGER.debug("Previous selected media player was None, keeping default")
+    def _restore_from_state(self, last_state) -> None:
+        """Restore current song state from last known state."""
+        if last_state.state != "None":
+            self._selected_media_player = last_state.state
+            _LOGGER.debug("Restored selected media player: %s", self._selected_media_player)
+        else:
+            _LOGGER.debug("Previous selected media player was None, keeping default")
 
     @property
     def state(self) -> str:
@@ -624,7 +639,7 @@ class SoundbeatsCurrentSongSensor(SensorEntity, RestoreEntity):
         _LOGGER.debug("Updating Soundbeats current song sensor")
 
 
-class SoundbeatsRoundCounterSensor(SensorEntity, RestoreEntity):
+class SoundbeatsRoundCounterSensor(SoundbeatsRestoreSensorMixin, SensorEntity, RestoreEntity):
     """Representation of a Soundbeats round counter sensor."""
 
     def __init__(self) -> None:
@@ -635,18 +650,15 @@ class SoundbeatsRoundCounterSensor(SensorEntity, RestoreEntity):
         self._attr_unit_of_measurement = None
         self._round_count = 0
 
-    async def async_added_to_hass(self) -> None:
-        """Called when entity is added to hass."""
-        await super().async_added_to_hass()
-        
-        # Restore previous state if available
-        if (last_state := await self.async_get_last_state()) is not None:
-            try:
-                self._round_count = int(last_state.state)
-                _LOGGER.debug("Restored round counter: %d", self._round_count)
-            except (ValueError, TypeError):
-                _LOGGER.warning("Could not restore round counter state, using default")
-                self._round_count = 0
+    def _restore_from_state(self, last_state) -> None:
+        """Restore round counter state from last known state."""
+        self._round_count = int(last_state.state)
+        _LOGGER.debug("Restored round counter: %d", self._round_count)
+
+    def _restore_fallback(self, error) -> None:
+        """Fallback to defaults if restoration fails."""
+        _LOGGER.warning("Could not restore round counter state, using default")
+        self._round_count = 0
 
     @property
     def state(self) -> int:
@@ -722,7 +734,7 @@ class SoundbeatsPlayedSongsSensor(SensorEntity):
         _LOGGER.debug("Updating Soundbeats played songs sensor")
 
 
-class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
+class SoundbeatsHighscoreSensor(SoundbeatsRestoreSensorMixin, SensorEntity, RestoreEntity):
     """Representation of a Soundbeats highscore sensor."""
 
     def __init__(self) -> None:
@@ -735,29 +747,25 @@ class SoundbeatsHighscoreSensor(SensorEntity, RestoreEntity):
         self._round_highscores = {}
         self._played_song_ids = []
 
-    async def async_added_to_hass(self) -> None:
-        """Called when entity is added to hass."""
-        await super().async_added_to_hass()
+    def _restore_from_state(self, last_state) -> None:
+        """Restore highscore state from last known state."""
+        # Convert state back to internal integer representation (* 100)
+        restored_value = float(last_state.state)
+        self._absolute_highscore = int(restored_value * 100)
+        _LOGGER.debug("Restored average highscore: %.2f (internal: %d)", restored_value, self._absolute_highscore)
         
-        # Restore previous state if available
-        if (last_state := await self.async_get_last_state()) is not None:
-            try:
-                # Convert state back to internal integer representation (* 100)
-                restored_value = float(last_state.state)
-                self._absolute_highscore = int(restored_value * 100)
-                _LOGGER.debug("Restored average highscore: %.2f (internal: %d)", restored_value, self._absolute_highscore)
-                
-                # Restore round highscores from attributes
-                if last_state.attributes:
-                    for key, value in last_state.attributes.items():
-                        if key.startswith("round_") and isinstance(value, (int, float)):
-                            self._round_highscores[key] = int(value)
-                    _LOGGER.debug("Restored round highscores: %s", self._round_highscores)
-                    
-            except (ValueError, TypeError):
-                _LOGGER.warning("Could not restore highscore state, using defaults")
-                self._absolute_highscore = 0
-                self._round_highscores = {}
+        # Restore round highscores from attributes
+        if last_state.attributes:
+            for key, value in last_state.attributes.items():
+                if key.startswith("round_") and isinstance(value, (int, float)):
+                    self._round_highscores[key] = int(value)
+            _LOGGER.debug("Restored round highscores: %s", self._round_highscores)
+
+    def _restore_fallback(self, error) -> None:
+        """Fallback to defaults if restoration fails."""
+        _LOGGER.warning("Could not restore highscore state, using defaults")
+        self._absolute_highscore = 0
+        self._round_highscores = {}
 
     @property
     def state(self) -> float:
