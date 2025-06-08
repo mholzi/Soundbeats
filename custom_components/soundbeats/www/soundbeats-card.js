@@ -2691,7 +2691,7 @@ class SoundbeatsCard extends HTMLElement {
           align-items: center;
           gap: 8px;
           min-height: 2em;
-          justify-content: center;
+          justify-content: flex-start;
         }
         
         .crown-icon {
@@ -3847,6 +3847,13 @@ class SoundbeatsCard extends HTMLElement {
     `;
     
     if (hasValidTeamCount) {
+      // Show admin warning in team management section
+      html += `
+        <div class="admin-warning">
+          <ha-icon icon="mdi:shield-account" class="warning-icon"></ha-icon>
+          <span><strong>Important:</strong> ${this._t('settings.team_admin_notice')}</span>
+        </div>`;
+      
       html += this.renderTeamsContent('management');
     } else {
       html += `
