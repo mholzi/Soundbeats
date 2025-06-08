@@ -55,12 +55,12 @@ class SoundbeatsCard extends HTMLElement {
     this._loadTranslations();
   }
 
-  setConfig(config) {
+  async setConfig(config) {
     if (!config) {
       throw new Error('Invalid configuration');
     }
     this.config = config;
-    this.render();
+    await this.render();
   }
 
   // Translation system methods
@@ -110,10 +110,10 @@ class SoundbeatsCard extends HTMLElement {
     return text;
   }
 
-  _toggleLanguage() {
+  async _toggleLanguage() {
     this._currentLanguage = this._currentLanguage === 'en' ? 'de' : 'en';
     localStorage.setItem('soundbeats-language', this._currentLanguage);
-    this.render();
+    await this.render();
   }
 
   // Unified cache management helpers
