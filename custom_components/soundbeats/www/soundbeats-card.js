@@ -828,7 +828,7 @@ class SoundbeatsCard extends HTMLElement {
         this._validationErrors = [];
         this.updateSplashValidationState();
       }, 3000);
-    } else if (missingVariables.length === 0 || splashOverride) {
+    } else if ((missingVariables.length === 0 || splashOverride) && !splashTestingMode) {
       // Everything is configured OR splash is forced (and not in testing mode) - transition to game UI and reset game state
       // Call service to reset game state (points, played songs, round counter)
       if (this.hass) {

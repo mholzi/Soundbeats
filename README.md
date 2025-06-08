@@ -139,11 +139,14 @@ service: soundbeats.toggle_splash
 
 #### Behavior
 * **First call**: Forces the splash screen to appear with simulated missing variables (shows setup/configuration state)
+  * The splash screen will remain in this state until the next toggle, even if the game is fully configured
+  * The "Start Game" button will show validation errors instead of launching the game
 * **Second call**: Forces the splash screen to appear in ready state (shows ready-to-launch state)
+  * Shows the splash screen with all settings appearing as configured and ready to launch
 * **Third call**: Disables the forced splash screen and returns to normal behavior
 * **Game start**: The forced splash screen is automatically cleared when a game is started (via the Launch Game button)
 
-> **Note**: This is a testing feature and the splash override state does not persist across Home Assistant restarts.
+> **Note**: This is a testing feature and the splash override state does not persist across Home Assistant restarts. When in testing mode (first state), the simulated missing variables take precedence over actual configuration status.
 
 ---
 
