@@ -671,11 +671,6 @@ class SoundbeatsCard extends HTMLElement {
     `;
 
     // Audio Player Input (always show)
-    const mediaPlayers = this.getMediaPlayers();
-    const currentSelection = this.getSelectedAudioPlayer();
-    const isActuallyLoading = this._isLoadingMediaPlayers;
-    const hasNoPlayers = mediaPlayers.length === 0 && !isActuallyLoading;
-    
     inputsHtml += `
       <div class="splash-input-section ${this.hasValidationError('audioPlayer') ? 'error' : ''}">
         <div class="splash-input-header">
@@ -683,14 +678,7 @@ class SoundbeatsCard extends HTMLElement {
           <h3>${this._t('settings.audio_player')}</h3>
         </div>
         <p class="input-description">${this._t('settings.audio_player_description')}</p>
-        <select class="splash-audio-select" onchange="this.getRootNode().host.updateAudioPlayer(this.value)" onfocus="this.getRootNode().host._trackAudioPlayerInteraction('.splash-audio-select')" onmousedown="this.getRootNode().host._trackAudioPlayerInteraction('.splash-audio-select')" ${isActuallyLoading ? 'disabled' : ''}>
-          <option value="">${isActuallyLoading ? this._t('ui.loading_audio_players') : hasNoPlayers ? this._t('ui.no_audio_players') : this._t('ui.select_audio_player')}</option>
-          ${mediaPlayers.map(player => 
-            `<option value="${player.entity_id}" ${currentSelection === player.entity_id ? 'selected' : ''}>
-              ${player.name} - ${player.entity_id}
-            </option>`
-          ).join('')}
-        </select>
+        ${this._renderAudioPlayerSelect('splash-audio-select')}
       </div>
     `;
 
@@ -742,8 +730,6 @@ class SoundbeatsCard extends HTMLElement {
 
     // Timer Input (only show if missing - optional)
     if (missingMap.timer) {
-      const currentTimer = this.getCountdownTimerLength();
-      
       inputsHtml += `
         <div class="splash-input-section ${this.hasValidationError('timer') ? 'error' : ''}">
           <div class="splash-input-header">
@@ -752,10 +738,7 @@ class SoundbeatsCard extends HTMLElement {
           </div>
           <p class="input-description">${this._t('settings.countdown_description')}</p>
           <div class="splash-timer-control">
-            <input type="range" class="splash-timer-slider" min="5" max="300" step="5" 
-                   value="${currentTimer}"
-                   oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + this.getRootNode().host._t('defaults.seconds_suffix');">
-            <span class="splash-timer-value">${currentTimer}${this._t('defaults.seconds_suffix')}</span>
+            ${this._renderTimerSlider('splash-timer-slider')}
           </div>
         </div>
       `;
@@ -799,6 +782,57 @@ class SoundbeatsCard extends HTMLElement {
   _hasRecentAudioPlayerInteraction(selector) {
     const interaction = this._recentAudioPlayerInteractions && this._recentAudioPlayerInteractions[selector];
     return interaction && (Date.now() - interaction.timestamp < 3000); // 3 second window
+  }
+
+  // Reusable function for rendering audio player dropdown
+  _renderAudioPlayerSelect(className = 'audio-player-select') {
+    const mediaPlayers = this.getMediaPlayers();
+    const currentSelection = this.getSelectedAudioPlayer();
+    const isActuallyLoading = this._isLoadingMediaPlayers;
+    const hasNoPlayers = mediaPlayers.length === 0 && !isActuallyLoading;
+
+    // Determine the text for the placeholder option
+    const placeholderText = isActuallyLoading 
+        ? this._t('ui.loading_audio_players') 
+        : hasNoPlayers 
+            ? this._t('ui.no_audio_players') 
+            : this._t('ui.select_audio_player');
+
+    return `
+        <select 
+            class="${className}" 
+            onchange="this.getRootNode().host.updateAudioPlayer(this.value)"
+            onfocus="this.getRootNode().host._trackAudioPlayerInteraction('.${className}')"
+            onmousedown="this.getRootNode().host._trackAudioPlayerInteraction('.${className}')"
+            ${isActuallyLoading ? 'disabled' : ''}
+        >
+            <option value="">${placeholderText}</option>
+            ${mediaPlayers.map(player => 
+                `<option value="${player.entity_id}" ${currentSelection === player.entity_id ? 'selected' : ''}>
+                    ${player.name} - ${player.entity_id}
+                </option>`
+            ).join('')}
+        </select>
+    `;
+  }
+
+  // Reusable function for rendering timer slider
+  _renderTimerSlider(className = 'timer-slider') {
+    const currentTimer = this.getCountdownTimerLength();
+    const secondsSuffix = this._t('defaults.seconds_suffix');
+    
+    return `
+        <input 
+            type="range" 
+            class="${className}" 
+            min="5" 
+            max="300" 
+            step="5" 
+            value="${currentTimer}"
+            oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + this.getRootNode().host._t('defaults.seconds_suffix');"
+        />
+        <span class="${className === 'splash-timer-slider' ? 'splash-timer-value' : 'timer-value'}">${currentTimer}${secondsSuffix}</span>
+    `;
   }
 
   // Clear validation errors cache when state changes
@@ -3480,16 +3514,7 @@ class SoundbeatsCard extends HTMLElement {
                   ${this._t('ui.countdown_timer_length')}
                 </div>
                 <div class="setting-control">
-                  <input 
-                    type="range" 
-                    class="timer-slider" 
-                    min="5" 
-                    max="300" 
-                    step="5" 
-                    value="${this.getCountdownTimerLength()}"
-                    oninput="this.getRootNode().host.updateCountdownTimerLength(this.value); this.nextElementSibling.textContent = this.value + this.getRootNode().host._t('defaults.seconds_suffix');"
-                  />
-                  <span class="timer-value">${this.getCountdownTimerLength()}${this._t('defaults.seconds_suffix')}</span>
+                  ${this._renderTimerSlider('timer-slider')}
                 </div>
               </div>
               <div class="setting-item">
@@ -3498,19 +3523,7 @@ class SoundbeatsCard extends HTMLElement {
                   ${this._t('settings.audio_player')}
                 </div>
                 <div class="setting-control">
-                  <select 
-                    class="audio-player-select" 
-                    onchange="this.getRootNode().host.updateAudioPlayer(this.value)"
-                    onfocus="this.getRootNode().host._trackAudioPlayerInteraction('.audio-player-select')"
-                    onmousedown="this.getRootNode().host._trackAudioPlayerInteraction('.audio-player-select')"
-                  >
-                    <option value="">${this._t('ui.select_audio_player')}</option>
-                    ${this.getMediaPlayers().map(player => 
-                      `<option value="${player.entity_id}" ${this.getSelectedAudioPlayer() === player.entity_id ? 'selected' : ''}>
-                        ${player.name} - ${player.entity_id}
-                      </option>`
-                    ).join('')}
-                  </select>
+                  ${this._renderAudioPlayerSelect('audio-player-select')}
                 </div>
               </div>
               <div class="setting-item">
