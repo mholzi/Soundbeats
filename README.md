@@ -1,7 +1,7 @@
 # 🎵 Soundbeats: The Ultimate Home Assistant Party Game! 🚀
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![Version](https://img.shields.io/badge/version-v5.0-blue.svg)](https://github.com/mholzi/Soundbeats)
+[![Version](https://img.shields.io/badge/version-v0.5.1-blue.svg)](https://github.com/mholzi/Soundbeats)
 
 **Turn your smart home into a music trivia battleground!** 🎤 Soundbeats brings stunning, zero-config party gaming straight to your Home Assistant dashboard. Teams battle to guess song release years – install, play, and dominate in under 2 minutes!
 

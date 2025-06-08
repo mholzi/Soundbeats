@@ -1,7 +1,7 @@
 {
   "domain": "soundbeats",
   "name": "Soundbeats",
-  "version": "5.0.0",
+  "version": "0.5.1",
   "documentation": "https://github.com/mholzi/Soundbeats",
   "issue_tracker": "https://github.com/mholzi/Soundbeats/issues",
   "dependencies": [],
