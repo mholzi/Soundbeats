@@ -3283,6 +3283,9 @@ class SoundbeatsCard extends HTMLElement {
 
         <!-- Team Management Section - Only visible to admins -->
         <div class="section admin-section ${isAdmin ? '' : 'hidden'}">
+          <!-- Team count dropdown - always visible -->
+          ${this.renderTeamCountDropdown()}
+          
           <div class="expandable-header" onclick="this.getRootNode().host.toggleTeamManagement()">
             <h3>
               <ha-icon icon="mdi:account-group-outline" class="icon"></ha-icon>
@@ -3575,13 +3578,11 @@ class SoundbeatsCard extends HTMLElement {
     }
   }
 
-  renderTeamManagement() {
-    // Use unified rendering logic from splash screen
+  renderTeamCountDropdown() {
+    // Render just the team count dropdown for use outside expandable content
     const teamCount = this.getSelectedTeamCount();
-    const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
     
-    // Always show team count dropdown at the top
-    let html = `
+    return `
       <div class="team-management-section">
         <div class="team-management-header">
           <ha-icon icon="mdi:account-group" class="input-icon"></ha-icon>
@@ -3597,6 +3598,14 @@ class SoundbeatsCard extends HTMLElement {
         </select>
       </div>
     `;
+  }
+
+  renderTeamManagement() {
+    // Render team management content for inside expandable section
+    const teamCount = this.getSelectedTeamCount();
+    const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
+    
+    let html = '';
     
     if (hasValidTeamCount) {
       // Show admin warning in team management section
@@ -4622,6 +4631,9 @@ class SoundbeatsCard extends HTMLElement {
       }
     }
     
+    // Update team count dropdowns in both splash and team management sections
+    this.updateTeamCountDropdowns();
+    
     // Update team management sections reactively (throttled)
     if (!this._managementSectionsUpdateTimeout) {
       this._managementSectionsUpdateTimeout = setTimeout(() => {
@@ -5079,6 +5091,31 @@ class SoundbeatsCard extends HTMLElement {
             <span>${this._t('settings.select_teams_for_assignments')}</span>
           </div>
         `;
+      }
+    }
+  }
+
+  updateTeamCountDropdowns() {
+    // Update both splash and team management team count dropdowns
+    const teamCount = this.getSelectedTeamCount();
+    
+    // Update splash screen dropdown
+    const splashSelect = this.shadowRoot.querySelector('.splash-team-count-select');
+    if (splashSelect && document.activeElement !== splashSelect) {
+      const currentValue = splashSelect.value;
+      const expectedValue = teamCount ? teamCount.toString() : '';
+      if (currentValue !== expectedValue) {
+        splashSelect.value = expectedValue;
+      }
+    }
+    
+    // Update team management dropdown
+    const teamManagementSelect = this.shadowRoot.querySelector('.team-management-count-select');
+    if (teamManagementSelect && document.activeElement !== teamManagementSelect) {
+      const currentValue = teamManagementSelect.value;
+      const expectedValue = teamCount ? teamCount.toString() : '';
+      if (currentValue !== expectedValue) {
+        teamManagementSelect.value = expectedValue;
       }
     }
   }
