@@ -160,6 +160,10 @@ async def _register_services(hass: HomeAssistant) -> None:
         team_count = call.data.get("team_count")
         await config_service.update_team_count(team_count)
 
+    async def toggle_splash(call):
+        """Toggle the splash screen override for testing purposes."""
+        await game_service.toggle_splash()
+
     # Register all services under the "soundbeats" domain
     hass.services.async_register(DOMAIN, "start_game", start_game)
     hass.services.async_register(DOMAIN, "stop_game", stop_game)
@@ -174,6 +178,7 @@ async def _register_services(hass: HomeAssistant) -> None:
     hass.services.async_register(DOMAIN, "update_countdown_timer_length", update_countdown_timer_length)
     hass.services.async_register(DOMAIN, "update_audio_player", update_audio_player)
     hass.services.async_register(DOMAIN, "update_team_count", update_team_count)
+    hass.services.async_register(DOMAIN, "toggle_splash", toggle_splash)
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry and remove services if no entries remain."""
@@ -197,6 +202,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 "update_countdown_timer_length",
                 "update_audio_player",
                 "update_team_count",
+                "toggle_splash",
             ]:
                 hass.services.async_remove(DOMAIN, svc)
     return unload_ok

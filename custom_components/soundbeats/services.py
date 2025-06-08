@@ -69,6 +69,9 @@ class SoundbeatsGameService:
             main_sensor = entities.get("main_sensor")
             if main_sensor and hasattr(main_sensor, 'set_state'):
                 main_sensor.set_state("playing")
+                # Clear splash override when game starts
+                if hasattr(main_sensor, 'clear_splash_override'):
+                    main_sensor.clear_splash_override()
             else:
                 self.hass.states.async_set("sensor.soundbeats_game_status", "playing")
             
@@ -389,6 +392,27 @@ class SoundbeatsGameService:
         state_obj = self.hass.states.get("sensor.soundbeats_game_status")
         if state_obj:
             self.hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, state_obj.attributes)
+
+    async def toggle_splash(self) -> None:
+        """Toggle the splash screen override for testing purposes."""
+        _LOGGER.info("Toggling splash screen override")
+        try:
+            entities = self._get_entities()
+            main_sensor = entities.get("main_sensor")
+            if main_sensor and hasattr(main_sensor, 'toggle_splash_override'):
+                main_sensor.toggle_splash_override()
+            else:
+                # Fallback: update state attributes directly
+                state_obj = self.hass.states.get("sensor.soundbeats_game_status")
+                if state_obj:
+                    current_attributes = dict(state_obj.attributes)
+                    current_attributes["splash_override"] = not current_attributes.get("splash_override", False)
+                    self.hass.states.async_set("sensor.soundbeats_game_status", state_obj.state, current_attributes)
+                else:
+                    _LOGGER.warning("Could not find main game status sensor for splash toggle")
+        except Exception as e:
+            _LOGGER.error("Failed to toggle splash override: %s", e)
+            raise ServiceValidationError(f"Failed to toggle splash override: {e}") from e
 
 
 class SoundbeatsTeamService:
