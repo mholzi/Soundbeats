@@ -20,6 +20,7 @@ class SoundbeatsCard extends HTMLElement {
     this.gameSettingsExpanded = false;
     this.teamManagementExpanded = false;
     this.highscoreDiagnosticExpanded = false;
+    this.highscoreExpanded = true; // Initial state should be true as per requirements
 
     // Initialize user data cache
     this.homeAssistantUsers = [];
@@ -3405,15 +3406,6 @@ class SoundbeatsCard extends HTMLElement {
           </div>
         </div>
         
-        <!-- Highscore Section - Always visible -->
-        <div class="section highscore-section">
-          <h3>
-            <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
-            ${this._ts('ui.highscores_after_round', { round: this.getRoundCounter() })}
-          </h3>
-          ${this.renderHighscores()}
-        </div>
-        
         <!-- Team Section - Always visible -->
         <div class="section team-section">
           <h3>
@@ -3423,6 +3415,20 @@ class SoundbeatsCard extends HTMLElement {
           
           <div class="teams-container">
             ${this.renderTeams()}
+          </div>
+        </div>
+        
+        <!-- Highscore Section - Always visible and expandable -->
+        <div class="section highscore-section">
+          <div class="expandable-header" onclick="this.getRootNode().host.toggleHighscore()">
+            <h3>
+              <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
+              ${this._ts('ui.highscores_after_round', { round: this.getRoundCounter() })}
+            </h3>
+            <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.highscoreExpanded ? 'expanded' : ''}"></ha-icon>
+          </div>
+          <div class="expandable-content ${this.highscoreExpanded ? 'expanded' : 'collapsed'}">
+            ${this.renderHighscores()}
           </div>
         </div>
         
@@ -4782,6 +4788,12 @@ class SoundbeatsCard extends HTMLElement {
     this.updateExpanderState();
   }
 
+  toggleHighscore() {
+    this.highscoreExpanded = !this.highscoreExpanded;
+    // Update only the expander elements to preserve input states
+    this.updateExpanderState();
+  }
+
   updateExpanderState() {
     // Ensure shadowRoot is available before trying to update elements
     if (!this.shadowRoot || !this.shadowRoot.querySelector) {
@@ -4813,6 +4825,20 @@ class SoundbeatsCard extends HTMLElement {
       }
       if (teamManagementContent) {
         teamManagementContent.className = `expandable-content ${this.teamManagementExpanded ? 'expanded' : 'collapsed'}`;
+      }
+    }
+    
+    // Update the Highscore section
+    const highscoreHeader = this.shadowRoot.querySelector('.highscore-section .expandable-header');
+    if (highscoreHeader) {
+      const highscoreIcon = highscoreHeader.querySelector('.expander-icon');
+      const highscoreContent = highscoreHeader.nextElementSibling;
+      
+      if (highscoreIcon) {
+        highscoreIcon.className = `expander-icon ${this.highscoreExpanded ? 'expanded' : ''}`;
+      }
+      if (highscoreContent) {
+        highscoreContent.className = `expandable-content ${this.highscoreExpanded ? 'expanded' : 'collapsed'}`;
       }
     }
     
@@ -5063,11 +5089,16 @@ class SoundbeatsCard extends HTMLElement {
     if (!highscoreEntity) {
       // If highscore entity is not available, replace with empty message
       highscoreSection.innerHTML = `
-        <h3>
-          <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
-          ${this._ts('ui.highscores_after_round', { round: this.getRoundCounter() })}
-        </h3>
-        <div class="highscore-empty">${this._t('game.highscore_data_not_available')}</div>
+        <div class="expandable-header" onclick="this.getRootNode().host.toggleHighscore()">
+          <h3>
+            <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
+            ${this._ts('ui.highscores_after_round', { round: this.getRoundCounter() })}
+          </h3>
+          <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.highscoreExpanded ? 'expanded' : ''}"></ha-icon>
+        </div>
+        <div class="expandable-content ${this.highscoreExpanded ? 'expanded' : 'collapsed'}">
+          <div class="highscore-empty">${this._t('game.highscore_data_not_available')}</div>
+        </div>
       `;
       return;
     }
@@ -5079,27 +5110,32 @@ class SoundbeatsCard extends HTMLElement {
 
     // Update the highscore content
     highscoreSection.innerHTML = `
-      <h3>
-        <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
-        ${this._ts('ui.highscores_after_round', { round: currentRound })}
-      </h3>
-      <div class="highscore-display">
-        <div class="global-highscore">
-          <div class="highscore-header">
-            <ha-icon icon="mdi:crown" class="icon crown-icon"></ha-icon>
-            <span class="highscore-label">${this._t('game.highscore_avg_round')}</span>
-          </div>
-          <div class="highscore-value">${this.formatPointsValue(globalAverageHighscore)} ${this._t('defaults.points_suffix')}</div>
-        </div>
-        ${currentRound > 1 && userAverage !== null ? `
-          <div class="user-average">
+      <div class="expandable-header" onclick="this.getRootNode().host.toggleHighscore()">
+        <h3>
+          <ha-icon icon="mdi:trophy" class="icon"></ha-icon>
+          ${this._ts('ui.highscores_after_round', { round: currentRound })}
+        </h3>
+        <ha-icon icon="mdi:chevron-down" class="expander-icon ${this.highscoreExpanded ? 'expanded' : ''}"></ha-icon>
+      </div>
+      <div class="expandable-content ${this.highscoreExpanded ? 'expanded' : 'collapsed'}">
+        <div class="highscore-display">
+          <div class="global-highscore">
             <div class="highscore-header">
-              <ha-icon icon="mdi:account" class="icon"></ha-icon>
-              <span class="highscore-label">${this._t('game.your_average')}</span>
+              <ha-icon icon="mdi:crown" class="icon crown-icon"></ha-icon>
+              <span class="highscore-label">${this._t('game.highscore_avg_round')}</span>
             </div>
-            <div class="highscore-value">${this.formatPointsValue(userAverage)} ${this._t('defaults.points_suffix')}</div>
+            <div class="highscore-value">${this.formatPointsValue(globalAverageHighscore)} ${this._t('defaults.points_suffix')}</div>
           </div>
-        ` : ''}
+          ${currentRound > 1 && userAverage !== null ? `
+            <div class="user-average">
+              <div class="highscore-header">
+                <ha-icon icon="mdi:account" class="icon"></ha-icon>
+                <span class="highscore-label">${this._t('game.your_average')}</span>
+              </div>
+              <div class="highscore-value">${this.formatPointsValue(userAverage)} ${this._t('defaults.points_suffix')}</div>
+            </div>
+          ` : ''}
+        </div>
       </div>
     `;
   }
