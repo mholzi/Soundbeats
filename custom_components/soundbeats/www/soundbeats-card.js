@@ -1472,6 +1472,16 @@ class SoundbeatsCard extends HTMLElement {
           .song-year {
             font-size: 0.95em;
           }
+          
+          .song-controls-row {
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 12px;
+          }
+          
+          .song-volume-buttons {
+            gap: 8px;
+          }
         }
         
         .section h3 {
@@ -2118,7 +2128,9 @@ class SoundbeatsCard extends HTMLElement {
         .song-card {
           text-align: center;
           padding: 16px;
-          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
         
         .song-image {
@@ -2151,24 +2163,32 @@ class SoundbeatsCard extends HTMLElement {
           color: var(--primary-color, #03a9f4);
         }
 
+        .song-controls-row {
+          margin-top: 15px;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          gap: 16px;
+        }
+
         .song-next-button {
-          position: absolute;
-          bottom: 8px;
-          right: 8px;
           background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, #667eea 100%);
           border: 1px solid rgba(255, 255, 255, 0.3);
           color: white;
-          padding: 4px 6px;
+          padding: 8px 12px;
           border-radius: 4px;
           cursor: pointer;
-          font-size: 0.8em;
+          font-size: 0.9em;
           transition: background 0.3s;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 2px;
-          min-width: 24px;
-          min-height: 24px;
+          gap: 4px;
+          min-width: auto;
+          min-height: 32px;
+          font-weight: 500;
         }
 
         .song-next-button:hover {
@@ -2176,13 +2196,10 @@ class SoundbeatsCard extends HTMLElement {
         }
 
         .song-next-button ha-icon {
-          --mdc-icon-size: 16px;
+          --mdc-icon-size: 18px;
         }
 
         .song-volume-buttons {
-          position: absolute;
-          bottom: 8px;
-          left: 8px;
           display: flex;
           flex-direction: row;
           gap: 4px;
@@ -2192,16 +2209,16 @@ class SoundbeatsCard extends HTMLElement {
           background: rgba(255, 255, 255, 0.2);
           border: 1px solid rgba(255, 255, 255, 0.3);
           color: var(--primary-text-color);
-          padding: 4px 6px;
+          padding: 8px 10px;
           border-radius: 4px;
           cursor: pointer;
-          font-size: 0.8em;
+          font-size: 0.9em;
           transition: background 0.3s;
           display: flex;
           align-items: center;
           justify-content: center;
-          min-width: 24px;
-          min-height: 24px;
+          min-width: 32px;
+          min-height: 32px;
         }
 
         .song-volume-button:hover {
@@ -2209,7 +2226,7 @@ class SoundbeatsCard extends HTMLElement {
         }
 
         .song-volume-button ha-icon {
-          --mdc-icon-size: 16px;
+          --mdc-icon-size: 18px;
         }
 
         .expandable-header {
@@ -3373,21 +3390,23 @@ class SoundbeatsCard extends HTMLElement {
               <div class="song-artist">${this.getCurrentSong().artist}</div>
               <div class="song-year">${this.getCurrentSong().year}</div>
               ${isAdmin ? `
-                <div class="song-volume-buttons">
-                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeDown()" title="${this._t('ui.volume_down')}">
-                    <ha-icon icon="mdi:volume-minus"></ha-icon>
-                  </button>
-                  <button class="song-volume-button" onclick="this.getRootNode().host.togglePlayPause()" title="${this.getMediaPlayerState() === 'playing' ? this._t('ui.pause') : this._t('ui.play')}">
-                    <ha-icon icon="${this.getMediaPlayerState() === 'playing' ? 'mdi:pause' : 'mdi:play'}"></ha-icon>
-                  </button>
-                  <button class="song-volume-button" onclick="this.getRootNode().host.volumeUp()" title="${this._t('ui.volume_up')}">
-                    <ha-icon icon="mdi:volume-plus"></ha-icon>
+                <div class="song-controls-row">
+                  <div class="song-volume-buttons">
+                    <button class="song-volume-button" onclick="this.getRootNode().host.volumeDown()" title="${this._t('ui.volume_down')}">
+                      <ha-icon icon="mdi:volume-minus"></ha-icon>
+                    </button>
+                    <button class="song-volume-button" onclick="this.getRootNode().host.togglePlayPause()" title="${this.getMediaPlayerState() === 'playing' ? this._t('ui.pause') : this._t('ui.play')}">
+                      <ha-icon icon="${this.getMediaPlayerState() === 'playing' ? 'mdi:pause' : 'mdi:play'}"></ha-icon>
+                    </button>
+                    <button class="song-volume-button" onclick="this.getRootNode().host.volumeUp()" title="${this._t('ui.volume_up')}">
+                      <ha-icon icon="mdi:volume-plus"></ha-icon>
+                    </button>
+                  </div>
+                  <button class="song-next-button" onclick="this.getRootNode().host.nextSong()">
+                    <ha-icon icon="mdi:skip-next" class="icon"></ha-icon>
+                    ${this._t('ui.next_song')}
                   </button>
                 </div>
-                <button class="song-next-button" onclick="this.getRootNode().host.nextSong()">
-                  <ha-icon icon="mdi:skip-next" class="icon"></ha-icon>
-                  ${this._t('ui.next_song')}
-                </button>
               ` : ''}
             </div>
           ` : ''}
