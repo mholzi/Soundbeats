@@ -108,6 +108,7 @@ class SoundbeatsSensor(SensorEntity):
         self._state = "ready"
         self._team_count = 3  # Default to 3 teams
         self._splash_override = False  # For testing splash screen
+        self._splash_testing_mode = False  # For simulating missing variables in splash screen
 
     @property
     def state(self) -> str:
@@ -117,12 +118,18 @@ class SoundbeatsSensor(SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
-        return {
+        attributes = {
             "friendly_name": "Soundbeats Game Status",
             "description": "Current status of the Soundbeats party game",
             "team_count": self._team_count,
             "splash_override": self._splash_override,
         }
+        
+        # Only include splash_testing_mode if splash override is active
+        if self._splash_override:
+            attributes["splash_testing_mode"] = self._splash_testing_mode
+            
+        return attributes
 
     def set_state(self, new_state: str) -> None:
         """Set the game state."""
@@ -136,12 +143,25 @@ class SoundbeatsSensor(SensorEntity):
 
     def toggle_splash_override(self) -> None:
         """Toggle the splash override for testing."""
-        self._splash_override = not self._splash_override
+        if not self._splash_override:
+            # First toggle: Enable splash override with testing mode (simulate missing variables)
+            self._splash_override = True
+            self._splash_testing_mode = True
+        elif self._splash_testing_mode:
+            # Second toggle: Keep splash override but disable testing mode (show ready state)
+            self._splash_override = True
+            self._splash_testing_mode = False
+        else:
+            # Third toggle: Disable splash override completely
+            self._splash_override = False
+            self._splash_testing_mode = False
+        
         self.async_write_ha_state()
 
     def clear_splash_override(self) -> None:
         """Clear the splash override (when game starts)."""
         self._splash_override = False
+        self._splash_testing_mode = False
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
