@@ -48,7 +48,8 @@ Welcome to the **Soundbeats** Home Assistant party game! This repository contain
 - **All UI text must be dynamic** and use the translation system - no hardcoded strings allowed.
 - **Use translation helpers**: Use `_t('key')` or `_ts('key', substitutions)` for all user-facing text.
 - **Maintain dual language support**: All new text must include both English (`en`) and German (`de`) translations.
-- **Update translation files**: Add new keys to both `custom_components/soundbeats/www/translations.json` and the embedded fallback translations in `soundbeats-card.js`.
+- **Single source of truth**: Add new translation keys only to `custom_components/soundbeats/www/translations.json` - this is the primary translation file.
+- **Minimal fallback**: The embedded fallback in `soundbeats-card.js` contains only critical UI elements and should not be expanded.
 - **Follow translation key structure**: Use logical groupings like `ui.*`, `settings.*`, `alerts.*`, `game.*`, `diagnostics.*`, `betting.*`, `defaults.*`, etc.
 - **No static text exceptions**: Button labels, error messages, placeholders, default values, and all user-visible content must use translations.
 
@@ -63,7 +64,7 @@ Welcome to the **Soundbeats** Home Assistant party game! This repository contain
 - [ ] Tests are updated and passing.
 - [ ] **All UI text uses the translation system with `_t()` calls - no hardcoded strings.**
 - [ ] **Both English and German translations are provided for all new text.**
-- [ ] **Translation files are updated**: `translations.json` and embedded fallback translations.
+- [ ] **Translation keys are added to `translations.json` - the single source of truth for UI text.**
 
 ---
 
