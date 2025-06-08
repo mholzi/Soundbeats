@@ -850,8 +850,8 @@ class SoundbeatsCard extends HTMLElement {
         
         .splash-language-toggle {
           position: absolute;
-          top: 20px;
-          right: 20px;
+          top: 10px;
+          right: 10px;
           z-index: 10;
         }
         
