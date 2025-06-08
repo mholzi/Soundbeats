@@ -67,7 +67,7 @@ class SoundbeatsCard extends HTMLElement {
   async _loadTranslations() {
     if (this._translations) return;
     try {
-      const response = await fetch('/local/community/soundbeats/translations.json');
+      const response = await fetch('/soundbeats_frontend_assets/translations.json');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
