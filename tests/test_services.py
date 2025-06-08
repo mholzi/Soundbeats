@@ -154,6 +154,38 @@ class TestSoundbeatsGameService:
             # Verify blocking=True is passed
             assert call_args[1]["blocking"] == True
 
+    async def test_toggle_splash_success(self, game_service, hass):
+        """Test successful splash toggle."""
+        # Setup mock main sensor
+        main_sensor = MagicMock()
+        main_sensor.toggle_splash_override = MagicMock()
+        hass.data[DOMAIN]["entities"]["main_sensor"] = main_sensor
+        
+        # Test
+        await game_service.toggle_splash()
+        
+        # Verify
+        main_sensor.toggle_splash_override.assert_called_once()
+
+    async def test_toggle_splash_fallback(self, game_service, hass):
+        """Test splash toggle fallback when no main sensor available."""
+        # Setup mock state object
+        state_obj = MagicMock()
+        state_obj.state = "ready"
+        state_obj.attributes = {"splash_override": False}
+        hass.states.get.return_value = state_obj
+        hass.states.async_set = MagicMock()
+        
+        # Test
+        await game_service.toggle_splash()
+        
+        # Verify state was updated with toggled splash_override
+        hass.states.async_set.assert_called_once()
+        call_args = hass.states.async_set.call_args
+        assert call_args[0][0] == "sensor.soundbeats_game_status"
+        assert call_args[0][1] == "ready"
+        assert call_args[0][2]["splash_override"] == True
+
 
 class TestSoundbeatsTeamService:
     """Test the SoundbeatsTeamService class."""

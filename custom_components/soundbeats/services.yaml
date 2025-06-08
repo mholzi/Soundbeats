@@ -177,3 +177,8 @@ update_team_user_id:
       example: "12345678901234567890abcdef123456"
       selector:
         text:
+
+toggle_splash:
+  name: Toggle Splash Screen
+  description: Toggle the splash screen display for testing purposes - will show splash screen regardless of configuration state until toggled off or game is started
+  fields: {}

@@ -115,6 +115,37 @@ Soundbeats automatically tracks records with zero configuration.
 
 ---
 
+## 🧪 Testing Features
+
+Soundbeats includes special features designed for testing and demonstration purposes.
+
+### Toggle Splash Screen Service
+
+For testing or demonstration purposes, you can force the splash screen to appear even when all game configuration is complete. This is useful for:
+* **Testing splash screen functionality**
+* **Demonstrating the configuration process**
+* **Creating screenshots or videos**
+
+#### Usage
+Call the service from Home Assistant:
+1. **Developer Tools**: Go to **Settings > Developer Tools > Services**
+2. **Service**: Select `soundbeats.toggle_splash`
+3. **Call Service**: Click the "Call Service" button
+
+Alternatively, use YAML:
+```yaml
+service: soundbeats.toggle_splash
+```
+
+#### Behavior
+* **First call**: Forces the splash screen to appear on the Soundbeats card regardless of configuration state
+* **Second call**: Disables the forced splash screen and returns to normal behavior
+* **Game start**: The forced splash screen is automatically cleared when a game is started (via the Launch Game button)
+
+> **Note**: This is a testing feature and the splash override state does not persist across Home Assistant restarts.
+
+---
+
 ## 🔧 Troubleshooting
 
 * **Card Not Appearing?**
