@@ -138,8 +138,9 @@ service: soundbeats.toggle_splash
 ```
 
 #### Behavior
-* **First call**: Forces the splash screen to appear on the Soundbeats card regardless of configuration state
-* **Second call**: Disables the forced splash screen and returns to normal behavior
+* **First call**: Forces the splash screen to appear with simulated missing variables (shows setup/configuration state)
+* **Second call**: Forces the splash screen to appear in ready state (shows ready-to-launch state)
+* **Third call**: Disables the forced splash screen and returns to normal behavior
 * **Game start**: The forced splash screen is automatically cleared when a game is started (via the Launch Game button)
 
 > **Note**: This is a testing feature and the splash override state does not persist across Home Assistant restarts.

@@ -469,6 +469,17 @@ class SoundbeatsCard extends HTMLElement {
     return false;
   }
 
+  getSplashTestingMode() {
+    // Check if splash testing mode is active (simulates missing variables)
+    if (this.hass && this.hass.states) {
+      const entity = this.hass.states['sensor.soundbeats_game_status'];
+      if (entity && entity.attributes && entity.attributes.splash_testing_mode) {
+        return entity.attributes.splash_testing_mode;
+      }
+    }
+    return false;
+  }
+
   isGameReady() {
     // Check if all critical game variables are set
     const missingVariables = this.getMissingGameVariables();
@@ -480,6 +491,32 @@ class SoundbeatsCard extends HTMLElement {
     const cached = this._getCached('missingVariables');
     if (cached !== null) {
       return cached;
+    }
+    
+    // Check if we're in splash testing mode (simulates missing variables for testing)
+    const splashTestingMode = this.getSplashTestingMode();
+    if (splashTestingMode) {
+      const fakeMissing = [
+        {
+          key: 'teamCount',
+          name: this._t('settings.missing_team_count_name'),
+          description: this._t('settings.missing_team_count_description')
+        },
+        {
+          key: 'audioPlayer',
+          name: this._t('settings.missing_audio_player_name'),
+          description: this._t('settings.missing_audio_player_description')
+        },
+        {
+          key: 'timer',
+          name: this._t('settings.missing_countdown_timer_name'),
+          description: this._t('settings.missing_countdown_timer_description')
+        }
+      ];
+      
+      // Cache the fake result
+      this._setCached('missingVariables', fakeMissing);
+      return fakeMissing;
     }
     
     const missing = [];
@@ -777,22 +814,11 @@ class SoundbeatsCard extends HTMLElement {
   handleSplashStart() {
     const missingVariables = this.getMissingGameVariables();
     const splashOverride = this.getSplashOverride();
+    const splashTestingMode = this.getSplashTestingMode();
     
-    if (missingVariables.length === 0 || splashOverride) {
-      // Everything is configured OR splash is forced - transition to game UI and reset game state
-      // Call service to reset game state (points, played songs, round counter)
-      if (this.hass) {
-        this.hass.callService('soundbeats', 'start_game', {});
-      }
-      
-      // NOTE: Following zero-setup philosophy, this method handles UI transition.
-      // All configuration changes are already persisted immediately when users interact
-      // with UI controls. Actual game logic (song start, scoring, etc.) is initiated
-      // by explicit user actions on the game screen, not by this UI transition.
-      this._hasLaunchedFromSplash = true;  // Mark that user has successfully launched
-      this.clearValidationCache();  // Clear cache to ensure UI updates
-      this.render();  // Re-render to transition from splash to main game UI
-    } else {
+    // If we're in testing mode, treat it as if there are missing variables
+    // (even if splash override is active)
+    if (splashTestingMode || (missingVariables.length > 0 && !splashOverride)) {
       // Highlight missing items
       this._validationErrors = missingVariables.map(v => v.key);
       this.highlightMissingItems();
@@ -805,6 +831,20 @@ class SoundbeatsCard extends HTMLElement {
         this._validationErrors = [];
         this.updateSplashValidationState();
       }, 3000);
+    } else if (missingVariables.length === 0 || splashOverride) {
+      // Everything is configured OR splash is forced (and not in testing mode) - transition to game UI and reset game state
+      // Call service to reset game state (points, played songs, round counter)
+      if (this.hass) {
+        this.hass.callService('soundbeats', 'start_game', {});
+      }
+      
+      // NOTE: Following zero-setup philosophy, this method handles UI transition.
+      // All configuration changes are already persisted immediately when users interact
+      // with UI controls. Actual game logic (song start, scoring, etc.) is initiated
+      // by explicit user actions on the game screen, not by this UI transition.
+      this._hasLaunchedFromSplash = true;  // Mark that user has successfully launched
+      this.clearValidationCache();  // Clear cache to ensure UI updates
+      this.render();  // Re-render to transition from splash to main game UI
     }
   }
 
