@@ -429,6 +429,14 @@ class SoundbeatsCard extends HTMLElement {
       return cached;
     }
     
+    // Check if splash override is active for testing
+    const splashOverride = this.getSplashOverride();
+    if (splashOverride) {
+      // Cache the result
+      this._setCached('shouldShowSplash', true);
+      return true;
+    }
+    
     // Show splash screen when critical game variables are missing
     const missingVariables = this.getMissingGameVariables();
     const shouldShow = missingVariables.length > 0;
@@ -448,6 +456,17 @@ class SoundbeatsCard extends HTMLElement {
       }
     }
     return 'ready'; // Default state
+  }
+
+  getSplashOverride() {
+    // Check if splash override is active for testing
+    if (this.hass && this.hass.states) {
+      const entity = this.hass.states['sensor.soundbeats_game_status'];
+      if (entity && entity.attributes && entity.attributes.splash_override) {
+        return entity.attributes.splash_override;
+      }
+    }
+    return false;
   }
 
   isGameReady() {
@@ -757,9 +776,10 @@ class SoundbeatsCard extends HTMLElement {
 
   handleSplashStart() {
     const missingVariables = this.getMissingGameVariables();
+    const splashOverride = this.getSplashOverride();
     
-    if (missingVariables.length === 0) {
-      // Everything is configured - transition to game UI and reset game state
+    if (missingVariables.length === 0 || splashOverride) {
+      // Everything is configured OR splash is forced - transition to game UI and reset game state
       // Call service to reset game state (points, played songs, round counter)
       if (this.hass) {
         this.hass.callService('soundbeats', 'start_game', {});

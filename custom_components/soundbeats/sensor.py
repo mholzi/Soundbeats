@@ -81,6 +81,7 @@ class SoundbeatsSensor(SensorEntity):
         self._attr_icon = "mdi:music-note"
         self._state = "ready"
         self._team_count = 3  # Default to 3 teams
+        self._splash_override = False  # For testing splash screen
 
     @property
     def state(self) -> str:
@@ -94,6 +95,7 @@ class SoundbeatsSensor(SensorEntity):
             "friendly_name": "Soundbeats Game Status",
             "description": "Current status of the Soundbeats party game",
             "team_count": self._team_count,
+            "splash_override": self._splash_override,
         }
 
     def set_state(self, new_state: str) -> None:
@@ -104,6 +106,16 @@ class SoundbeatsSensor(SensorEntity):
     def set_team_count(self, team_count: int) -> None:
         """Set the number of teams."""
         self._team_count = team_count
+        self.async_write_ha_state()
+
+    def toggle_splash_override(self) -> None:
+        """Toggle the splash override for testing."""
+        self._splash_override = not self._splash_override
+        self.async_write_ha_state()
+
+    def clear_splash_override(self) -> None:
+        """Clear the splash override (when game starts)."""
+        self._splash_override = False
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
