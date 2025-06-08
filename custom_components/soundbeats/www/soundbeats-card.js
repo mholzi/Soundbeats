@@ -2685,7 +2685,7 @@ class SoundbeatsCard extends HTMLElement {
           align-items: center;
           gap: 8px;
           min-height: 2em;
-          justify-content: center;
+          justify-content: flex-start;
         }
         
         .crown-icon {
