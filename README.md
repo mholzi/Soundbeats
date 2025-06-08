@@ -23,6 +23,7 @@ From installation to gameplay in under two minutes, Soundbeats is designed for i
 ### 🔌 Seamless Integration
 * **🎧 Works with ANY Player**: Fully compatible with any Home Assistant media player that supports Spotify playback (Sonos, Google Cast, VLC, etc.).
 * **🤖 No Spotify Integration Needed**: Soundbeats handles all audio playback internally. Your media player just needs to be ableto play Spotify URLs.
+* **🚀 Complete Lovelace Package**: Includes everything for the Lovelace UI with minimal setup - no manual resource registration or YAML editing required.
 * **🔧 Powerful Admin Controls**: Admins can manage teams, adjust the countdown timer, and control music playback directly from the card.
 * **🌐 Multi-Language Support**: Fully translated in English and German.
 
@@ -87,6 +88,18 @@ Soundbeats is an addictive game of musical knowledge and high-stakes betting.
 When a team places a bet:
 * **Win (Perfect Guess)**: The points for the round are **doubled** (20 becomes 40!).
 * **Lose (Any other guess)**: The team gets **0 points** for the round.
+
+### Team Rankings & Medals
+Soundbeats features a sophisticated ranking system that properly handles ties:
+* **🥇 Gold Medal (Rank 1)**: Highest scoring team(s)
+* **🥈 Silver Medal (Rank 2)**: Second highest score
+* **🥉 Bronze Medal (Rank 3)**: Third highest score
+* **🏆 Other**: Remaining teams
+
+**Tie Handling**: When teams are tied, they share the same rank, and the next rank is properly skipped. For example:
+- Team A: 15 points → **Rank 1** (Gold)
+- Team B: 15 points → **Rank 1** (Gold) 
+- Team C: 10 points → **Rank 3** (Bronze) ✨
 
 ---
 

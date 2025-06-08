@@ -3544,10 +3544,10 @@ class SoundbeatsCard extends HTMLElement {
     let medalRank = 1; // Tracks current medal level (1=gold, 2=silver, 3=bronze)
     let lastPoints = null;
     
-    participatingTeams.forEach((team) => {
-      // If points changed, advance to next medal level
+    participatingTeams.forEach((team, index) => {
+      // If points changed, advance medal rank to the next position (handling ties properly)
       if (lastPoints !== null && team.points !== lastPoints) {
-        medalRank++;
+        medalRank = index + 1; // Skip ranks based on actual position after ties
       }
       
       // Cap medal rank at 3 (bronze), everything else gets rank 4+ for 'rank-other'
