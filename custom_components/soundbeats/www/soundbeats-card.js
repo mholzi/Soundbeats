@@ -3713,18 +3713,6 @@ class SoundbeatsCard extends HTMLElement {
           name: name.trim()
         });
       }
-      this.clearValidationCache();
-      
-      // Only trigger UI refresh for splash screen, never for team management during editing
-      // This prevents the focus loss issue when editing team names
-      setTimeout(() => {
-        if (this.shouldShowSplashScreen()) {
-          this.updateSplashValidationState();
-        }
-        // Do NOT update team management section to prevent focus loss
-        // The team management section will update naturally through other mechanisms
-        // without disrupting the user's editing experience
-      }, 10);
     }, 50); // Further reduced delay for more responsive text input
   }
 
@@ -3761,28 +3749,12 @@ class SoundbeatsCard extends HTMLElement {
         user_id: userId || null
       });
     }
-    this.clearValidationCache();
     
     // Track recent user selections to prevent UI from overriding them
     if (!this._recentUserSelections) {
       this._recentUserSelections = {};
     }
     this._recentUserSelections[teamId] = { userId, timestamp: Date.now() };
-    
-    // Trigger UI refresh in both splash screen and team management after a brief delay
-    setTimeout(() => {
-      if (this.shouldShowSplashScreen()) {
-        this.updateSplashValidationState();
-        // Also update splash screen dropdowns to reflect database state
-        this.updateSplashScreenDropdowns();
-      }
-      // Only update team management section for user ID changes (dropdown selections)
-      // since these are discrete actions that don't interfere with text input focus
-      const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
-      if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
-        this.updateSplashTeamsSection('management');
-      }
-    }, 10); // Reduced delay since no debouncing
   }
 
   updateTeamYearGuess(teamId, yearGuess) {
@@ -4489,14 +4461,6 @@ class SoundbeatsCard extends HTMLElement {
           timer_length: parseInt(timerLength)
         });
       }
-      this.clearValidationCache();
-      
-      // Trigger UI refresh after a brief delay to allow the service call to complete
-      setTimeout(() => {
-        if (this.shouldShowSplashScreen()) {
-          this.updateSplashValidationState();
-        }
-      }, 10);
     }, 100); // Reduced delay for more responsive slider
   }
 
@@ -4512,14 +4476,6 @@ class SoundbeatsCard extends HTMLElement {
           audio_player: audioPlayer
         });
       }
-      this.clearValidationCache();
-      
-      // Trigger UI refresh after a brief delay to allow the service call to complete
-      setTimeout(() => {
-        if (this.shouldShowSplashScreen()) {
-          this.updateSplashValidationState();
-        }
-      }, 10);
     }, 100); // Reduced delay for more responsive dropdown
   }
 
@@ -4542,21 +4498,6 @@ class SoundbeatsCard extends HTMLElement {
           team_count: parseInt(teamCount)
         });
       }
-      this.clearValidationCache();
-      
-      // Update both splash screen and team management to show correct number of team inputs
-      setTimeout(() => {
-        if (this.shouldShowSplashScreen()) {
-          this.updateSplashTeamsSection('splash');
-          this.updateSplashValidationState();
-        }
-        // Only update team management section if user is not currently editing
-        // to prevent disrupting focus during text input
-        const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
-        if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
-          this.updateSplashTeamsSection('management');
-        }
-      }, 25);
     }, 100); // Reduced delay for more responsive dropdown
   }
 
@@ -4659,7 +4600,7 @@ class SoundbeatsCard extends HTMLElement {
     // Update dropdown options without changing selected value if not focused
     this.updateAudioPlayerOptions();
     
-    // Update splash screen dropdowns if splash screen is shown (throttled)
+    // Update splash screen-related elements if splash screen is shown
     if (this.shouldShowSplashScreen()) {
       // Throttle splash screen updates to avoid excessive calls
       if (!this._splashUpdateTimeout) {
@@ -4668,6 +4609,28 @@ class SoundbeatsCard extends HTMLElement {
           this._splashUpdateTimeout = null;
         }, 50);
       }
+      
+      // Update splash validation state reactively
+      this.updateSplashValidationState();
+      
+      // Throttle team sections updates to avoid excessive calls during rapid state changes
+      if (!this._teamSectionsUpdateTimeout) {
+        this._teamSectionsUpdateTimeout = setTimeout(() => {
+          this.updateSplashTeamsSection('splash');
+          this._teamSectionsUpdateTimeout = null;
+        }, 50);
+      }
+    }
+    
+    // Update team management sections reactively (throttled)
+    if (!this._managementSectionsUpdateTimeout) {
+      this._managementSectionsUpdateTimeout = setTimeout(() => {
+        const teamManagementContainer = this.shadowRoot?.querySelector('.team-management-container');
+        if (teamManagementContainer && !this.isUserEditingTeamManagement()) {
+          this.updateSplashTeamsSection('management');
+        }
+        this._managementSectionsUpdateTimeout = null;
+      }, 50);
     }
     
     // Check if all songs have been played
