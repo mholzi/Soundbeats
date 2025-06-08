@@ -2094,28 +2094,115 @@ class SoundbeatsCard extends HTMLElement {
         }
 
         .song-fun-fact {
-          margin: 16px 0;
-          padding: 12px;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-          border-left: 4px solid var(--primary-color, #03a9f4);
+          margin: 20px 0;
+          padding: 0;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 16px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+          position: relative;
+          overflow: hidden;
+          border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .song-fun-fact::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+          pointer-events: none;
+        }
+
+        .song-fun-fact-content {
+          position: relative;
+          z-index: 1;
+          padding: 18px;
         }
 
         .song-fun-fact-label {
-          font-size: 0.9em;
-          font-weight: bold;
-          margin-bottom: 6px;
-          color: var(--primary-color, #03a9f4);
+          font-size: 0.85em;
+          font-weight: 800;
+          margin-bottom: 12px;
+          color: #ffffff;
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 8px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .song-fun-fact-label ha-icon {
+          font-size: 1.2em;
+          color: #ffd700;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
         }
 
         .song-fun-fact-text {
-          font-size: 0.95em;
-          line-height: 1.4;
-          color: var(--primary-text-color);
-          font-style: italic;
+          font-size: 1em;
+          line-height: 1.6;
+          color: #ffffff;
+          font-weight: 500;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+          margin: 0;
+        }
+
+        .song-fun-fact:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Only apply hover effects on devices with precise pointers */
+        @media (hover: hover) and (pointer: fine) {
+          .song-fun-fact:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+          }
+        }
+
+        /* Responsive design for fun facts */
+        @media (max-width: 768px) {
+          .song-fun-fact {
+            margin: 16px 0;
+          }
+          
+          .song-fun-fact-content {
+            padding: 16px;
+          }
+          
+          .song-fun-fact-label {
+            font-size: 0.8em;
+            margin-bottom: 10px;
+          }
+          
+          .song-fun-fact-text {
+            font-size: 0.95em;
+            line-height: 1.5;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .song-fun-fact {
+            margin: 12px 0;
+            border-radius: 12px;
+          }
+          
+          .song-fun-fact-content {
+            padding: 14px;
+          }
+          
+          .song-fun-fact-label {
+            font-size: 0.75em;
+            margin-bottom: 8px;
+            gap: 6px;
+          }
+          
+          .song-fun-fact-text {
+            font-size: 0.9em;
+          }
         }
 
         .song-next-button {
@@ -3341,8 +3428,13 @@ class SoundbeatsCard extends HTMLElement {
               <div class="song-year">${this.getCurrentSong().year}</div>
               ${this.getCurrentSong().fun_fact ? `
                 <div class="song-fun-fact">
-                  <div class="song-fun-fact-label"><ha-icon icon="mdi:lightbulb"></ha-icon> ${this._t('ui.fun_fact')}:</div>
-                  <div class="song-fun-fact-text">${this.getCurrentSong().fun_fact}</div>
+                  <div class="song-fun-fact-content">
+                    <div class="song-fun-fact-label">
+                      <ha-icon icon="mdi:brain"></ha-icon> 
+                      ${this._t('ui.fun_fact')}
+                    </div>
+                    <div class="song-fun-fact-text">${this.getCurrentSong().fun_fact}</div>
+                  </div>
                 </div>
               ` : ''}
               ${isAdmin ? `
