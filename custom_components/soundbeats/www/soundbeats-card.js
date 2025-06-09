@@ -4085,7 +4085,7 @@ class SoundbeatsCard extends HTMLElement {
     }
     this._recentTeamNameChanges[teamId] = { name: name.trim(), timestamp: Date.now() };
     
-    // Debounce team name updates
+    // Debounce team name updates  
     this.debouncedServiceCall(`teamName_${teamId}`, () => {
       if (this.hass && name.trim()) {
         this.hass.callService('soundbeats', 'update_team_name', {
@@ -4093,7 +4093,7 @@ class SoundbeatsCard extends HTMLElement {
           name: name.trim()
         });
       }
-    }, 100); // Increased delay from 50ms to 100ms for better performance
+    }, 300); // Increased delay from 100ms to 300ms to provide more typing time
   }
 
   updateTeamPoints(teamId, points) {
@@ -5254,9 +5254,11 @@ toggleTeamBetting(teamId, betting) {
           if (nameInput && document.activeElement !== nameInput) {
             // Check if there's a recent team name change to avoid overriding user input
             const recentChange = this._recentTeamNameChanges && this._recentTeamNameChanges[teamId];
-            const isRecentChange = recentChange && (Date.now() - recentChange.timestamp < 3000); // 3 second window for consistency
+            const isRecentChange = recentChange && (Date.now() - recentChange.timestamp < 5000); // Extended to 5 second window for better protection
             
-            if (!isRecentChange) {
+            // Additional check: only update if the current input value is different from the team name
+            // and there hasn't been a recent change. This prevents overriding partially typed values.
+            if (!isRecentChange && nameInput.value !== team.name) {
               nameInput.value = team.name;
             }
           }
@@ -5411,7 +5413,9 @@ toggleTeamBetting(teamId, betting) {
             <label class="${labelClass}">${this._ts('settings.team_label', { number: teamId.split('_')[1] })}</label>
             <input type="text" class="${inputClass}" placeholder="${this._t('settings.team_name_placeholder')}" 
                    value="${team.name}" 
-                   oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+                   oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)"
+                   onfocus="this.getRootNode().host._trackTeamManagementInteraction()"
+                   onblur="this.getRootNode().host._trackTeamManagementInteraction()">
             <select class="${selectClass}" 
                     onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
                     onmousedown="this.getRootNode().host._trackDropdownOpen('.${selectClass}')"
@@ -5441,7 +5445,9 @@ toggleTeamBetting(teamId, betting) {
             </div>
             <div class="team-management-controls">
               <input type="text" class="${inputClass}" placeholder="${this._t('settings.team_name_placeholder')}" value="${team.name}" 
-                     oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
+                     oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)"
+                     onfocus="this.getRootNode().host._trackTeamManagementInteraction()"
+                     onblur="this.getRootNode().host._trackTeamManagementInteraction()">
               <select 
                 class="${selectClass}" 
                 onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
@@ -5627,6 +5633,12 @@ toggleTeamBetting(teamId, betting) {
     
     // Check if any input field in team management is currently focused
     const activeElement = document.activeElement;
+    
+    // Enhanced focus detection: check if any text input in the entire component is focused
+    if (activeElement && activeElement.type === 'text' && this.shadowRoot.contains(activeElement)) {
+      return true; // Any text input being edited should prevent updates
+    }
+    
     if (!activeElement || !teamManagementContainer.contains(activeElement)) {
       // Also check for recent interactions to prevent updates during rapid user input
       return this._hasRecentTeamManagementInteraction();
@@ -5647,7 +5659,7 @@ toggleTeamBetting(teamId, betting) {
 
   _hasRecentTeamManagementInteraction() {
     return this._lastTeamManagementInteraction && 
-           (Date.now() - this._lastTeamManagementInteraction < 1000); // 1 second window
+           (Date.now() - this._lastTeamManagementInteraction < 2000); // Extended to 2 second window for better protection
   }
 
   updateTeamManagementDropdowns() {
