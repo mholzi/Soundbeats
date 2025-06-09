@@ -49,6 +49,9 @@ class SoundbeatsCard extends HTMLElement {
     // (using same pattern as _recentUserSelections for consistency)
     this._recentAudioPlayerInteractions = {};
     
+    // Track dropdown state to avoid unnecessary updates
+    this._lastTeamDropdownStateKey = null;
+    
     // Translation system
     this._currentLanguage = localStorage.getItem('soundbeats-language') || 'en';
     this._translations = null;
@@ -3699,6 +3702,9 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateTeamName(teamId, name) {
+    // Track team management interaction to prevent disruptive updates
+    this._trackTeamManagementInteraction();
+    
     // Track recent team name changes to prevent UI from overriding them
     if (!this._recentTeamNameChanges) {
       this._recentTeamNameChanges = {};
@@ -3713,7 +3719,7 @@ class SoundbeatsCard extends HTMLElement {
           name: name.trim()
         });
       }
-    }, 50); // Further reduced delay for more responsive text input
+    }, 100); // Increased delay from 50ms to 100ms for better performance
   }
 
   updateTeamPoints(teamId, points) {
@@ -3742,6 +3748,9 @@ class SoundbeatsCard extends HTMLElement {
   }
 
   updateTeamUserId(teamId, userId) {
+    // Track team management interaction to prevent disruptive updates
+    this._trackTeamManagementInteraction();
+    
     // Call service immediately without debouncing since team user ID selection is a discrete action
     if (this.hass) {
       this.hass.callService('soundbeats', 'update_team_user_id', {
@@ -4607,7 +4616,7 @@ class SoundbeatsCard extends HTMLElement {
         this._splashUpdateTimeout = setTimeout(() => {
           this.updateSplashScreenDropdowns();
           this._splashUpdateTimeout = null;
-        }, 50);
+        }, 150); // Increased from 50ms to 150ms for better performance
       }
       
       // Update splash validation state reactively
@@ -4618,7 +4627,7 @@ class SoundbeatsCard extends HTMLElement {
         this._teamSectionsUpdateTimeout = setTimeout(() => {
           this.updateSplashTeamsSection('splash');
           this._teamSectionsUpdateTimeout = null;
-        }, 50);
+        }, 150); // Increased from 50ms to 150ms for better performance
       }
     }
     
@@ -4630,7 +4639,7 @@ class SoundbeatsCard extends HTMLElement {
           this.updateSplashTeamsSection('management');
         }
         this._managementSectionsUpdateTimeout = null;
-      }, 50);
+      }, 150); // Increased from 50ms to 150ms for better performance
     }
     
     // Check if all songs have been played
@@ -5087,7 +5096,7 @@ class SoundbeatsCard extends HTMLElement {
     // Debounce splash screen dropdown updates to prevent excessive rebuilding
     this.debouncedServiceCall('splashDropdownUpdate', () => {
       this._updateSplashScreenDropdownsInternal();
-    }, 50); // Short delay to batch multiple rapid updates
+    }, 100); // Increased from 50ms to 100ms for better performance
   }
   
   _updateSplashScreenDropdownsInternal() {
@@ -5102,29 +5111,22 @@ class SoundbeatsCard extends HTMLElement {
       const isActuallyLoading = this._isLoadingMediaPlayers;
       const hasNoPlayers = mediaPlayers.length === 0 && !isActuallyLoading;
       
-      // Only update if the options have actually changed or loading state has changed
-      const currentOptions = Array.from(audioSelect.options).map(opt => opt.value).join(',');
-      const newOptions = ['', ...mediaPlayers.map(p => p.entity_id)].join(',');
-      const currentFirstOptionText = audioSelect.options[0] ? audioSelect.options[0].textContent : '';
       const newFirstOptionText = isActuallyLoading ? this._t('ui.loading_audio_players') : hasNoPlayers ? this._t('ui.no_audio_players') : this._t('ui.select_audio_player');
       
-      if (currentOptions !== newOptions || currentFirstOptionText !== newFirstOptionText) {
-        // Preserve current user selection if it exists
-        const currentUserSelection = audioSelect.value;
-        
-        audioSelect.innerHTML = `<option value="">${newFirstOptionText}</option>`;
-        mediaPlayers.forEach(player => {
-          const option = document.createElement('option');
-          option.value = player.entity_id;
-          option.textContent = `${player.name} - ${player.entity_id}`;
-          option.selected = currentSelection === player.entity_id;
-          audioSelect.appendChild(option);
-        });
-        
-        // If user had a selection that's still valid, preserve it
-        if (currentUserSelection && mediaPlayers.some(p => p.entity_id === currentUserSelection)) {
-          audioSelect.value = currentUserSelection;
-        }
+      // Use the optimized helper method instead of innerHTML
+      const currentUserSelection = audioSelect.value;
+      this._updateSelectOptions(audioSelect, [
+        { value: '', text: newFirstOptionText },
+        ...mediaPlayers.map(player => ({
+          value: player.entity_id,
+          text: `${player.name} - ${player.entity_id}`,
+          selected: currentSelection === player.entity_id
+        }))
+      ]);
+      
+      // If user had a selection that's still valid, preserve it
+      if (currentUserSelection && mediaPlayers.some(p => p.entity_id === currentUserSelection)) {
+        audioSelect.value = currentUserSelection;
       }
     }
 
@@ -5141,30 +5143,24 @@ class SoundbeatsCard extends HTMLElement {
         const teamId = teamIdMatch ? teamIdMatch[1] : null;
         const databaseValue = teamId && teams[teamId] ? teams[teamId].user_id : null;
         
-        // Only update if users have changed
-        const currentOptions = Array.from(select.options).map(opt => opt.value).join(',');
-        const newOptions = ['', ...users.filter(user => !user.name.startsWith('Home Assistant') && !user.name.startsWith('Supervisor')).map(u => u.id)].join(',');
+        const filteredUsers = users.filter(user => !user.name.startsWith('Home Assistant') && !user.name.startsWith('Supervisor'));
         
-        if (currentOptions !== newOptions) {
-          select.innerHTML = `<option value="">${this._t('ui.select_user')}</option>`;
-          users.filter(user => !user.name.startsWith('Home Assistant') && !user.name.startsWith('Supervisor')).forEach(user => {
-            const option = document.createElement('option');
-            option.value = user.id;
-            option.textContent = user.name;
-            option.selected = databaseValue === user.id;
-            select.appendChild(option);
-          });
-        } else {
-          // Even if options haven't changed, update selection to match database
-          // But respect recent user selections to avoid overriding their choice
-          const recentSelection = this._recentUserSelections && this._recentUserSelections[teamId];
-          const isRecentSelection = recentSelection && (Date.now() - recentSelection.timestamp < 2000); // 2 second window
-          
-          if (!isRecentSelection) {
-            Array.from(select.options).forEach(option => {
-              option.selected = option.value === databaseValue;
-            });
-          }
+        // Use the optimized helper method for better performance
+        this._updateSelectOptions(select, [
+          { value: '', text: this._t('ui.select_user') },
+          ...filteredUsers.map(user => ({
+            value: user.id,
+            text: user.name,
+            selected: databaseValue === user.id
+          }))
+        ]);
+        
+        // Respect recent user selections to avoid overriding their choice
+        const recentSelection = this._recentUserSelections && this._recentUserSelections[teamId];
+        const isRecentSelection = recentSelection && (Date.now() - recentSelection.timestamp < 2000); // 2 second window
+        
+        if (!isRecentSelection && databaseValue) {
+          select.value = databaseValue;
         }
       }
     });
@@ -5178,7 +5174,8 @@ class SoundbeatsCard extends HTMLElement {
     // Check if any input field in team management is currently focused
     const activeElement = document.activeElement;
     if (!activeElement || !teamManagementContainer.contains(activeElement)) {
-      return false;
+      // Also check for recent interactions to prevent updates during rapid user input
+      return this._hasRecentTeamManagementInteraction();
     }
     
     // Check for specific input types that indicate user interaction
@@ -5187,6 +5184,16 @@ class SoundbeatsCard extends HTMLElement {
       activeElement.type === 'checkbox' || 
       activeElement.tagName.toLowerCase() === 'select'
     );
+  }
+
+  // Track recent team management interactions to prevent disruptive updates
+  _trackTeamManagementInteraction() {
+    this._lastTeamManagementInteraction = Date.now();
+  }
+
+  _hasRecentTeamManagementInteraction() {
+    return this._lastTeamManagementInteraction && 
+           (Date.now() - this._lastTeamManagementInteraction < 1000); // 1 second window
   }
 
   updateTeamManagementDropdowns() {
@@ -5200,6 +5207,16 @@ class SoundbeatsCard extends HTMLElement {
     const isLoadingUsers = this._isLoadingUsers || (!this.usersLoaded && users.length === 0);
     const teams = this.getTeams();
     
+    // Generate cache key for current state to avoid unnecessary updates
+    const filteredUsers = users.filter(user => !user.name.startsWith('Home Assistant') && !user.name.startsWith('Supervisor'));
+    const currentStateKey = `${isLoadingUsers}_${filteredUsers.map(u => `${u.id}:${u.name}`).join('|')}_${Object.entries(teams).map(([id, t]) => `${id}:${t.user_id}`).join('|')}`;
+    
+    // Check if we need to update by comparing with last state
+    if (this._lastTeamDropdownStateKey === currentStateKey) {
+      return; // No changes needed
+    }
+    this._lastTeamDropdownStateKey = currentStateKey;
+    
     // Update each team's dropdown options
     Object.entries(teams).forEach(([teamId, team]) => {
       const managementItem = teamManagementContainer.querySelector(`[data-team="${teamId}"]`);
@@ -5208,15 +5225,15 @@ class SoundbeatsCard extends HTMLElement {
         if (select && document.activeElement !== select) {
           const currentValue = select.value;
           
-          // Update options
-          select.innerHTML = `
-            <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
-            ${users.filter(user => !user.name.startsWith('Home Assistant') && !user.name.startsWith('Supervisor')).map(user => 
-              `<option value="${user.id}" ${team.user_id === user.id ? 'selected' : ''}>
-                ${user.name}
-              </option>`
-            ).join('')}
-          `;
+          // Use DOM manipulation instead of innerHTML for better performance
+          this._updateSelectOptions(select, [
+            { value: '', text: isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user') },
+            ...filteredUsers.map(user => ({
+              value: user.id,
+              text: user.name,
+              selected: team.user_id === user.id
+            }))
+          ]);
           
           // Restore the selected value if it still exists
           if (currentValue && Array.from(select.options).some(opt => opt.value === currentValue)) {
@@ -5224,6 +5241,40 @@ class SoundbeatsCard extends HTMLElement {
           }
         }
       }
+    });
+  }
+
+  // Helper method to efficiently update select options using DOM manipulation
+  _updateSelectOptions(select, options) {
+    // Check if options have actually changed to avoid unnecessary DOM updates
+    const currentOptions = Array.from(select.options).map(opt => ({
+      value: opt.value,
+      text: opt.textContent,
+      selected: opt.selected
+    }));
+    
+    // Compare current options with new options
+    if (currentOptions.length === options.length && 
+        currentOptions.every((opt, i) => 
+          opt.value === options[i].value && 
+          opt.text === options[i].text && 
+          opt.selected === Boolean(options[i].selected)
+        )) {
+      return; // No changes needed
+    }
+    
+    // Clear existing options
+    select.innerHTML = '';
+    
+    // Add new options
+    options.forEach(optionData => {
+      const option = document.createElement('option');
+      option.value = optionData.value;
+      option.textContent = optionData.text;
+      if (optionData.selected) {
+        option.selected = true;
+      }
+      select.appendChild(option);
     });
   }
 
