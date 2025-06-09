@@ -1577,67 +1577,60 @@ class SoundbeatsCard extends HTMLElement {
           gap: 8px;
         }
         
-        .year-slider {
+        .year-input {
           width: 100%;
-          height: 6px;
-          border-radius: 3px;
-          background: var(--divider-color, #e0e0e0);
-          outline: none;
-          -webkit-appearance: none;
-          appearance: none;
-        }
-        
-        .year-slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 20px;
-          height: 20px;
-          background: var(--primary-color, #03a9f4);
-          border-radius: 50%;
-          cursor: pointer;
-          border: none;
-        }
-        
-        .year-slider::-moz-range-thumb {
-          width: 20px;
-          height: 20px;
-          background: var(--primary-color, #03a9f4);
-          border-radius: 50%;
-          cursor: pointer;
-          border: none;
-        }
-        
-        .year-value {
-          color: var(--primary-text-color);
-          font-size: 1.1em;
-          font-weight: 500;
-          min-width: 60px;
-          text-align: center;
-          padding: 4px 8px;
-          background: var(--card-background-color, #ffffff);
+          box-sizing: border-box;
+          padding: 16px;
+          margin-bottom: 12px;
           border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: 4px;
+          border-radius: 8px;
+          text-align: center;
+          font-size: 2em;
+          font-weight: bold;
+          background-color: var(--secondary-background-color, #f5f5f5);
+          color: var(--primary-text-color);
+          /* For number inputs, hide the spinners on the side */
+          -moz-appearance: textfield;
+        }
+
+        .year-input::-webkit-outer-spin-button,
+        .year-input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+
+        .year-buttons {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 8px;
+        }
+
+        .year-button {
+          padding: 16px;
+          border: none;
+          border-radius: 8px;
+          background-color: var(--light-primary-color);
+          color: var(--text-primary-color);
+          font-size: 1.2em;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background-color 0.2s ease-in-out;
+        }
+
+        .year-button:hover {
+          background-color: var(--primary-color);
         }
         
         /* Mobile touch optimization */
         @media (max-width: 768px) {
-          .year-slider {
-            height: 8px;
+          .year-input {
+            font-size: 2.2em;
+            padding: 18px;
           }
-          
-          .year-slider::-webkit-slider-thumb {
-            width: 24px;
-            height: 24px;
-          }
-          
-          .year-slider::-moz-range-thumb {
-            width: 24px;
-            height: 24px;
-          }
-          
-          .year-value {
-            font-size: 1.2em;
-            padding: 8px 12px;
+
+          .year-button {
+            padding: 18px;
+            font-size: 1.3em;
           }
         }
         
@@ -4176,31 +4169,54 @@ class SoundbeatsCard extends HTMLElement {
     const minYear = 1950;
     return `
       <div class="year-picker-container">
-        <input type="range" 
-               class="year-slider" 
-               id="year-slider-${teamId}"
-               min="${minYear}" 
-               max="${currentYear}" 
-               step="1" 
+        <input type="number"
+               class="year-input"
+               id="year-input-${teamId}"
                value="${selectedYear}"
-               oninput="this.getRootNode().host._handleYearSliderChange('${teamId}', this.value)"
-               onchange="this.getRootNode().host._handleYearSliderChange('${teamId}', this.value)">
-        <span class="year-value" id="year-value-${teamId}">${selectedYear}</span>
+               pattern="[0-9]*"
+               oninput="this.getRootNode().host._handleYearInputChange('${teamId}', this.value)">
+        <div class="year-buttons">
+            <button class="year-button" onclick="this.getRootNode().host._adjustYear('${teamId}', -10)">${this._t('buttons.year_adjust_minus_ten')}</button>
+            <button class="year-button" onclick="this.getRootNode().host._adjustYear('${teamId}', -1)">${this._t('buttons.year_adjust_minus_one')}</button>
+            <button class="year-button" onclick="this.getRootNode().host._adjustYear('${teamId}', 1)">${this._t('buttons.year_adjust_plus_one')}</button>
+            <button class="year-button" onclick="this.getRootNode().host._adjustYear('${teamId}', 10)">${this._t('buttons.year_adjust_plus_ten')}</button>
+        </div>
       </div>
     `;
   }
 
-_handleYearSliderChange(teamId, value) {
-    // Update the year guess and display value
-    const year = parseInt(value, 10);
-    const yearValue = this.shadowRoot.querySelector(`#year-value-${teamId}`);
-    
-    if (yearValue) {
-      yearValue.textContent = year;
+  _adjustYear(teamId, adjustment) {
+    const inputElement = this.shadowRoot.querySelector(`#year-input-${teamId}`);
+    if (inputElement) {
+        let currentValue = parseInt(inputElement.value, 10);
+        currentValue += adjustment;
+
+        // Add validation to keep the year within a reasonable range
+        const minYear = 1950;
+        const maxYear = new Date().getFullYear();
+        if (currentValue < minYear) {
+            currentValue = minYear;
+        } else if (currentValue > maxYear) {
+            currentValue = maxYear;
+        }
+
+        inputElement.value = currentValue;
+        this.updateTeamYearGuess(teamId, currentValue);
     }
-    
-    // Update selection and call service
-    this.updateTeamYearGuess(teamId, year);
+  }
+
+  _handleYearInputChange(teamId, value) {
+    // Validate that the input is a 4-digit number
+    const year = parseInt(value, 10);
+    const minYear = 1950;
+    const maxYear = new Date().getFullYear();
+
+    if (value.length === 4 && year >= minYear && year <= maxYear) {
+        // Use a debounced call to update the state after the user stops typing
+        this.debouncedServiceCall(`yearGuess_${teamId}`, () => {
+            this.updateTeamYearGuess(teamId, year);
+        }, 500); // 500ms delay
+    }
   }
 
 toggleTeamBetting(teamId, betting) {
@@ -5357,22 +5373,18 @@ toggleTeamBetting(teamId, betting) {
   }
 
   updateYearSliderValues() {
-    // Update year slider values for all teams without recreating the entire section
+    // Update year input values for all teams without recreating the entire section
     const teams = this.getTeams();
     const currentUserId = this.hass && this.hass.user ? this.hass.user.id : null;
     
     Object.entries(teams)
       .filter(([teamId, team]) => team.participating && team.user_id === currentUserId)
       .forEach(([teamId, team]) => {
-        const yearSlider = this.shadowRoot.querySelector(`#year-slider-${teamId}`);
-        const yearValue = this.shadowRoot.querySelector(`#year-value-${teamId}`);
+        const yearInput = this.shadowRoot.querySelector(`#year-input-${teamId}`);
         
-        // Only update if slider is not being actively used
-        if (yearSlider && document.activeElement !== yearSlider) {
-          yearSlider.value = team.year_guess;
-        }
-        if (yearValue) {
-          yearValue.textContent = team.year_guess;
+        // Only update if input is not being actively used
+        if (yearInput && document.activeElement !== yearInput) {
+          yearInput.value = team.year_guess;
         }
       });
   }
