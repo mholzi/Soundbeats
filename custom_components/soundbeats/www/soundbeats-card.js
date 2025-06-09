@@ -21,6 +21,7 @@ class SoundbeatsCard extends HTMLElement {
     this.teamManagementExpanded = false;
     this.highscoreDiagnosticExpanded = false;
     this.highscoreExpanded = true; // Initial state should be true as per requirements
+    this.mobileAdminExpanded = false; // Mobile admin section starts collapsed
 
     // Initialize user data cache
     this.homeAssistantUsers = [];
@@ -68,6 +69,18 @@ class SoundbeatsCard extends HTMLElement {
 
   isTabletMode() {
     return this.config && this.config.tablet === true;
+  }
+
+  isMobileDevice() {
+    // Detect mobile devices for mobile-optimized UI
+    // Uses a combination of user agent, screen size, and touch capability
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobileUserAgent = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    const isSmallScreen = window.innerWidth <= 768;
+    const hasTouchCapability = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // Consider it mobile if it has mobile user agent OR (small screen AND touch capability)
+    return isMobileUserAgent || (isSmallScreen && hasTouchCapability);
   }
 
   // Translation system methods
@@ -455,8 +468,250 @@ class SoundbeatsCard extends HTMLElement {
     `;
   }
 
+  renderMobileMode() {
+    const isAdmin = this.checkAdminPermissions();
+    const isCountdownRunning = this.getCountdownCurrent() > 0;
+    const currentSong = this.getCurrentSong();
+    const roundCounter = this.getRoundCounter();
+    const showSong = this.getCountdownCurrent() === 0 && currentSong && roundCounter > 0;
+    
+    return `
+      <div class="mobile-mode-container">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+          <div class="mobile-title">
+            <ha-icon icon="mdi:music-note" class="icon"></ha-icon>
+            ${this._t('ui.title')}
+          </div>
+          ${isAdmin ? `
+            <button class="mobile-qr-button" onclick="this.getRootNode().host.showQrModal()" title="${this._t('ui.qr_modal_title')}">
+              <ha-icon icon="mdi:qrcode"></ha-icon>
+            </button>
+          ` : ''}
+        </div>
+
+        <!-- Mobile Game Status -->
+        <div class="mobile-game-status">
+          ${isCountdownRunning ? `
+            <div class="mobile-countdown-section">
+              <div class="mobile-countdown-timer">${this.getCountdownCurrent()}s</div>
+              <div class="mobile-countdown-progress">
+                <div class="mobile-countdown-progress-bar" style="width: ${this.getCountdownProgressPercent()}%"></div>
+              </div>
+              <div class="mobile-countdown-label">${this._t('ui.song_timer')}</div>
+            </div>
+          ` : showSong ? `
+            <div class="mobile-song-section">
+              <div class="mobile-song-card">
+                <img src="${currentSong.entity_picture}" alt="Song Cover" class="mobile-song-image" />
+                <div class="mobile-song-info">
+                  <div class="mobile-song-name">${currentSong.song_name}</div>
+                  <div class="mobile-song-artist">${currentSong.artist}</div>
+                  <div class="mobile-song-year">${currentSong.year}</div>
+                </div>
+              </div>
+              ${isAdmin ? `
+                <div class="mobile-song-controls">
+                  <button class="mobile-control-btn" onclick="this.getRootNode().host.volumeDown()" title="${this._t('ui.volume_down')}">
+                    <ha-icon icon="mdi:volume-minus"></ha-icon>
+                  </button>
+                  <button class="mobile-control-btn" onclick="this.getRootNode().host.togglePlayPause()" title="${this.getMediaPlayerState() === 'playing' ? this._t('ui.pause') : this._t('ui.play')}">
+                    <ha-icon icon="${this.getMediaPlayerState() === 'playing' ? 'mdi:pause' : 'mdi:play'}"></ha-icon>
+                  </button>
+                  <button class="mobile-control-btn" onclick="this.getRootNode().host.volumeUp()" title="${this._t('ui.volume_up')}">
+                    <ha-icon icon="mdi:volume-plus"></ha-icon>
+                  </button>
+                  <button class="mobile-next-btn" onclick="this.getRootNode().host.nextSong()">
+                    <ha-icon icon="mdi:skip-next"></ha-icon>
+                    ${this._t('ui.next_song')}
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+          ` : `
+            <div class="mobile-waiting-section">
+              <ha-icon icon="mdi:music-note-outline" class="mobile-waiting-icon"></ha-icon>
+              <div class="mobile-waiting-text">${this._t('game.no_song_message')}</div>
+            </div>
+          `}
+        </div>
+
+        <!-- Mobile Team Section -->
+        <div class="mobile-team-section">
+          ${this.renderMobileTeams()}
+        </div>
+
+        <!-- Mobile Quick Scoreboard -->
+        <div class="mobile-scoreboard">
+          <div class="mobile-scoreboard-header">
+            <ha-icon icon="mdi:podium" class="icon"></ha-icon>
+            ${this._t('ui.teams_overview')}
+          </div>
+          <div class="mobile-scoreboard-content">
+            ${this.renderMobileScoreboard()}
+          </div>
+        </div>
+
+        <!-- Mobile Admin Section -->
+        ${isAdmin ? `
+          <div class="mobile-admin-section">
+            <div class="mobile-admin-header" onclick="this.getRootNode().host.toggleMobileAdmin()">
+              <ha-icon icon="mdi:cog" class="icon"></ha-icon>
+              ${this._t('ui.game_settings')}
+              <ha-icon icon="mdi:chevron-down" class="mobile-admin-chevron ${this.mobileAdminExpanded ? 'expanded' : ''}"></ha-icon>
+            </div>
+            <div class="mobile-admin-content ${this.mobileAdminExpanded ? 'expanded' : 'collapsed'}">
+              <button class="mobile-admin-btn" onclick="this.getRootNode().host.startNewGame()">
+                <ha-icon icon="mdi:play" class="icon"></ha-icon>
+                ${this._t('splash.start_game')}
+              </button>
+              <div class="mobile-setting-item">
+                <div class="mobile-setting-label">
+                  <ha-icon icon="mdi:timer-outline" class="icon"></ha-icon>
+                  ${this._t('ui.countdown_timer_length')}
+                </div>
+                ${this._renderTimerSlider('mobile-timer-slider')}
+              </div>
+              <div class="mobile-setting-item">
+                <div class="mobile-setting-label">
+                  <ha-icon icon="mdi:speaker" class="icon"></ha-icon>
+                  ${this._t('settings.audio_player')}
+                </div>
+                ${this._renderAudioPlayerSelect('mobile-audio-player-select')}
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Version Footer -->
+        <div class="mobile-version-footer">
+          v${this.getVersion()}
+        </div>
+      </div>
+    `;
+  }
+
+  renderMobileTeams() {
+    const teams = this.getTeams();
+    const isCountdownRunning = this.getCountdownCurrent() > 0;
+    const currentYear = new Date().getFullYear();
+    
+    let teamsHtml = '';
+    
+    for (const teamId in teams) {
+      const team = teams[teamId];
+      if (!team.name) continue;
+      
+      teamsHtml += `
+        <div class="mobile-team-card ${team.isCurrentUser ? 'current-user' : ''}">
+          <div class="mobile-team-header">
+            <div class="mobile-team-name">${team.name}</div>
+            <div class="mobile-team-points">${team.points} ${this._t('defaults.points_suffix')}</div>
+          </div>
+          
+          ${isCountdownRunning ? `
+            <div class="mobile-year-section">
+              <div class="mobile-year-label">${this._t('game.year_guess_label')}</div>
+              ${this._renderMobileYearPicker(teamId, currentYear, team.year_guess)}
+              
+              <div class="mobile-betting-section">
+                <button class="mobile-bet-button ${team.betting ? 'betting-active' : ''}" 
+                        onclick="this.getRootNode().host.toggleTeamBetting('${teamId}', ${!team.betting})"
+                        aria-label="${team.betting ? this._t('betting.cancel_bet_aria') : this._ts('betting.place_bet_for_aria', { team: team.name })}">
+                  ${team.betting ? this._t('betting.betting_active') : this._t('betting.place_bet')}
+                </button>
+                ${team.betting ? `<div class="mobile-betting-info">${this._t('betting.win_lose_info')}</div>` : ''}
+              </div>
+            </div>
+          ` : `
+            <div class="mobile-team-status">
+              ${this.getRoundCounter() === 0 ? 
+                this._t('game.no_song_message') : 
+                (team.year_guess ? 
+                  `${this._t('game.your_guess_vs_actual', { guess: team.year_guess, year: '?' })}`.replace(' | Actual year: ?', '') : 
+                  this._t('game.no_song_message')
+                )
+              }
+            </div>
+          `}
+        </div>
+      `;
+    }
+    
+    return teamsHtml || `<div class="mobile-no-teams">${this._t('ui.no_teams_configured')}</div>`;
+  }
+
+  _renderMobileYearPicker(teamId, currentYear, selectedYear) {
+    return `
+      <div class="mobile-year-picker">
+        <input type="number" 
+               class="mobile-year-input" 
+               id="mobile-year-input-${teamId}"
+               placeholder="YYYY" 
+               min="1950" 
+               max="${currentYear}"
+               value="${selectedYear || ''}"
+               oninput="this.getRootNode().host._handleMobileYearChange('${teamId}', this.value)">
+        <div class="mobile-year-buttons">
+          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', -10)">-10</button>
+          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', -1)">-1</button>
+          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', 1)">+1</button>
+          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', 10)">+10</button>
+        </div>
+      </div>
+    `;
+  }
+
+  renderMobileScoreboard() {
+    const teams = this.getTeams();
+    const teamsArray = Object.keys(teams)
+      .map(id => ({ id, ...teams[id] }))
+      .filter(team => team.name)
+      .sort((a, b) => b.points - a.points);
+    
+    if (teamsArray.length === 0) {
+      return `<div class="mobile-no-scores">${this._t('ui.no_teams_configured')}</div>`;
+    }
+    
+    return teamsArray.map((team, index) => `
+      <div class="mobile-score-item ${team.isCurrentUser ? 'current-user' : ''}">
+        <div class="mobile-score-rank">${index + 1}</div>
+        <div class="mobile-score-name">${team.name}</div>
+        <div class="mobile-score-points">${team.points}</div>
+      </div>
+    `).join('');
+  }
+
+  toggleMobileAdmin() {
+    this.mobileAdminExpanded = !this.mobileAdminExpanded;
+    this.updateDisplayValues();
+  }
+
+  _handleMobileYearChange(teamId, value) {
+    if (value && /^\d{4}$/.test(value)) {
+      const year = parseInt(value, 10);
+      const currentYear = new Date().getFullYear();
+      if (year >= 1950 && year <= currentYear) {
+        this.updateTeamYearGuess(teamId, year);
+      }
+    }
+  }
+
+  _adjustMobileYear(teamId, adjustment) {
+    const input = this.shadowRoot.querySelector(`#mobile-year-input-${teamId}`);
+    if (input) {
+      const currentValue = parseInt(input.value, 10) || new Date().getFullYear();
+      const newValue = currentValue + adjustment;
+      const currentYear = new Date().getFullYear();
+      
+      if (newValue >= 1950 && newValue <= currentYear) {
+        input.value = newValue;
+        this.updateTeamYearGuess(teamId, newValue);
+      }
+    }
+  }
+
   renderSplashInputs(missingVariables) {
-    const missingMap = {};
     missingVariables.forEach(variable => {
       missingMap[variable.key] = variable;
     });
@@ -3457,6 +3712,535 @@ class SoundbeatsCard extends HTMLElement {
         .tablet-mode-container .hidden {
           display: none;
         }
+
+        /* Mobile Mode Styles */
+        .mobile-mode-container {
+          width: 100%;
+          max-width: 100vw;
+          padding: 8px;
+          background: var(--card-background-color, #ffffff);
+          border-radius: 8px;
+          box-sizing: border-box;
+          font-family: var(--primary-font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
+        }
+
+        /* Mobile Header */
+        .mobile-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 16px;
+          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, var(--accent-color, #ff5722) 100%);
+          color: white;
+          border-radius: 8px;
+          margin-bottom: 16px;
+        }
+
+        .mobile-title {
+          font-size: 1.2em;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .mobile-qr-button {
+          background: rgba(255, 255, 255, 0.2);
+          border: none;
+          border-radius: 50%;
+          width: 44px;
+          height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+        }
+
+        .mobile-qr-button:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Mobile Game Status */
+        .mobile-game-status {
+          margin-bottom: 20px;
+        }
+
+        .mobile-countdown-section {
+          text-align: center;
+          padding: 24px;
+          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, var(--accent-color, #ff5722) 100%);
+          border-radius: 12px;
+          color: white;
+        }
+
+        .mobile-countdown-timer {
+          font-size: 4rem;
+          font-weight: bold;
+          margin-bottom: 12px;
+        }
+
+        .mobile-countdown-progress {
+          width: 100%;
+          height: 8px;
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+          overflow: hidden;
+          margin-bottom: 8px;
+        }
+
+        .mobile-countdown-progress-bar {
+          height: 100%;
+          background: white;
+          transition: width 0.3s ease;
+        }
+
+        .mobile-countdown-label {
+          font-size: 1.1em;
+          opacity: 0.9;
+        }
+
+        .mobile-song-section {
+          background: var(--card-background-color, #ffffff);
+          border: 2px solid var(--primary-color, #03a9f4);
+          border-radius: 12px;
+          overflow: hidden;
+        }
+
+        .mobile-song-card {
+          padding: 16px;
+          text-align: center;
+        }
+
+        .mobile-song-image {
+          width: 150px;
+          height: 150px;
+          border-radius: 8px;
+          margin-bottom: 12px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .mobile-song-name {
+          font-size: 1.3em;
+          font-weight: bold;
+          margin-bottom: 4px;
+          color: var(--primary-text-color);
+        }
+
+        .mobile-song-artist {
+          font-size: 1.1em;
+          margin-bottom: 4px;
+          color: var(--secondary-text-color);
+        }
+
+        .mobile-song-year {
+          font-size: 1em;
+          color: var(--secondary-text-color);
+          margin-bottom: 16px;
+        }
+
+        .mobile-song-controls {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          justify-content: center;
+          padding: 16px;
+          background: var(--secondary-background-color, #f5f5f5);
+        }
+
+        .mobile-control-btn {
+          background: var(--primary-color, #03a9f4);
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 48px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .mobile-control-btn:hover {
+          background: var(--primary-color-dark, #0288d1);
+          transform: scale(1.05);
+        }
+
+        .mobile-next-btn {
+          background: linear-gradient(135deg, var(--accent-color, #ff5722) 0%, #e64a19 100%);
+          color: white;
+          border: none;
+          border-radius: 24px;
+          padding: 12px 20px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          font-weight: bold;
+          transition: all 0.3s ease;
+          flex: 1;
+          min-width: 140px;
+          max-width: 200px;
+          justify-content: center;
+        }
+
+        .mobile-next-btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 4px 12px rgba(230, 74, 25, 0.4);
+        }
+
+        .mobile-waiting-section {
+          text-align: center;
+          padding: 40px 20px;
+          color: var(--secondary-text-color);
+        }
+
+        .mobile-waiting-icon {
+          font-size: 3rem;
+          margin-bottom: 16px;
+          opacity: 0.5;
+        }
+
+        .mobile-waiting-text {
+          font-size: 1.1em;
+        }
+
+        /* Mobile Team Section */
+        .mobile-team-section {
+          margin-bottom: 20px;
+        }
+
+        .mobile-team-card {
+          background: var(--card-background-color, #ffffff);
+          border: 2px solid var(--divider-color, #e0e0e0);
+          border-radius: 12px;
+          margin-bottom: 12px;
+          overflow: hidden;
+          transition: border-color 0.3s ease;
+        }
+
+        .mobile-team-card.current-user {
+          border-color: var(--primary-color, #03a9f4);
+          box-shadow: 0 2px 8px rgba(3, 169, 244, 0.2);
+        }
+
+        .mobile-team-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px;
+          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, var(--accent-color, #ff5722) 100%);
+          color: white;
+        }
+
+        .mobile-team-name {
+          font-size: 1.1em;
+          font-weight: bold;
+        }
+
+        .mobile-team-points {
+          font-size: 1.1em;
+          font-weight: bold;
+        }
+
+        .mobile-year-section {
+          padding: 16px;
+        }
+
+        .mobile-year-label {
+          font-size: 1em;
+          font-weight: 500;
+          margin-bottom: 12px;
+          color: var(--primary-text-color);
+        }
+
+        .mobile-year-picker {
+          margin-bottom: 16px;
+        }
+
+        .mobile-year-input {
+          width: 100%;
+          padding: 16px;
+          font-size: 1.2em;
+          text-align: center;
+          border: 2px solid var(--divider-color, #e0e0e0);
+          border-radius: 8px;
+          background: var(--card-background-color, #ffffff);
+          color: var(--primary-text-color);
+          margin-bottom: 8px;
+          box-sizing: border-box;
+          /* Prevent iOS zoom */
+          font-size: 16px;
+        }
+
+        .mobile-year-input:focus {
+          border-color: var(--primary-color, #03a9f4);
+          outline: none;
+        }
+
+        .mobile-year-buttons {
+          display: flex;
+          gap: 8px;
+          justify-content: center;
+        }
+
+        .mobile-year-btn {
+          background: var(--primary-color, #03a9f4);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          padding: 12px 16px;
+          cursor: pointer;
+          font-weight: bold;
+          min-width: 48px;
+          min-height: 48px;
+          transition: all 0.3s ease;
+        }
+
+        .mobile-year-btn:hover {
+          background: var(--primary-color-dark, #0288d1);
+          transform: scale(1.05);
+        }
+
+        .mobile-betting-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .mobile-bet-button {
+          background: var(--primary-color, #03a9f4);
+          color: white;
+          border: none;
+          border-radius: 24px;
+          padding: 16px 32px;
+          font-size: 1.1em;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          min-height: 48px;
+          text-transform: uppercase;
+        }
+
+        .mobile-bet-button.betting-active {
+          background: var(--warning-color, #ff9800);
+          animation: pulse-betting 2s infinite;
+        }
+
+        .mobile-bet-button:hover:not(.betting-active) {
+          background: var(--primary-color-dark, #0288d1);
+          transform: scale(1.05);
+        }
+
+        .mobile-betting-info {
+          font-size: 0.9em;
+          color: var(--secondary-text-color);
+          text-align: center;
+        }
+
+        .mobile-team-status {
+          padding: 16px;
+          text-align: center;
+          color: var(--secondary-text-color);
+          font-style: italic;
+        }
+
+        /* Mobile Scoreboard */
+        .mobile-scoreboard {
+          background: var(--card-background-color, #ffffff);
+          border: 2px solid var(--divider-color, #e0e0e0);
+          border-radius: 12px;
+          margin-bottom: 20px;
+          overflow: hidden;
+        }
+
+        .mobile-scoreboard-header {
+          padding: 16px;
+          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, var(--accent-color, #ff5722) 100%);
+          color: white;
+          font-weight: bold;
+          font-size: 1.1em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .mobile-scoreboard-content {
+          padding: 8px;
+        }
+
+        .mobile-score-item {
+          display: flex;
+          align-items: center;
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--divider-color, #e0e0e0);
+        }
+
+        .mobile-score-item:last-child {
+          border-bottom: none;
+        }
+
+        .mobile-score-item.current-user {
+          background: rgba(3, 169, 244, 0.1);
+        }
+
+        .mobile-score-rank {
+          width: 32px;
+          height: 32px;
+          background: var(--primary-color, #03a9f4);
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          margin-right: 12px;
+        }
+
+        .mobile-score-name {
+          flex: 1;
+          font-weight: 500;
+        }
+
+        .mobile-score-points {
+          font-weight: bold;
+          color: var(--primary-color, #03a9f4);
+        }
+
+        /* Mobile Admin Section */
+        .mobile-admin-section {
+          background: var(--card-background-color, #ffffff);
+          border: 2px solid var(--divider-color, #e0e0e0);
+          border-radius: 12px;
+          margin-bottom: 20px;
+          overflow: hidden;
+        }
+
+        .mobile-admin-header {
+          padding: 16px;
+          background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, var(--accent-color, #ff5722) 100%);
+          color: white;
+          font-weight: bold;
+          font-size: 1.1em;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          cursor: pointer;
+        }
+
+        .mobile-admin-chevron {
+          transition: transform 0.3s ease;
+        }
+
+        .mobile-admin-chevron.expanded {
+          transform: rotate(180deg);
+        }
+
+        .mobile-admin-content {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.3s ease;
+        }
+
+        .mobile-admin-content.expanded {
+          max-height: 500px;
+          padding: 16px;
+        }
+
+        .mobile-admin-btn {
+          width: 100%;
+          background: var(--primary-color, #03a9f4);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          padding: 16px;
+          font-size: 1.1em;
+          font-weight: bold;
+          cursor: pointer;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          transition: all 0.3s ease;
+          min-height: 48px;
+        }
+
+        .mobile-admin-btn:hover {
+          background: var(--primary-color-dark, #0288d1);
+          transform: scale(1.02);
+        }
+
+        .mobile-setting-item {
+          margin-bottom: 16px;
+        }
+
+        .mobile-setting-label {
+          font-weight: 500;
+          margin-bottom: 8px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--primary-text-color);
+        }
+
+        /* Mobile Version Footer */
+        .mobile-version-footer {
+          text-align: center;
+          font-size: 0.8em;
+          color: var(--secondary-text-color);
+          opacity: 0.7;
+          margin-top: 16px;
+        }
+
+        /* No teams/scores messages */
+        .mobile-no-teams,
+        .mobile-no-scores {
+          text-align: center;
+          padding: 32px 16px;
+          color: var(--secondary-text-color);
+          font-style: italic;
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 480px) {
+          .mobile-mode-container {
+            padding: 4px;
+          }
+
+          .mobile-countdown-timer {
+            font-size: 3rem;
+          }
+
+          .mobile-song-image {
+            width: 120px;
+            height: 120px;
+          }
+
+          .mobile-year-buttons {
+            flex-wrap: wrap;
+          }
+
+          .mobile-year-btn {
+            flex: 1;
+            min-width: 44px;
+          }
+
+          .mobile-control-btn {
+            width: 44px;
+            height: 44px;
+          }
+        }
+
+        /* Ensure mobile styles override desktop/tablet when on mobile */
+        @media (max-width: 768px) and (pointer: coarse) {
+          .mobile-mode-container * {
+            touch-action: manipulation;
+          }
+        }
       </style>
       
       <!-- Alert Banner for No Audio Player Selected -->
@@ -3495,7 +4279,7 @@ class SoundbeatsCard extends HTMLElement {
         </button>
       </div>
       
-      ${showSplash ? this.renderSplashScreen() : (this.isTabletMode() ? this.renderTabletMode() : `
+      ${showSplash ? this.renderSplashScreen() : (this.isTabletMode() ? this.renderTabletMode() : (this.isMobileDevice() ? this.renderMobileMode() : `
       <div class="soundbeats-card">
         <!-- Title Section - Always visible -->
         <div class="section title-section">
@@ -3681,7 +4465,7 @@ class SoundbeatsCard extends HTMLElement {
       <div class="version-footer">
         v${this.getVersion()}
       </div>
-      `)}
+      `))}
       
       <!-- QR Code Modal -->
       <div class="qr-modal" id="qr-modal">
