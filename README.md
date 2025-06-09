@@ -115,6 +115,32 @@ Here’s how to set it up:
 
 > **Pro-Tip**: To help friends connect easily, the user with admin rights (assigned to Team 1) can click the QR code icon in the top-left of the card. This will display a QR code that other players can scan with their phones to instantly open your Home Assistant address in their browser.
 
+### 📺 Tablet Mode (Scoreboard Display)
+
+For the ultimate party experience, use a tablet or TV as a dedicated scoreboard while players use their mobile devices! Tablet mode provides a large, always-visible display perfect for everyone to see the game status.
+
+**How to Enable Tablet Mode:**
+1. Add a new Soundbeats card to your dashboard
+2. Edit the card in YAML mode and add the tablet configuration:
+   ```yaml
+   type: custom:soundbeats-card
+   tablet: true
+   ```
+3. Save the card and display it on your tablet or TV
+
+**Tablet Mode Features:**
+* **📱 Left Panel**: Large countdown timer (perfect visibility from across the room) and current song card with responsive album artwork
+* **🏆 Right Panel**: Live team rankings showing all participating teams with their current scores
+* **📺 Optimized Layout**: Full-screen layout designed for tablet and TV displays
+* **🚫 No Overflow**: Rankings are contained within the screen boundaries with scrolling as needed
+* **📱 Responsive**: Automatically adapts to smaller tablet screens by stacking panels vertically
+* **🎮 Global View**: Shows the status for all teams, not just the current user's team
+
+**Perfect Setup:**
+- Players use their phones/tablets with individual user accounts for private guessing
+- One tablet/TV displays the shared scoreboard using tablet mode
+- Everyone can see the timer, current song, and live rankings!
+
 
 ---
 
