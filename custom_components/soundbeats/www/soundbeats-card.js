@@ -5033,6 +5033,9 @@ toggleTeamBetting(teamId, betting) {
     // Update timer display value only if slider is not being actively used
     this.updateTimerDisplayValue();
     
+    // Update year slider values only if sliders are not being actively used
+    this.updateYearSliderValues();
+    
     // Update dropdown options without changing selected value if not focused
     this.updateAudioPlayerOptions();
     
@@ -5351,6 +5354,27 @@ toggleTeamBetting(teamId, betting) {
     if (timerValue) {
       timerValue.textContent = `${currentValue}s`;
     }
+  }
+
+  updateYearSliderValues() {
+    // Update year slider values for all teams without recreating the entire section
+    const teams = this.getTeams();
+    const currentUserId = this.hass && this.hass.user ? this.hass.user.id : null;
+    
+    Object.entries(teams)
+      .filter(([teamId, team]) => team.participating && team.user_id === currentUserId)
+      .forEach(([teamId, team]) => {
+        const yearSlider = this.shadowRoot.querySelector(`#year-slider-${teamId}`);
+        const yearValue = this.shadowRoot.querySelector(`#year-value-${teamId}`);
+        
+        // Only update if slider is not being actively used
+        if (yearSlider && document.activeElement !== yearSlider) {
+          yearSlider.value = team.year_guess;
+        }
+        if (yearValue) {
+          yearValue.textContent = team.year_guess;
+        }
+      });
   }
 
   updateAudioPlayerOptions() {
