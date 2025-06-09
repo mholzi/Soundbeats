@@ -5433,7 +5433,7 @@ class SoundbeatsCard extends HTMLElement {
 
   updateAudioPlayerOptions() {
     const select = this.shadowRoot.querySelector('.audio-player-select');
-    if (!select || document.activeElement === select || this._hasRecentAudioPlayerInteraction('.audio-player-select')) return;
+    if (!select || document.activeElement === select || this._hasRecentAudioPlayerInteraction('.audio-player-select') || this._isDropdownOpen('.audio-player-select')) return;
     
     const currentSelection = this.getSelectedAudioPlayer();
     const mediaPlayers = this.getMediaPlayers();
