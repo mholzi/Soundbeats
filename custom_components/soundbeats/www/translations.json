@@ -106,7 +106,11 @@
       "status": "Status:"
     },
     "buttons": {
-      "close": "×"
+      "close": "×",
+      "year_adjust_minus_ten": "-10",
+      "year_adjust_minus_one": "-1",
+      "year_adjust_plus_one": "+1",
+      "year_adjust_plus_ten": "+10"
     },
     "language_toggle": {
       "german": "Deutsch",
@@ -239,7 +243,11 @@
       "status": "Status:"
     },
     "buttons": {
-      "close": "×"
+      "close": "×",
+      "year_adjust_minus_ten": "-10",
+      "year_adjust_minus_one": "-1",
+      "year_adjust_plus_one": "+1",
+      "year_adjust_plus_ten": "+10"
     },
     "language_toggle": {
       "german": "Deutsch",
