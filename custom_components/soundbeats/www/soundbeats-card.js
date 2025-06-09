@@ -3921,40 +3921,27 @@ class SoundbeatsCard extends HTMLElement {
     return defaultTeams;
   }
 
-  getTeamRankings(globalRankings = false) {
-    // Calculate team rankings based on points among participating teams
-    // globalRankings=true: all participating teams, globalRankings=false: only current user's teams
+  getTeamRankings() {
+    // This function now ALWAYS calculates a global rank based on all participating teams.
     const teams = this.getTeams();
-    
-    // Get current user ID for filtering (only used when globalRankings=false)
-    const currentUserId = this.hass && this.hass.user ? this.hass.user.id : null;
-    
+
     const participatingTeams = Object.entries(teams)
-      .filter(([teamId, team]) => {
-        if (globalRankings) {
-          return team.participating; // Show all participating teams
-        } else {
-          return team.participating && team.user_id === currentUserId; // User-specific
-        }
-      })
+      .filter(([teamId, team]) => team.participating) // Simplified: always filter for all participating teams
       .map(([teamId, team]) => ({ teamId, ...team }))
-      .sort((a, b) => b.points - a.points); // Sort by points descending
-    
+      .sort((a, b) => b.points - a.points);
+
     const rankings = {};
-    let medalRank = 1; // Tracks current medal level (1=gold, 2=silver, 3=bronze)
+    let medalRank = 1;
     let lastPoints = null;
-    
+
     participatingTeams.forEach((team, index) => {
-      // If points changed, advance medal rank to the next position (handling ties properly)
       if (lastPoints !== null && team.points !== lastPoints) {
-        medalRank = index + 1; // Skip ranks based on actual position after ties
+        medalRank = index + 1;
       }
-      
-      // Cap medal rank at 3 (bronze), everything else gets rank 4+ for 'rank-other'
       rankings[team.teamId] = medalRank <= 3 ? medalRank : 4;
       lastPoints = team.points;
     });
-    
+
     return rankings;
   }
 
@@ -4045,8 +4032,9 @@ class SoundbeatsCard extends HTMLElement {
       .filter(([teamId, team]) => team.participating && team.user_id === currentUserId)
       .map(([teamId, team]) => {
         const rank = rankings[teamId] || 0;
-        // If round counter is 0, all teams use rank-other background
-        const rankClass = currentRound === 0 ? 'rank-other' :
+        
+        // This logic is now simplified to match the overview
+        const rankClass = currentRound === 0 || team.points === 0 ? 'rank-other' :
                          rank === 1 ? 'rank-1' : 
                          rank === 2 ? 'rank-2' : 
                          rank === 3 ? 'rank-3' : 'rank-other';
@@ -4290,7 +4278,7 @@ toggleTeamBetting(teamId, betting) {
 
   renderOtherTeamsOverview() {
     const teams = this.getTeams();
-    const rankings = this.getTeamRankings(true); // Use global rankings for overview
+    const rankings = this.getTeamRankings(); // CHANGE #1: Simplified call
     const isCountdownRunning = this.getCountdownCurrent() > 0;
     const currentRound = this.getRoundCounter();
     
@@ -4305,7 +4293,7 @@ toggleTeamBetting(teamId, betting) {
     }
     
     return sortedTeams.map((team, index) => {
-      const rank = rankings[team.teamId] || (index + 1);
+      const rank = rankings[team.teamId] || 0; // CHANGE #2: Consistent fallback
       const rankClass = currentRound === 0 || team.points === 0 ? 'rank-other' :
                        rank === 1 ? 'rank-1' : 
                        rank === 2 ? 'rank-2' : 
