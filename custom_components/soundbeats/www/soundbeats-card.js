@@ -1571,80 +1571,73 @@ class SoundbeatsCard extends HTMLElement {
         .year-picker-container {
           position: relative;
           width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
         }
         
-        .year-input {
+        .year-slider {
           width: 100%;
-          padding: 12px;
-          border: 2px solid var(--divider-color, #e0e0e0);
-          border-radius: 8px;
-          font-size: 1em;
-          font-weight: 500;
-          text-align: center;
-          background: var(--card-background-color, #ffffff);
-          color: var(--primary-text-color);
+          height: 6px;
+          border-radius: 3px;
+          background: var(--divider-color, #e0e0e0);
           outline: none;
-          transition: border-color 0.2s ease;
+          -webkit-appearance: none;
+          appearance: none;
         }
         
-        .year-input:focus {
-          border-color: var(--primary-color, #03a9f4);
-        }
-        
-        .year-input::placeholder {
-          color: var(--secondary-text-color, #757575);
-        }
-        
-        .year-picker-dropdown {
-          display: none;
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          z-index: 1000;
-          background: var(--card-background-color, #ffffff);
-          border: 2px solid var(--primary-color, #03a9f4);
-          border-radius: 8px;
-          max-height: 200px;
-          overflow-y: auto;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          margin-top: 4px;
-        }
-        
-        .year-picker-dropdown.show {
-          display: block;
-        }
-        
-        .year-item {
-          padding: 12px 16px;
+        .year-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          background: var(--primary-color, #03a9f4);
+          border-radius: 50%;
           cursor: pointer;
-          font-size: 1em;
-          font-weight: 500;
+          border: none;
+        }
+        
+        .year-slider::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          background: var(--primary-color, #03a9f4);
+          border-radius: 50%;
+          cursor: pointer;
+          border: none;
+        }
+        
+        .year-value {
           color: var(--primary-text-color);
-          border-bottom: 1px solid var(--divider-color, #e0e0e0);
-          transition: background-color 0.2s ease;
-          user-select: none;
-        }
-        
-        .year-item:last-child {
-          border-bottom: none;
-        }
-        
-        .year-item:hover {
-          background-color: var(--primary-color, #03a9f4);
-          color: var(--text-primary-color, #ffffff);
-        }
-        
-        .year-item.selected {
-          background-color: var(--primary-color, #03a9f4);
-          color: var(--text-primary-color, #ffffff);
+          font-size: 1.1em;
+          font-weight: 500;
+          min-width: 60px;
+          text-align: center;
+          padding: 4px 8px;
+          background: var(--card-background-color, #ffffff);
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 4px;
         }
         
         /* Mobile touch optimization */
         @media (max-width: 768px) {
-          .year-item {
-            padding: 16px;
-            font-size: 1.1em;
+          .year-slider {
+            height: 8px;
+          }
+          
+          .year-slider::-webkit-slider-thumb {
+            width: 24px;
+            height: 24px;
+          }
+          
+          .year-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+          }
+          
+          .year-value {
+            font-size: 1.2em;
+            padding: 8px 12px;
           }
         }
         
@@ -4180,115 +4173,37 @@ class SoundbeatsCard extends HTMLElement {
 
   // Year picker helper methods
   _renderYearPicker(teamId, currentYear, selectedYear) {
+    const minYear = 1950;
     return `
       <div class="year-picker-container">
-        <input type="text" 
-               class="year-input" 
-               id="year-input-${teamId}"
-               placeholder="YYYY" 
-               maxlength="4" 
-               autocomplete="off"
+        <input type="range" 
+               class="year-slider" 
+               id="year-slider-${teamId}"
+               min="${minYear}" 
+               max="${currentYear}" 
+               step="1" 
                value="${selectedYear}"
-               oninput="this.getRootNode().host._handleYearInputChange('${teamId}', this.value)"
-               onclick="this.getRootNode().host._showYearPicker('${teamId}')">
-        
-        <div id="year-picker-dropdown-${teamId}" class="year-picker-dropdown">
-          ${this._generateYearOptions(currentYear, selectedYear)}
-        </div>
+               oninput="this.getRootNode().host._handleYearSliderChange('${teamId}', this.value)"
+               onchange="this.getRootNode().host._handleYearSliderChange('${teamId}', this.value)">
+        <span class="year-value" id="year-value-${teamId}">${selectedYear}</span>
       </div>
     `;
   }
 
-  _generateYearOptions(currentYear, selectedYear) {
-    const startYear = 1950;
-    let yearHTML = '';
+_handleYearSliderChange(teamId, value) {
+    // Update the year guess and display value
+    const year = parseInt(value, 10);
+    const yearValue = this.shadowRoot.querySelector(`#year-value-${teamId}`);
     
-    for (let year = currentYear; year >= startYear; year--) {
-      const isSelected = year == selectedYear;
-      yearHTML += `<div class="year-item ${isSelected ? 'selected' : ''}" 
-                        data-year="${year}"
-                        onclick="event.stopPropagation(); this.getRootNode().host._selectYear('${year}', this.closest('.year-picker-container'))">${year}</div>`;
+    if (yearValue) {
+      yearValue.textContent = year;
     }
     
-    return yearHTML;
+    // Update selection and call service
+    this.updateTeamYearGuess(teamId, year);
   }
 
-  _handleYearInputChange(teamId, value) {
-    // Validate year input as user types
-    if (/^\d{4}$/.test(value)) {
-      const year = parseInt(value, 10);
-      if (year >= 1950 && year <= new Date().getFullYear()) {
-        // Valid year - update selection and call service
-        this.updateTeamYearGuess(teamId, year);
-        this._updateSelectedYear(teamId, year);
-      }
-    }
-  }
-
-  _showYearPicker(teamId) {
-    // Show the year picker dropdown
-    const dropdown = this.shadowRoot.querySelector(`#year-picker-dropdown-${teamId}`);
-    if (dropdown) {
-      dropdown.classList.add('show');
-      
-      // Close picker when clicking outside
-      const closeHandler = (event) => {
-        if (!dropdown.contains(event.target) && !event.target.closest(`#year-input-${teamId}`)) {
-          dropdown.classList.remove('show');
-          document.removeEventListener('click', closeHandler);
-        }
-      };
-      
-      setTimeout(() => {
-        document.addEventListener('click', closeHandler);
-      }, 10);
-    }
-  }
-
-  _selectYear(year, container) {
-    // Handle year selection from picker
-    if (!container) {
-      // Fallback: find container by walking up the DOM
-      const dropdown = this.shadowRoot.querySelector('.year-picker-dropdown.show');
-      if (dropdown) {
-        container = dropdown.closest('.year-picker-container');
-      }
-    }
-    
-    const input = container?.querySelector('.year-input');
-    const dropdown = container?.querySelector('.year-picker-dropdown');
-    
-    if (input && dropdown) {
-      input.value = year;
-      dropdown.classList.remove('show');
-      
-      // Extract team ID from input ID
-      const teamId = input.id.replace('year-input-', '');
-      this.updateTeamYearGuess(teamId, parseInt(year, 10));
-      
-      // Update visual selection
-      this._updateSelectedYear(teamId, year);
-    }
-  }
-
-  _updateSelectedYear(teamId, year) {
-    // Update visual selection in the picker
-    const dropdown = this.shadowRoot.querySelector(`#year-picker-dropdown-${teamId}`);
-    if (dropdown) {
-      // Remove previous selection
-      dropdown.querySelectorAll('.year-item').forEach(item => {
-        item.classList.remove('selected');
-      });
-      
-      // Add selection to matching year
-      const yearItem = dropdown.querySelector(`[data-year="${year}"]`);
-      if (yearItem) {
-        yearItem.classList.add('selected');
-      }
-    }
-  }
-
-  toggleTeamBetting(teamId, betting) {
+toggleTeamBetting(teamId, betting) {
     // Toggle team betting state through Home Assistant service
     // This calls the backend to update the team.betting property
     // The UI will reflect the change when the state updates from HA
@@ -5118,6 +5033,9 @@ class SoundbeatsCard extends HTMLElement {
     // Update timer display value only if slider is not being actively used
     this.updateTimerDisplayValue();
     
+    // Update year slider values only if sliders are not being actively used
+    this.updateYearSliderValues();
+    
     // Update dropdown options without changing selected value if not focused
     this.updateAudioPlayerOptions();
     
@@ -5436,6 +5354,27 @@ class SoundbeatsCard extends HTMLElement {
     if (timerValue) {
       timerValue.textContent = `${currentValue}s`;
     }
+  }
+
+  updateYearSliderValues() {
+    // Update year slider values for all teams without recreating the entire section
+    const teams = this.getTeams();
+    const currentUserId = this.hass && this.hass.user ? this.hass.user.id : null;
+    
+    Object.entries(teams)
+      .filter(([teamId, team]) => team.participating && team.user_id === currentUserId)
+      .forEach(([teamId, team]) => {
+        const yearSlider = this.shadowRoot.querySelector(`#year-slider-${teamId}`);
+        const yearValue = this.shadowRoot.querySelector(`#year-value-${teamId}`);
+        
+        // Only update if slider is not being actively used
+        if (yearSlider && document.activeElement !== yearSlider) {
+          yearSlider.value = team.year_guess;
+        }
+        if (yearValue) {
+          yearValue.textContent = team.year_guess;
+        }
+      });
   }
 
   updateAudioPlayerOptions() {
