@@ -63,6 +63,10 @@ class SoundbeatsCard extends HTMLElement {
     await this.render();
   }
 
+  isTabletMode() {
+    return this.config && this.config.tablet === true;
+  }
+
   // Translation system methods
   async _loadTranslations() {
     if (this._translations) return;
@@ -371,6 +375,73 @@ class SoundbeatsCard extends HTMLElement {
             ${isReady ? this._t('splash.launch_game') : this._t('splash.start_game')}
           </button>
           ${isReady ? '' : `<p class="start-help">${this._t('splash.start_help')}</p>`}
+        </div>
+        
+        <!-- Version Footer -->
+        <div class="version-footer">
+          v${this.getVersion()}
+        </div>
+      </div>
+    `;
+  }
+
+  renderTabletMode() {
+    const isAdmin = this.checkAdminPermissions();
+    
+    return `
+      <div class="tablet-mode-container">
+        <div class="tablet-left-panel">
+          <!-- Timer Section - Large font for tablet -->
+          <div class="tablet-timer-section ${this.getCountdownCurrent() > 0 ? '' : 'hidden'}">
+            <div class="tablet-countdown-timer">${this.getCountdownCurrent()}s</div>
+            <div class="tablet-countdown-progress">
+              <div class="tablet-countdown-progress-bar" style="width: ${this.getCountdownProgressPercent()}%"></div>
+            </div>
+          </div>
+          
+          <!-- Song Section - Responsive image for tablet -->
+          <div class="tablet-song-section ${this.getCountdownCurrent() === 0 && this.getCurrentSong() && this.getRoundCounter() > 0 ? '' : 'hidden'}">
+            ${this.getCurrentSong() ? `
+              <div class="tablet-song-card">
+                <img src="${this.getCurrentSong().entity_picture}" alt="Song Cover" class="tablet-song-image" />
+                <div class="tablet-song-info">
+                  <div class="tablet-song-name">${this.getCurrentSong().song_name}</div>
+                  <div class="tablet-song-artist">${this.getCurrentSong().artist}</div>
+                  <div class="tablet-song-year">${this.getCurrentSong().year}</div>
+                </div>
+                ${isAdmin ? `
+                  <div class="tablet-song-controls">
+                    <button class="tablet-control-button" onclick="this.getRootNode().host.volumeDown()" title="${this._t('ui.volume_down')}">
+                      <ha-icon icon="mdi:volume-minus"></ha-icon>
+                    </button>
+                    <button class="tablet-control-button" onclick="this.getRootNode().host.togglePlayPause()" title="${this.getMediaPlayerState() === 'playing' ? this._t('ui.pause') : this._t('ui.play')}">
+                      <ha-icon icon="${this.getMediaPlayerState() === 'playing' ? 'mdi:pause' : 'mdi:play'}"></ha-icon>
+                    </button>
+                    <button class="tablet-control-button" onclick="this.getRootNode().host.volumeUp()" title="${this._t('ui.volume_up')}">
+                      <ha-icon icon="mdi:volume-plus"></ha-icon>
+                    </button>
+                    <button class="tablet-next-song-button" onclick="this.getRootNode().host.nextSong()" title="${this._t('ui.next_song')}">
+                      <ha-icon icon="mdi:skip-next" class="icon"></ha-icon>
+                      ${this._t('ui.next_song')}
+                    </button>
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+        
+        <div class="tablet-right-panel">
+          <!-- Team Rankings - No overflow -->
+          <div class="tablet-rankings-section">
+            <h2 class="tablet-rankings-title">
+              <ha-icon icon="mdi:podium" class="icon"></ha-icon>
+              ${this._t('ui.teams_overview')}
+            </h2>
+            <div class="tablet-rankings-container">
+              ${this.renderOtherTeamsOverview()}
+            </div>
+          </div>
         </div>
         
         <!-- Version Footer -->
@@ -3123,6 +3194,266 @@ class SoundbeatsCard extends HTMLElement {
           color: var(--secondary-text-color, rgba(0, 0, 0, 0.5));
           text-shadow: none;
         }
+        
+        /* Tablet Mode Styles */
+        .tablet-mode-container {
+          display: flex;
+          min-height: 100vh;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .tablet-left-panel {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 2rem;
+          min-height: 100vh;
+        }
+        
+        .tablet-right-panel {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          padding: 2rem;
+          min-height: 100vh;
+          overflow: hidden;
+        }
+        
+        /* Tablet Timer Styles */
+        .tablet-timer-section {
+          text-align: center;
+          margin-bottom: 3rem;
+        }
+        
+        .tablet-countdown-timer {
+          font-size: 8rem;
+          font-weight: bold;
+          color: #FFD700;
+          text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+          margin-bottom: 1rem;
+        }
+        
+        .tablet-countdown-progress {
+          width: 300px;
+          height: 20px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 10px;
+          overflow: hidden;
+          margin: 0 auto;
+        }
+        
+        .tablet-countdown-progress-bar {
+          height: 100%;
+          background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+          transition: width 0.3s ease;
+          border-radius: 10px;
+        }
+        
+        /* Tablet Song Styles */
+        .tablet-song-section {
+          text-align: center;
+          max-width: 600px;
+        }
+        
+        .tablet-song-card {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          padding: 2rem;
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .tablet-song-image {
+          width: 300px;
+          height: 300px;
+          object-fit: cover;
+          border-radius: 15px;
+          margin-bottom: 1.5rem;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tablet-song-info {
+          margin-bottom: 1.5rem;
+        }
+        
+        .tablet-song-name {
+          font-size: 2.5rem;
+          font-weight: bold;
+          margin-bottom: 0.5rem;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .tablet-song-artist {
+          font-size: 2rem;
+          margin-bottom: 0.5rem;
+          opacity: 0.9;
+        }
+        
+        .tablet-song-year {
+          font-size: 1.5rem;
+          opacity: 0.8;
+        }
+        
+        .tablet-song-controls {
+          display: flex;
+          justify-content: center;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+        
+        .tablet-control-button {
+          background: rgba(255, 255, 255, 0.2);
+          border: none;
+          color: white;
+          padding: 1rem;
+          border-radius: 50%;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          width: 60px;
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .tablet-control-button:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: scale(1.1);
+        }
+        
+        .tablet-next-song-button {
+          background: linear-gradient(135deg, #ff6b35 0%, #f39c12 50%, #ffd700 100%);
+          border: none;
+          color: white;
+          padding: 1rem 2rem;
+          border-radius: 30px;
+          cursor: pointer;
+          font-size: 1.2rem;
+          font-weight: bold;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: 1rem;
+        }
+        
+        .tablet-next-song-button:hover {
+          transform: scale(1.05);
+          box-shadow: 0 4px 16px rgba(255, 107, 53, 0.4);
+        }
+        
+        /* Tablet Rankings Styles */
+        .tablet-rankings-section {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        
+        .tablet-rankings-title {
+          font-size: 3rem;
+          margin-bottom: 2rem;
+          text-align: center;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 1rem;
+        }
+        
+        .tablet-rankings-container {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          overflow-y: auto;
+          padding-right: 1rem;
+        }
+        
+        /* Override overview team item styles for tablet */
+        .tablet-mode-container .overview-team-item {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+          padding: 1.5rem;
+          border-radius: 15px;
+          min-width: unset;
+          max-width: unset;
+          width: 100%;
+          min-height: 80px;
+          font-size: 1.5rem;
+        }
+        
+        .tablet-mode-container .overview-team-item .overview-team-name {
+          font-size: 2rem;
+          font-weight: bold;
+        }
+        
+        .tablet-mode-container .overview-team-item .overview-team-points {
+          font-size: 1.8rem;
+          font-weight: bold;
+        }
+        
+        .tablet-mode-container .overview-rank-badge {
+          font-size: 2rem;
+          margin-right: 1rem;
+        }
+        
+        .tablet-mode-container .version-footer {
+          position: fixed;
+          bottom: 1rem;
+          left: 1rem;
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 1rem;
+          z-index: 1000;
+        }
+        
+        /* Responsive adjustments for smaller tablets */
+        @media (max-width: 1024px) {
+          .tablet-mode-container {
+            flex-direction: column;
+            min-height: 100vh;
+          }
+          
+          .tablet-left-panel,
+          .tablet-right-panel {
+            flex: none;
+            min-height: 50vh;
+            padding: 1rem;
+          }
+          
+          .tablet-countdown-timer {
+            font-size: 6rem;
+          }
+          
+          .tablet-song-image {
+            width: 200px;
+            height: 200px;
+          }
+          
+          .tablet-song-name {
+            font-size: 2rem;
+          }
+          
+          .tablet-song-artist {
+            font-size: 1.5rem;
+          }
+          
+          .tablet-rankings-title {
+            font-size: 2.5rem;
+          }
+        }
+        
+        /* Hidden class for tablet mode */
+        .tablet-mode-container .hidden {
+          display: none;
+        }
       </style>
       
       <!-- Alert Banner for No Audio Player Selected -->
@@ -3161,7 +3492,7 @@ class SoundbeatsCard extends HTMLElement {
         </button>
       </div>
       
-      ${showSplash ? this.renderSplashScreen() : `
+      ${showSplash ? this.renderSplashScreen() : (this.isTabletMode() ? this.renderTabletMode() : `
       <div class="soundbeats-card">
         <!-- Title Section - Always visible -->
         <div class="section title-section">
@@ -3347,7 +3678,7 @@ class SoundbeatsCard extends HTMLElement {
       <div class="version-footer">
         v${this.getVersion()}
       </div>
-      `}
+      `)}
       
       <!-- QR Code Modal -->
       <div class="qr-modal" id="qr-modal">
