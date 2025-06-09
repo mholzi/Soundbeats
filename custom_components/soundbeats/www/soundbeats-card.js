@@ -1948,6 +1948,13 @@ class SoundbeatsCard extends HTMLElement {
           gap: 12px;
         }
         
+        .setting-divider {
+          height: 1px;
+          background: var(--divider-color, rgba(255, 255, 255, 0.2));
+          margin: 8px 0;
+          opacity: 0.6;
+        }
+        
         .timer-slider {
           flex: 1;
           height: 6px;
@@ -3641,6 +3648,7 @@ class SoundbeatsCard extends HTMLElement {
                   Start a new Game
                 </button>
               </div>
+              <div class="setting-divider"></div>
               <div class="setting-item">
                 <div class="setting-label">
                   <ha-icon icon="mdi:account-group" class="icon"></ha-icon>
@@ -3675,6 +3683,7 @@ class SoundbeatsCard extends HTMLElement {
                   ${this._renderAudioPlayerSelect('audio-player-select')}
                 </div>
               </div>
+              <div class="setting-divider"></div>
               <div class="setting-item">
                 <div class="setting-label">
                   <ha-icon icon="mdi:translate" class="icon"></ha-icon>
