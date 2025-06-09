@@ -651,12 +651,14 @@ class SoundbeatsCard extends HTMLElement {
                min="1950" 
                max="${currentYear}"
                value="${selectedYear || ''}"
-               oninput="this.getRootNode().host._handleMobileYearChange('${teamId}', this.value)">
+               aria-label="Year guess input"
+               oninput="this.getRootNode().host._handleMobileYearChange('${teamId}', this.value)"
+               onkeydown="this.getRootNode().host._handleMobileKeyboardNavigation(event, '${teamId}')">
         <div class="mobile-year-buttons">
-          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', -10)">-10</button>
-          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', -1)">-1</button>
-          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', 1)">+1</button>
-          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', 10)">+10</button>
+          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', -10)" aria-label="Subtract 10 years">-10</button>
+          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', -1)" aria-label="Subtract 1 year">-1</button>
+          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', 1)" aria-label="Add 1 year">+1</button>
+          <button class="mobile-year-btn" onclick="this.getRootNode().host._adjustMobileYear('${teamId}', 10)" aria-label="Add 10 years">+10</button>
         </div>
       </div>
     `;
@@ -707,7 +709,28 @@ class SoundbeatsCard extends HTMLElement {
       if (newValue >= 1950 && newValue <= currentYear) {
         input.value = newValue;
         this.updateTeamYearGuess(teamId, newValue);
+        // Provide haptic feedback on mobile devices
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
       }
+    }
+  }
+
+  _handleMobileKeyboardNavigation(event, teamId) {
+    // Handle keyboard navigation for mobile year input
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this._adjustMobileYear(teamId, 1);
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this._adjustMobileYear(teamId, -1);
+    } else if (event.key === 'PageUp') {
+      event.preventDefault();
+      this._adjustMobileYear(teamId, 10);
+    } else if (event.key === 'PageDown') {
+      event.preventDefault();
+      this._adjustMobileYear(teamId, -10);
     }
   }
 
@@ -4239,6 +4262,68 @@ class SoundbeatsCard extends HTMLElement {
         @media (max-width: 768px) and (pointer: coarse) {
           .mobile-mode-container * {
             touch-action: manipulation;
+          }
+        }
+
+        /* Mobile landscape optimizations */
+        @media (max-width: 768px) and (orientation: landscape) {
+          .mobile-countdown-timer {
+            font-size: 3rem;
+          }
+          
+          .mobile-song-card {
+            padding: 12px;
+          }
+          
+          .mobile-song-image {
+            width: 100px;
+            height: 100px;
+          }
+          
+          .mobile-team-card {
+            margin-bottom: 8px;
+          }
+          
+          .mobile-year-section {
+            padding: 12px;
+          }
+        }
+
+        /* Focus styles for better accessibility */
+        .mobile-year-input:focus,
+        .mobile-bet-button:focus,
+        .mobile-year-btn:focus,
+        .mobile-control-btn:focus,
+        .mobile-admin-btn:focus {
+          outline: 2px solid var(--primary-color, #03a9f4);
+          outline-offset: 2px;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+          .mobile-team-header,
+          .mobile-scoreboard-header,
+          .mobile-admin-header {
+            border: 2px solid currentColor;
+          }
+          
+          .mobile-bet-button,
+          .mobile-year-btn,
+          .mobile-control-btn {
+            border: 1px solid currentColor;
+          }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+          .mobile-bet-button.betting-active {
+            animation: none;
+          }
+          
+          .mobile-control-btn:hover,
+          .mobile-next-btn:hover,
+          .mobile-year-btn:hover {
+            transform: none;
           }
         }
       </style>
