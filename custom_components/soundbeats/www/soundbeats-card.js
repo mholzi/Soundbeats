@@ -4197,6 +4197,7 @@ class SoundbeatsCard extends HTMLElement {
       <div class="year-picker-container">
         <div class="year-buttons-container">
           <button class="year-button year-minus" 
+                  id="year-minus-${teamId}"
                   onclick="this.getRootNode().host._handleYearChange('${teamId}', -1)"
                   aria-label="Decrease year"
                   ${selectedYear <= minYear ? 'disabled' : ''}>
@@ -4204,6 +4205,7 @@ class SoundbeatsCard extends HTMLElement {
           </button>
           <span class="year-value" id="year-value-${teamId}">${selectedYear}</span>
           <button class="year-button year-plus" 
+                  id="year-plus-${teamId}"
                   onclick="this.getRootNode().host._handleYearChange('${teamId}', 1)"
                   aria-label="Increase year"
                   ${selectedYear >= currentYear ? 'disabled' : ''}>
@@ -4241,8 +4243,8 @@ _handleYearChange(teamId, direction) {
   }
 
   _updateYearButtonStates(teamId, currentValue, minYear, maxYear) {
-    const minusButton = this.shadowRoot.querySelector(`[onclick*="'${teamId}', -1"]`);
-    const plusButton = this.shadowRoot.querySelector(`[onclick*="'${teamId}', 1"]`);
+    const minusButton = this.shadowRoot.querySelector(`#year-minus-${teamId}`);
+    const plusButton = this.shadowRoot.querySelector(`#year-plus-${teamId}`);
     
     if (minusButton) {
       minusButton.disabled = currentValue <= minYear;
