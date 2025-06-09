@@ -1577,67 +1577,86 @@ class SoundbeatsCard extends HTMLElement {
           gap: 8px;
         }
         
-        .year-slider {
+        .year-buttons-container {
+          display: flex;
+          align-items: center;
+          gap: 16px;
           width: 100%;
-          height: 6px;
-          border-radius: 3px;
-          background: var(--divider-color, #e0e0e0);
+          max-width: 200px;
+        }
+        
+        .year-button {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          border: 2px solid var(--primary-color, #03a9f4);
+          background: var(--card-background-color, #ffffff);
+          color: var(--primary-color, #03a9f4);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
           outline: none;
-          -webkit-appearance: none;
-          appearance: none;
+          flex-shrink: 0;
         }
         
-        .year-slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 20px;
-          height: 20px;
+        .year-button:hover:not(:disabled) {
           background: var(--primary-color, #03a9f4);
-          border-radius: 50%;
-          cursor: pointer;
-          border: none;
+          color: var(--text-primary-color, #ffffff);
+          transform: scale(1.05);
         }
         
-        .year-slider::-moz-range-thumb {
-          width: 20px;
-          height: 20px;
-          background: var(--primary-color, #03a9f4);
-          border-radius: 50%;
-          cursor: pointer;
-          border: none;
+        .year-button:active:not(:disabled) {
+          transform: scale(0.95);
+        }
+        
+        .year-button:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+          background: var(--divider-color, #e0e0e0);
+          border-color: var(--divider-color, #e0e0e0);
+          color: var(--secondary-text-color, #757575);
+        }
+        
+        .year-button ha-icon {
+          --mdc-icon-size: 24px;
         }
         
         .year-value {
           color: var(--primary-text-color);
-          font-size: 1.1em;
-          font-weight: 500;
-          min-width: 60px;
+          font-size: 1.4em;
+          font-weight: 600;
+          min-width: 80px;
           text-align: center;
-          padding: 4px 8px;
+          padding: 8px 12px;
           background: var(--card-background-color, #ffffff);
-          border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: 4px;
+          border: 2px solid var(--primary-color, #03a9f4);
+          border-radius: 8px;
+          flex: 1;
         }
         
         /* Mobile touch optimization */
         @media (max-width: 768px) {
-          .year-slider {
-            height: 8px;
+          .year-button {
+            width: 48px;
+            height: 48px;
           }
           
-          .year-slider::-webkit-slider-thumb {
-            width: 24px;
-            height: 24px;
-          }
-          
-          .year-slider::-moz-range-thumb {
-            width: 24px;
-            height: 24px;
+          .year-button ha-icon {
+            --mdc-icon-size: 28px;
           }
           
           .year-value {
-            font-size: 1.2em;
-            padding: 8px 12px;
+            font-size: 1.5em;
+            padding: 12px 16px;
+          }
+          
+          .year-buttons-container {
+            gap: 20px;
+            max-width: 240px;
+          }
+        }
           }
         }
         
@@ -4176,31 +4195,61 @@ class SoundbeatsCard extends HTMLElement {
     const minYear = 1950;
     return `
       <div class="year-picker-container">
-        <input type="range" 
-               class="year-slider" 
-               id="year-slider-${teamId}"
-               min="${minYear}" 
-               max="${currentYear}" 
-               step="1" 
-               value="${selectedYear}"
-               oninput="this.getRootNode().host._handleYearSliderChange('${teamId}', this.value)"
-               onchange="this.getRootNode().host._handleYearSliderChange('${teamId}', this.value)">
-        <span class="year-value" id="year-value-${teamId}">${selectedYear}</span>
+        <div class="year-buttons-container">
+          <button class="year-button year-minus" 
+                  onclick="this.getRootNode().host._handleYearChange('${teamId}', -1)"
+                  aria-label="Decrease year"
+                  ${selectedYear <= minYear ? 'disabled' : ''}>
+            <ha-icon icon="mdi:minus"></ha-icon>
+          </button>
+          <span class="year-value" id="year-value-${teamId}">${selectedYear}</span>
+          <button class="year-button year-plus" 
+                  onclick="this.getRootNode().host._handleYearChange('${teamId}', 1)"
+                  aria-label="Increase year"
+                  ${selectedYear >= currentYear ? 'disabled' : ''}>
+            <ha-icon icon="mdi:plus"></ha-icon>
+          </button>
+        </div>
       </div>
     `;
   }
 
-_handleYearSliderChange(teamId, value) {
-    // Update the year guess and display value
-    const year = parseInt(value, 10);
-    const yearValue = this.shadowRoot.querySelector(`#year-value-${teamId}`);
+_handleYearChange(teamId, direction) {
+    const teams = this.getTeams();
+    const team = teams[teamId];
+    if (!team) return;
     
+    const currentYear = new Date().getFullYear();
+    const minYear = 1950;
+    const currentValue = team.year_guess || currentYear;
+    const newYear = currentValue + direction;
+    
+    // Check bounds
+    if (newYear < minYear || newYear > currentYear) return;
+    
+    // Update the year guess and display value
+    const yearValue = this.shadowRoot.querySelector(`#year-value-${teamId}`);
     if (yearValue) {
-      yearValue.textContent = year;
+      yearValue.textContent = newYear;
     }
     
+    // Update button states
+    this._updateYearButtonStates(teamId, newYear, minYear, currentYear);
+    
     // Update selection and call service
-    this.updateTeamYearGuess(teamId, year);
+    this.updateTeamYearGuess(teamId, newYear);
+  }
+
+  _updateYearButtonStates(teamId, currentValue, minYear, maxYear) {
+    const minusButton = this.shadowRoot.querySelector(`[onclick*="'${teamId}', -1"]`);
+    const plusButton = this.shadowRoot.querySelector(`[onclick*="'${teamId}', 1"]`);
+    
+    if (minusButton) {
+      minusButton.disabled = currentValue <= minYear;
+    }
+    if (plusButton) {
+      plusButton.disabled = currentValue >= maxYear;
+    }
   }
 
 toggleTeamBetting(teamId, betting) {
@@ -5034,7 +5083,7 @@ toggleTeamBetting(teamId, betting) {
     this.updateTimerDisplayValue();
     
     // Update year slider values only if sliders are not being actively used
-    this.updateYearSliderValues();
+    this.updateYearPickerValues();
     
     // Update dropdown options without changing selected value if not focused
     this.updateAudioPlayerOptions();
@@ -5356,23 +5405,22 @@ toggleTeamBetting(teamId, betting) {
     }
   }
 
-  updateYearSliderValues() {
-    // Update year slider values for all teams without recreating the entire section
+  updateYearPickerValues() {
+    // Update year picker values for all teams without recreating the entire section
     const teams = this.getTeams();
     const currentUserId = this.hass && this.hass.user ? this.hass.user.id : null;
+    const currentYear = new Date().getFullYear();
+    const minYear = 1950;
     
     Object.entries(teams)
       .filter(([teamId, team]) => team.participating && team.user_id === currentUserId)
       .forEach(([teamId, team]) => {
-        const yearSlider = this.shadowRoot.querySelector(`#year-slider-${teamId}`);
         const yearValue = this.shadowRoot.querySelector(`#year-value-${teamId}`);
         
-        // Only update if slider is not being actively used
-        if (yearSlider && document.activeElement !== yearSlider) {
-          yearSlider.value = team.year_guess;
-        }
         if (yearValue) {
           yearValue.textContent = team.year_guess;
+          // Update button states
+          this._updateYearButtonStates(teamId, team.year_guess, minYear, currentYear);
         }
       });
   }
