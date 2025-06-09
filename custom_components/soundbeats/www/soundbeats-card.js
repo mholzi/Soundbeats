@@ -1466,46 +1466,90 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .year-guess-control {
+          position: relative;
           display: flex;
-          align-items: center;
-          gap: 12px;
+          flex-direction: column;
+          gap: 8px;
         }
         
-        .year-slider {
-          flex: 1;
-          height: 6px;
-          background: var(--divider-color, #e0e0e0);
-          border-radius: 3px;
-          outline: none;
-          -webkit-appearance: none;
-          appearance: none;
+        .year-picker-container {
+          position: relative;
+          width: 100%;
         }
         
-        .year-slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 18px;
-          height: 18px;
-          background: var(--primary-color, #03a9f4);
-          border-radius: 50%;
-          cursor: pointer;
-        }
-        
-        .year-slider::-moz-range-thumb {
-          width: 18px;
-          height: 18px;
-          background: var(--primary-color, #03a9f4);
-          border-radius: 50%;
-          cursor: pointer;
-          border: none;
-        }
-        
-        .year-value {
-          min-width: 50px;
-          text-align: center;
+        .year-input {
+          width: 100%;
+          padding: 12px;
+          border: 2px solid var(--divider-color, #e0e0e0);
+          border-radius: 8px;
+          font-size: 1em;
           font-weight: 500;
-          color: var(--primary-color, #03a9f4);
-          font-size: 0.9em;
+          text-align: center;
+          background: var(--card-background-color, #ffffff);
+          color: var(--primary-text-color);
+          outline: none;
+          transition: border-color 0.2s ease;
+        }
+        
+        .year-input:focus {
+          border-color: var(--primary-color, #03a9f4);
+        }
+        
+        .year-input::placeholder {
+          color: var(--secondary-text-color, #757575);
+        }
+        
+        .year-picker-dropdown {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          background: var(--card-background-color, #ffffff);
+          border: 2px solid var(--primary-color, #03a9f4);
+          border-radius: 8px;
+          max-height: 200px;
+          overflow-y: auto;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          margin-top: 4px;
+        }
+        
+        .year-picker-dropdown.show {
+          display: block;
+        }
+        
+        .year-item {
+          padding: 12px 16px;
+          cursor: pointer;
+          font-size: 1em;
+          font-weight: 500;
+          color: var(--primary-text-color);
+          border-bottom: 1px solid var(--divider-color, #e0e0e0);
+          transition: background-color 0.2s ease;
+          user-select: none;
+        }
+        
+        .year-item:last-child {
+          border-bottom: none;
+        }
+        
+        .year-item:hover {
+          background-color: var(--primary-color, #03a9f4);
+          color: var(--text-primary-color, #ffffff);
+        }
+        
+        .year-item.selected {
+          background-color: var(--primary-color, #03a9f4);
+          color: var(--text-primary-color, #ffffff);
+        }
+        
+        /* Mobile touch optimization */
+        @media (max-width: 768px) {
+          .year-item {
+            padding: 16px;
+            font-size: 1.1em;
+          }
         }
         
         .betting-section {
@@ -3666,9 +3710,7 @@ class SoundbeatsCard extends HTMLElement {
             <div class="year-guess-section">
               <label class="year-guess-label">${this._t('game.year_guess_label')}</label>
               <div class="year-guess-control">
-                <input type="range" class="year-slider" min="1950" max="${currentYear}" value="${team.year_guess}" 
-                       oninput="this.nextElementSibling.textContent = this.value; this.getRootNode().host.updateTeamYearGuess('${teamId}', this.value)">
-                <span class="year-value">${team.year_guess}</span>
+                ${this._renderYearPicker(teamId, currentYear, team.year_guess)}
               </div>
               <div class="betting-section">
                 <!-- 
@@ -3764,6 +3806,116 @@ class SoundbeatsCard extends HTMLElement {
         team_id: teamId,
         year_guess: parseInt(yearGuess, 10)
       });
+    }
+  }
+
+  // Year picker helper methods
+  _renderYearPicker(teamId, currentYear, selectedYear) {
+    return `
+      <div class="year-picker-container">
+        <input type="text" 
+               class="year-input" 
+               id="year-input-${teamId}"
+               placeholder="YYYY" 
+               maxlength="4" 
+               autocomplete="off"
+               value="${selectedYear}"
+               oninput="this.getRootNode().host._handleYearInputChange('${teamId}', this.value)"
+               onclick="this.getRootNode().host._showYearPicker('${teamId}')">
+        
+        <div id="year-picker-dropdown-${teamId}" class="year-picker-dropdown">
+          ${this._generateYearOptions(currentYear, selectedYear)}
+        </div>
+      </div>
+    `;
+  }
+
+  _generateYearOptions(currentYear, selectedYear) {
+    const startYear = 1950;
+    let yearHTML = '';
+    
+    for (let year = currentYear; year >= startYear; year--) {
+      const isSelected = year == selectedYear;
+      yearHTML += `<div class="year-item ${isSelected ? 'selected' : ''}" 
+                        data-year="${year}"
+                        onclick="event.stopPropagation(); this.getRootNode().host._selectYear('${year}', this.closest('.year-picker-container'))">${year}</div>`;
+    }
+    
+    return yearHTML;
+  }
+
+  _handleYearInputChange(teamId, value) {
+    // Validate year input as user types
+    if (/^\d{4}$/.test(value)) {
+      const year = parseInt(value, 10);
+      if (year >= 1950 && year <= new Date().getFullYear()) {
+        // Valid year - update selection and call service
+        this.updateTeamYearGuess(teamId, year);
+        this._updateSelectedYear(teamId, year);
+      }
+    }
+  }
+
+  _showYearPicker(teamId) {
+    // Show the year picker dropdown
+    const dropdown = this.shadowRoot.querySelector(`#year-picker-dropdown-${teamId}`);
+    if (dropdown) {
+      dropdown.classList.add('show');
+      
+      // Close picker when clicking outside
+      const closeHandler = (event) => {
+        if (!dropdown.contains(event.target) && !event.target.closest(`#year-input-${teamId}`)) {
+          dropdown.classList.remove('show');
+          document.removeEventListener('click', closeHandler);
+        }
+      };
+      
+      setTimeout(() => {
+        document.addEventListener('click', closeHandler);
+      }, 10);
+    }
+  }
+
+  _selectYear(year, container) {
+    // Handle year selection from picker
+    if (!container) {
+      // Fallback: find container by walking up the DOM
+      const dropdown = this.shadowRoot.querySelector('.year-picker-dropdown.show');
+      if (dropdown) {
+        container = dropdown.closest('.year-picker-container');
+      }
+    }
+    
+    const input = container?.querySelector('.year-input');
+    const dropdown = container?.querySelector('.year-picker-dropdown');
+    
+    if (input && dropdown) {
+      input.value = year;
+      dropdown.classList.remove('show');
+      
+      // Extract team ID from input ID
+      const teamId = input.id.replace('year-input-', '');
+      this.updateTeamYearGuess(teamId, parseInt(year, 10));
+      
+      // Update visual selection
+      this._updateSelectedYear(teamId, year);
+    }
+  }
+
+  _updateSelectedYear(teamId, year) {
+    // Update visual selection in the picker
+    const dropdown = this.shadowRoot.querySelector(`#year-picker-dropdown-${teamId}`);
+    if (dropdown) {
+      // Remove previous selection
+      dropdown.querySelectorAll('.year-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      
+      // Add selection to matching year
+      const yearItem = dropdown.querySelector(`[data-year="${year}"]`);
+      if (yearItem) {
+        yearItem.classList.add('selected');
+      }
     }
   }
 
