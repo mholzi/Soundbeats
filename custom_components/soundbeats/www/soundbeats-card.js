@@ -3814,6 +3814,13 @@ class SoundbeatsCard extends HTMLElement {
     }
     
     const currentUserId = this.hass.user.id;
+    const teamCount = this.getSelectedTeamCount();
+    
+    // Allow access to team management when no team count is set (initial setup)
+    if (!teamCount || teamCount < 1 || teamCount > 5) {
+      return true;
+    }
+    
     const teams = this.getTeams();
     
     // Check if team_1 exists and if current user is assigned to it
