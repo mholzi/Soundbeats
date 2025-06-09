@@ -3642,6 +3642,22 @@ class SoundbeatsCard extends HTMLElement {
               </div>
               <div class="setting-item">
                 <div class="setting-label">
+                  <ha-icon icon="mdi:account-group" class="icon"></ha-icon>
+                  ${this._t('settings.number_of_teams')}
+                </div>
+                <div class="setting-control">
+                    <select class="team-management-count-select" onchange="this.getRootNode().host.updateTeamCount(this.value)">
+                        <option value="">${this._t('settings.select_teams_placeholder')}</option>
+                        ${[1, 2, 3, 4, 5].map(count =>
+                        `<option value="${count}" ${this.getSelectedTeamCount() === count ? 'selected' : ''}>
+                            ${this._ts('settings.teams_count_option', { count: count, plural: count > 1 ? 's' : '' })}
+                            </option>`
+                        ).join('')}
+                    </select>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-label">
                   <ha-icon icon="mdi:timer-outline" class="icon"></ha-icon>
                   ${this._t('ui.countdown_timer_length')}
                 </div>
@@ -3980,43 +3996,25 @@ class SoundbeatsCard extends HTMLElement {
     const teamCount = this.getSelectedTeamCount();
     const hasValidTeamCount = teamCount && teamCount >= 1 && teamCount <= 5;
     
-    // Always show team count dropdown at the top
-    let html = `
-      <div class="team-management-section">
-        <div class="team-management-header">
-          <ha-icon icon="mdi:account-group" class="input-icon"></ha-icon>
-          <h4>${this._t('settings.number_of_teams')}</h4>
-        </div>
-        <select class="team-management-count-select" onchange="this.getRootNode().host.updateTeamCount(this.value)">
-          <option value="">${this._t('settings.select_teams_placeholder')}</option>
-          ${[1, 2, 3, 4, 5].map(count => 
-            `<option value="${count}" ${teamCount === count ? 'selected' : ''}>
-              ${this._ts('settings.teams_count_option', { count: count, plural: count > 1 ? 's' : '' })}
-            </option>`
-          ).join('')}
-        </select>
-      </div>
-    `;
-    
     if (hasValidTeamCount) {
       // Show admin warning in team management section
-      html += `
+      let html = `
         <div class="admin-warning">
           <ha-icon icon="mdi:shield-account" class="warning-icon"></ha-icon>
           <span><strong>Important:</strong> ${this._t('settings.team_admin_notice')}</span>
         </div>`;
       
       html += this.renderTeamsContent('management');
+      return html;
     } else {
-      html += `
+      // If no valid team count is selected in Game Settings, show a prompt.
+      return `
         <div class="team-management-prompt">
           <ha-icon icon="mdi:arrow-up" class="prompt-icon"></ha-icon>
           <span>${this._t('settings.select_teams_for_assignments')}</span>
         </div>
       `;
     }
-    
-    return html;
   }
 
   getTeamManagementDescription() {
