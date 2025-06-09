@@ -1632,6 +1632,11 @@ class SoundbeatsCard extends HTMLElement {
             padding: 18px;
             font-size: 1.3em;
           }
+          
+          .bet-button {
+            padding: 18px;
+            font-size: 1.3em;
+          }
         }
         
         .betting-section {
@@ -1649,21 +1654,24 @@ class SoundbeatsCard extends HTMLElement {
          * Solution: Use media queries to disable hover on touch devices
          */
         .bet-button {
-          background: var(--primary-color, #03a9f4);
+          background: #4caf50;
           color: white;
           border: none;
-          padding: 8px 16px;
-          border-radius: 20px;
+          padding: 16px;
+          border-radius: 8px;
           cursor: pointer;
           font-size: 0.9em;
           font-weight: bold;
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 6px;
           transition: all 0.3s ease;
           text-transform: uppercase;
           /* Prevent outline on focus for better mobile experience */
           outline: none;
+          /* Full width to match year buttons layout */
+          width: 100%;
         }
         
         /* 
@@ -1672,7 +1680,7 @@ class SoundbeatsCard extends HTMLElement {
          */
         @media (hover: hover) and (pointer: fine) {
           .bet-button:hover:not(.betting-active) {
-            background: var(--primary-color-dark, #0288d1);
+            background: #388e3c;
             transform: translateY(-1px);
           }
           
@@ -1697,7 +1705,7 @@ class SoundbeatsCard extends HTMLElement {
          * Provides visual feedback without conflicting with betting state
          */
         .bet-button:focus {
-          box-shadow: 0 0 0 2px var(--primary-color, #03a9f4);
+          box-shadow: 0 0 0 2px #4caf50;
         }
         
         .bet-button.betting-active:focus {
