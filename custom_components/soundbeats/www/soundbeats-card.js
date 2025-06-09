@@ -597,6 +597,27 @@ class SoundbeatsCard extends HTMLElement {
     return interaction && (Date.now() - interaction.timestamp < 3000); // 3 second window
   }
 
+  // Track dropdown open states to prevent updates while dropdowns are open
+  _trackDropdownOpen(selector) {
+    if (!this._openDropdowns) {
+      this._openDropdowns = {};
+    }
+    this._openDropdowns[selector] = { timestamp: Date.now() };
+  }
+
+  _trackDropdownClose(selector) {
+    if (this._openDropdowns && this._openDropdowns[selector]) {
+      delete this._openDropdowns[selector];
+    }
+  }
+
+  // Check if a dropdown is currently open
+  _isDropdownOpen(selector) {
+    const openState = this._openDropdowns && this._openDropdowns[selector];
+    // Consider dropdown open for a short window after opening to account for timing
+    return openState && (Date.now() - openState.timestamp < 5000); // 5 second window
+  }
+
   // Reusable function for rendering audio player dropdown
   _renderAudioPlayerSelect(className = 'audio-player-select') {
     const mediaPlayers = this.getMediaPlayers();
@@ -616,7 +637,8 @@ class SoundbeatsCard extends HTMLElement {
             class="${className}" 
             onchange="this.getRootNode().host.updateAudioPlayer(this.value)"
             onfocus="this.getRootNode().host._trackAudioPlayerInteraction('.${className}')"
-            onmousedown="this.getRootNode().host._trackAudioPlayerInteraction('.${className}')"
+            onmousedown="this.getRootNode().host._trackDropdownOpen('.${className}'); this.getRootNode().host._trackAudioPlayerInteraction('.${className}')"
+            onblur="this.getRootNode().host._trackDropdownClose('.${className}')"
             ${isActuallyLoading ? 'disabled' : ''}
         >
             <option value="">${placeholderText}</option>
@@ -5418,7 +5440,7 @@ class SoundbeatsCard extends HTMLElement {
 
   updateAudioPlayerOptions() {
     const select = this.shadowRoot.querySelector('.audio-player-select');
-    if (!select || document.activeElement === select || this._hasRecentAudioPlayerInteraction('.audio-player-select')) return;
+    if (!select || document.activeElement === select || this._hasRecentAudioPlayerInteraction('.audio-player-select') || this._isDropdownOpen('.audio-player-select')) return;
     
     const currentSelection = this.getSelectedAudioPlayer();
     const mediaPlayers = this.getMediaPlayers();
@@ -5455,6 +5477,8 @@ class SoundbeatsCard extends HTMLElement {
                    oninput="this.getRootNode().host.updateTeamName('${teamId}', this.value)">
             <select class="${selectClass}" 
                     onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
+                    onmousedown="this.getRootNode().host._trackDropdownOpen('.${selectClass}')"
+                    onblur="this.getRootNode().host._trackDropdownClose('.${selectClass}')"
                     ${isLoadingUsers ? 'disabled' : ''}>
               <option value="">${isLoadingUsers ? this._t('ui.loading_users') : this._t('ui.select_user')}</option>
               ${users.filter(user => !user.name.startsWith('Home Assistant') && !user.name.startsWith('Supervisor')).map(user => 
@@ -5484,6 +5508,8 @@ class SoundbeatsCard extends HTMLElement {
               <select 
                 class="${selectClass}" 
                 onchange="this.getRootNode().host.updateTeamUserId('${teamId}', this.value)"
+                onmousedown="this.getRootNode().host._trackDropdownOpen('.${selectClass}')"
+                onblur="this.getRootNode().host._trackDropdownClose('.${selectClass}')"
                 title="${this._t('ui.assign_user_tooltip')}"
                 ${isLoadingUsers ? 'disabled' : ''}
               >
@@ -5595,7 +5621,7 @@ class SoundbeatsCard extends HTMLElement {
     
     // Update audio player dropdown
     const audioSelect = this.shadowRoot.querySelector('.splash-audio-select');
-    if (audioSelect && document.activeElement !== audioSelect && !audioSelect.disabled && !this._hasRecentAudioPlayerInteraction('.splash-audio-select')) {
+    if (audioSelect && document.activeElement !== audioSelect && !audioSelect.disabled && !this._hasRecentAudioPlayerInteraction('.splash-audio-select') && !this._isDropdownOpen('.splash-audio-select')) {
       const currentSelection = this.getSelectedAudioPlayer();
       const mediaPlayers = this.getMediaPlayers();
       const isActuallyLoading = this._isLoadingMediaPlayers;
@@ -5626,7 +5652,8 @@ class SoundbeatsCard extends HTMLElement {
     const teams = this.getTeams();
     
     teamSelects.forEach(select => {
-      if (document.activeElement !== select && !select.disabled) {
+      const selectClass = select.className;
+      if (document.activeElement !== select && !select.disabled && !this._isDropdownOpen(`.${selectClass}`)) {
         // Extract team ID from the onchange attribute to get the correct database value
         const onchangeAttr = select.getAttribute('onchange');
         const teamIdMatch = onchangeAttr && onchangeAttr.match(/'([^']+)'/);
@@ -5712,7 +5739,7 @@ class SoundbeatsCard extends HTMLElement {
       const managementItem = teamManagementContainer.querySelector(`[data-team="${teamId}"]`);
       if (managementItem) {
         const select = managementItem.querySelector('.team-user-select');
-        if (select && document.activeElement !== select) {
+        if (select && document.activeElement !== select && !this._isDropdownOpen('.team-user-select')) {
           const currentValue = select.value;
           
           // Use DOM manipulation instead of innerHTML for better performance
