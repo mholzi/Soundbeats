@@ -52,6 +52,9 @@ class SoundbeatsCard extends HTMLElement {
     // Track dropdown state to avoid unnecessary updates
     this._lastTeamDropdownStateKey = null;
     
+    // Results modal timer
+    this._resultsModalTimer = null;
+    
     // Translation system
     this._currentLanguage = localStorage.getItem('soundbeats-language') || 'en';
     this._translations = null;
@@ -916,6 +919,148 @@ class SoundbeatsCard extends HTMLElement {
         
         .qr-modal-close ha-icon {
           --mdc-icon-size: 24px;
+        }
+        
+        /* Results Modal */
+        .results-modal {
+          position: fixed;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+          background: rgba(0, 0, 0, 0.8);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .results-modal.show {
+          opacity: 1;
+          visibility: visible;
+        }
+        .results-modal-content {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 24px;
+          border-radius: 16px;
+          width: 90%;
+          max-width: 500px;
+          max-height: 90vh;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+          position: relative;
+          transform: scale(0.9);
+          transition: transform 0.3s ease;
+          display: flex;
+          flex-direction: column;
+        }
+        .results-modal.show .results-modal-content {
+          transform: scale(1);
+        }
+        .results-modal-content h2 {
+          text-align: center;
+          margin-top: 0;
+          font-size: 1.8em;
+        }
+        .modal-close {
+          position: absolute;
+          top: 10px; right: 15px;
+          background: none;
+          border: none;
+          color: white;
+          font-size: 2em;
+          cursor: pointer;
+          line-height: 1;
+        }
+
+        /* Song Reveal */
+        .song-reveal {
+          display: flex;
+          gap: 16px;
+          padding: 16px;
+          background: rgba(0,0,0,0.2);
+          border-radius: 8px;
+          margin-bottom: 20px;
+          align-items: center;
+        }
+        .song-reveal-artwork {
+          width: 100px; height: 100px;
+          border-radius: 8px;
+        }
+        .song-reveal-info { flex: 1; }
+        .song-reveal-title { font-size: 1.2em; font-weight: bold; }
+        .song-reveal-artist { font-size: 1em; opacity: 0.8; }
+        .song-reveal-year {
+          font-size: 2.5em;
+          font-weight: bold;
+          color: #ffd700;
+          text-shadow: 0 0 10px #f39c12;
+        }
+
+        /* Team Results List */
+        .team-results-list {
+          overflow-y: auto;
+          flex-grow: 1;
+        }
+        .result-team-item {
+          display: flex;
+          align-items: center;
+          padding: 12px;
+          background: rgba(255,255,255,0.1);
+          border-radius: 6px;
+          margin-bottom: 8px;
+        }
+        .result-info { flex: 1; }
+        .result-team-name { font-weight: bold; }
+        .result-guess { font-size: 0.9em; opacity: 0.7; }
+        .result-points {
+          font-size: 1.2em;
+          font-weight: bold;
+          padding: 6px 12px;
+          border-radius: 16px;
+          margin-left: 12px;
+          color: white;
+        }
+        .result-points.points-win { background: #4caf50; }
+        .result-points.points-loss { background: #f44336; }
+
+        .bet-bonus-badge {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: #ff9800;
+          color: black;
+          font-weight: bold;
+          font-size: 0.8em;
+          padding: 4px 8px;
+          border-radius: 12px;
+          margin-top: 4px;
+          animation: pulse-gold 1.5s infinite;
+        }
+
+        @keyframes pulse-gold {
+          0% { box-shadow: 0 0 5px #ff9800; }
+          50% { box-shadow: 0 0 15px #ff9800; }
+          100% { box-shadow: 0 0 5px #ff9800; }
+        }
+
+        /* Timer Bar */
+        .results-timer-bar-container {
+          width: 100%;
+          height: 6px;
+          background: rgba(255,255,255,0.2);
+          border-radius: 3px;
+          margin-top: 16px;
+        }
+        .results-timer-bar {
+          height: 100%;
+          background: white;
+          border-radius: 3px;
+          animation: shrink-timer 10s linear forwards;
+        }
+        @keyframes shrink-timer {
+          from { width: 100%; }
+          to { width: 0%; }
         }
         
         /* Language toggle styles */
@@ -3742,6 +3887,30 @@ class SoundbeatsCard extends HTMLElement {
           <div class="qr-url-display" id="qr-url-display"></div>
         </div>
       </div>
+
+      <!-- Results Modal -->
+      <div class="results-modal" id="results-modal">
+        <div class="results-modal-content">
+          <button class="modal-close" onclick="this.getRootNode().host.hideResultsModal()">×</button>
+          <h2><ha-icon icon="mdi:music-note-eighth-dotted"></ha-icon> ${this._t('results.modal_title')}</h2>
+
+          <div class="song-reveal">
+            <img id="reveal-artwork" class="song-reveal-artwork" src="">
+            <div class="song-reveal-info">
+              <div id="reveal-title" class="song-reveal-title"></div>
+              <div id="reveal-artist" class="song-reveal-artist"></div>
+              <div id="reveal-year" class="song-reveal-year"></div>
+            </div>
+          </div>
+
+          <div id="team-results-list" class="team-results-list">
+          </div>
+
+          <div class="results-timer-bar-container">
+            <div id="results-timer-bar" class="results-timer-bar"></div>
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -5868,6 +6037,17 @@ toggleTeamBetting(teamId, betting) {
       this.updateSplashScreenDropdowns();
     }
     
+    // Check if a round has just finished to show the results modal
+    if (prevHass && hass) {
+      const oldRoundCounter = prevHass.states['sensor.soundbeats_round_counter']?.state || '0';
+      const newRoundCounter = hass.states['sensor.soundbeats_round_counter']?.state || '0';
+      
+      if (parseInt(newRoundCounter) > parseInt(oldRoundCounter)) {
+        // Small delay to ensure all team data is updated
+        setTimeout(() => this.showResultsModal(), 500);
+      }
+    }
+    
     // Initialize highscore tracking on first load
     if (!this._highscoreTrackingInitialized) {
       this.initializeHighscoreTracking();
@@ -5925,6 +6105,80 @@ toggleTeamBetting(teamId, betting) {
     // Close modal if clicking on the backdrop (not the content)
     if (event.target.classList.contains('qr-modal')) {
       this.hideQrModal();
+    }
+  }
+
+  // Results Modal Methods
+  showResultsModal() {
+    const modal = this.shadowRoot.querySelector('#results-modal');
+    if (!modal) return;
+
+    // 1. Get latest data
+    const teams = this.getTeams();
+    const currentSong = this.getCurrentSong();
+
+    // 2. Populate song reveal section
+    this.shadowRoot.querySelector('#reveal-artwork').src = currentSong.entity_picture || '';
+    this.shadowRoot.querySelector('#reveal-title').textContent = currentSong.song_name || '';
+    this.shadowRoot.querySelector('#reveal-artist').textContent = currentSong.artist || '';
+    this.shadowRoot.querySelector('#reveal-year').textContent = currentSong.year || '';
+
+    // 3. Populate team results
+    const listElement = this.shadowRoot.querySelector('#team-results-list');
+    listElement.innerHTML = ''; // Clear previous results
+
+    Object.values(teams).filter(t => t.participating).forEach(team => {
+      const wasBetting = team.last_round_betting;
+      const points = team.last_round_points;
+
+      // Determine if bet was won
+      const betWon = wasBetting && points > 0;
+
+      const teamItem = document.createElement('div');
+      teamItem.className = 'result-team-item';
+      teamItem.innerHTML = `
+        <div class="result-info">
+          <div class="result-team-name">${team.name}</div>
+          <div class="result-guess">${this._ts('results.your_guess', { guess: team.year_guess })}</div>
+          ${wasBetting ? `
+            <div class="bet-bonus-badge">
+              <ha-icon icon="mdi:poker-chip"></ha-icon>
+              <span>${betWon ? this._t('results.bet_won') : this._t('results.bet_lost')}</span>
+            </div>
+          ` : ''}
+        </div>
+        <div class="result-points ${points > 0 ? 'points-win' : 'points-loss'}">
+          +${points} ${this._t('defaults.points_suffix')}
+        </div>
+      `;
+      listElement.appendChild(teamItem);
+    });
+    
+    // 4. Reset and show
+    // By removing and re-adding the timer bar, we restart the CSS animation
+    const timerContainer = this.shadowRoot.querySelector('.results-timer-bar-container');
+    const oldTimer = this.shadowRoot.querySelector('#results-timer-bar');
+    if (oldTimer) oldTimer.remove();
+    const newTimer = document.createElement('div');
+    newTimer.id = 'results-timer-bar';
+    newTimer.className = 'results-timer-bar';
+    timerContainer.appendChild(newTimer);
+    
+    modal.classList.add('show');
+
+    // 5. Set auto-dismiss timer
+    this._resultsModalTimer = setTimeout(() => this.hideResultsModal(), 10000);
+  }
+
+  hideResultsModal() {
+    const modal = this.shadowRoot.querySelector('#results-modal');
+    if (modal) {
+      modal.classList.remove('show');
+    }
+    // Clear the timer to prevent it from firing if closed manually
+    if (this._resultsModalTimer) {
+      clearTimeout(this._resultsModalTimer);
+      this._resultsModalTimer = null;
     }
   }
 

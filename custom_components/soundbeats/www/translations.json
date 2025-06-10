@@ -134,6 +134,12 @@
     },
     "highscore": {
       "new_average_message": "New average highscore: {value} pts/round! 🏆"
+    },
+    "results": {
+      "modal_title": "Round Results!",
+      "bet_won": "BET WON!",
+      "bet_lost": "BET LOST",
+      "your_guess": "Your Guess: {guess}"
     }
   },
   "de": {
@@ -271,6 +277,12 @@
     },
     "highscore": {
       "new_average_message": "Neuer Durchschnitts-Highscore: {value} Pkt/Runde! 🏆"
+    },
+    "results": {
+      "modal_title": "Runden-Ergebnisse!",
+      "bet_won": "WETTE GEWONNEN!",
+      "bet_lost": "WETTE VERLOREN",
+      "your_guess": "Dein Tipp: {guess}"
     }
   }
 }
