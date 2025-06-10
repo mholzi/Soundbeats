@@ -3225,10 +3225,12 @@ class SoundbeatsCard extends HTMLElement {
         .tablet-mode-container {
           display: flex;
           min-height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #4854a0 0%, #2c3e50 100%);
           color: white;
           position: relative;
           overflow: hidden;
+          padding: 1rem;
+          gap: 1rem;
         }
         
         .tablet-left-panel {
@@ -3239,6 +3241,9 @@ class SoundbeatsCard extends HTMLElement {
           align-items: center;
           padding: 2rem;
           min-height: 100vh;
+          background: rgba(0, 0, 0, 0.15);
+          border-radius: 20px;
+          backdrop-filter: blur(10px);
         }
         
         .tablet-right-panel {
@@ -3248,6 +3253,9 @@ class SoundbeatsCard extends HTMLElement {
           padding: 2rem;
           min-height: 100vh;
           overflow: hidden;
+          background: rgba(0, 0, 0, 0.15);
+          border-radius: 20px;
+          backdrop-filter: blur(10px);
         }
         
         /* Tablet Timer Styles */
@@ -3257,15 +3265,31 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .tablet-countdown-timer {
-          font-size: 8rem;
+          font-size: 10rem;
           font-weight: bold;
           color: #FFD700;
-          text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+          text-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
           margin-bottom: 1rem;
+          line-height: 1;
+          animation: pulse-timer 1s infinite;
+          animation-play-state: paused;
+        }
+        
+        .tablet-countdown-timer.low-time {
+          color: #ff6b6b;
+          text-shadow: 0 0 20px #ff6b6b;
+          animation-play-state: running;
+        }
+        
+        @keyframes pulse-timer {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
         }
         
         .tablet-countdown-progress {
-          width: 300px;
+          width: 80%;
+          max-width: 400px;
           height: 20px;
           background: rgba(255, 255, 255, 0.2);
           border-radius: 10px;
@@ -3275,9 +3299,13 @@ class SoundbeatsCard extends HTMLElement {
         
         .tablet-countdown-progress-bar {
           height: 100%;
-          background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
-          transition: width 0.3s ease;
+          background: linear-gradient(90deg, #ffeb3b, #f39c12);
+          transition: width 1s linear, background-color 0.5s ease;
           border-radius: 10px;
+        }
+        
+        .tablet-countdown-progress-bar.low-time {
+          background: linear-gradient(90deg, #ff6b6b, #f44336);
         }
         
         /* Tablet Song Styles */
@@ -3382,10 +3410,11 @@ class SoundbeatsCard extends HTMLElement {
         }
         
         .tablet-rankings-title {
-          font-size: 3rem;
-          margin-bottom: 2rem;
+          font-size: 2.5rem;
+          font-weight: bold;
+          text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+          margin-bottom: 1rem;
           text-align: center;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -3394,6 +3423,7 @@ class SoundbeatsCard extends HTMLElement {
         
         .tablet-rankings-container {
           flex: 1;
+          width: 100%;
           display: flex;
           flex-direction: column;
           gap: 1rem;
@@ -3401,14 +3431,15 @@ class SoundbeatsCard extends HTMLElement {
           padding-right: 1rem;
         }
         
-        /* Override overview team item styles for tablet */
+        /* Leaderboard Item Redesign */
         .tablet-mode-container .overview-team-item {
           display: flex;
-          flex-direction: row;
           align-items: center;
-          justify-content: space-between;
-          padding: 1.5rem;
+          padding: 1.2rem;
+          background: rgba(255, 255, 255, 0.1);
           border-radius: 15px;
+          transition: all 0.5s ease;
+          border-left: 5px solid transparent;
           min-width: unset;
           max-width: unset;
           width: 100%;
@@ -3416,19 +3447,65 @@ class SoundbeatsCard extends HTMLElement {
           font-size: 1.5rem;
         }
         
-        .tablet-mode-container .overview-team-item .overview-team-name {
-          font-size: 2rem;
-          font-weight: bold;
+        /* Rank-based styling */
+        .tablet-mode-container .overview-team-item.rank-1 { 
+          border-left-color: #ffd700; 
+          background: rgba(255, 215, 0, 0.2); 
+        }
+        .tablet-mode-container .overview-team-item.rank-2 { 
+          border-left-color: #c0c0c0; 
+          background: rgba(192, 192, 192, 0.2); 
+        }
+        .tablet-mode-container .overview-team-item.rank-3 { 
+          border-left-color: #cd7f32; 
+          background: rgba(205, 127, 50, 0.2); 
         }
         
-        .tablet-mode-container .overview-team-item .overview-team-points {
+        .tablet-mode-container .overview-rank-badge {
+          font-size: 1.5rem;
+          font-weight: bold;
+          margin-right: 1rem;
+          min-width: 80px;
+        }
+        .tablet-mode-container .overview-rank-badge ha-icon { 
+          color: #ffd700; 
+        }
+        
+        .tablet-mode-container .overview-team-info {
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        
+        .tablet-mode-container .overview-team-item .overview-team-name {
           font-size: 1.8rem;
           font-weight: bold;
         }
         
-        .tablet-mode-container .overview-rank-badge {
+        .tablet-mode-container .overview-team-item .overview-team-points {
           font-size: 2rem;
-          margin-right: 1rem;
+          font-weight: bold;
+        }
+        
+        .tablet-mode-container .overview-points-update {
+          font-size: 1.2rem;
+          font-weight: bold;
+          color: #4caf50;
+          padding: 0.5rem 1rem;
+          background: rgba(76, 175, 80, 0.2);
+          border-radius: 12px;
+          margin-right: 1.5rem;
+          opacity: 0;
+          animation: fade-in-out 3s ease forwards;
+        }
+        
+        /* Animation for points gained in the last round */
+        @keyframes fade-in-out {
+          0% { opacity: 0; transform: scale(0.5); }
+          25% { opacity: 1; transform: scale(1.1); }
+          80% { opacity: 1; transform: scale(1); }
+          100% { opacity: 0; }
         }
         
         .tablet-mode-container .version-footer {
@@ -4337,16 +4414,12 @@ toggleTeamBetting(teamId, betting) {
             <ha-icon icon="${rankIcon}"></ha-icon>
           </div>
           <div class="overview-team-info">
-            <span class="overview-team-points">${team.points} ${this._t('defaults.points_suffix')}</span>
             <span class="overview-team-name">${team.name}</span>
+            <span class="overview-team-points">${team.points} ${this._t('defaults.points_suffix')}</span>
           </div>
-          <div class="overview-team-points-container">
-            ${!isCountdownRunning && currentRound > 0 ? `
-              <div class="overview-points-badge ${team.last_round_points > 0 ? 'points-earned' : 'no-points'}">
-                ${team.last_round_points}${this._t('defaults.points_suffix')}
-              </div>
-            ` : ''}
-          </div>
+          ${!isCountdownRunning && currentRound > 0 && team.last_round_points > 0 ? `
+            <div class="overview-points-update">+${team.last_round_points}</div>
+          ` : ''}
           <div class="overview-team-badges">
             ${isCountdownRunning && team.betting ? `
               <div class="overview-bet-badge">
@@ -5137,6 +5210,10 @@ toggleTeamBetting(teamId, betting) {
     const countdownTimer = this.shadowRoot.querySelector('.countdown-timer');
     const countdownProgressBar = this.shadowRoot.querySelector('.countdown-progress-bar');
     
+    // Also update tablet mode countdown elements
+    const tabletCountdownTimer = this.shadowRoot.querySelector('.tablet-countdown-timer');
+    const tabletCountdownProgressBar = this.shadowRoot.querySelector('.tablet-countdown-progress-bar');
+    
     const currentCountdown = this.getCountdownCurrent();
     const isRunning = currentCountdown > 0;
     
@@ -5165,6 +5242,17 @@ toggleTeamBetting(teamId, betting) {
     if (countdownProgressBar) {
       const progressPercent = this.getCountdownProgressPercent();
       countdownProgressBar.style.width = `${progressPercent}%`;
+    }
+    
+    // Update tablet mode countdown timer with urgency animations
+    if (tabletCountdownTimer && tabletCountdownProgressBar) {
+      if (currentCountdown <= 5 && currentCountdown > 0) {
+        tabletCountdownTimer.classList.add('low-time');
+        tabletCountdownProgressBar.classList.add('low-time');
+      } else {
+        tabletCountdownTimer.classList.remove('low-time');
+        tabletCountdownProgressBar.classList.remove('low-time');
+      }
     }
   }
 
