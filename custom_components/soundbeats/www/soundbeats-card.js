@@ -60,6 +60,7 @@ class SoundbeatsCard extends HTMLElement {
     this._tabletRankingShowBarChart = false;
     this._tabletNextSongPressed = false;
     this._tabletBarAnimationTimer = null;
+    this._tabletPreviousTeamOrder = [];
     
     // Translation system
     this._currentLanguage = localStorage.getItem('soundbeats-language') || 'en';
@@ -77,6 +78,15 @@ class SoundbeatsCard extends HTMLElement {
 
   isTabletMode() {
     return this.config && this.config.tablet === true;
+  }
+  
+  disconnectedCallback() {
+    // Clean up timers when the element is disconnected
+    this.stopTabletBarAnimation();
+    if (this._tabletRankingTransitionTimer) {
+      clearTimeout(this._tabletRankingTransitionTimer);
+      this._tabletRankingTransitionTimer = null;
+    }
   }
 
   // Translation system methods
@@ -3802,6 +3812,39 @@ class SoundbeatsCard extends HTMLElement {
           position: relative;
         }
         
+        .tablet-chart-row.position-up {
+          animation: slide-up 1s ease-out;
+        }
+        
+        .tablet-chart-row.position-down {
+          animation: slide-down 1s ease-out;
+        }
+        
+        .position-indicator {
+          position: absolute;
+          right: -40px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #FFD700;
+          font-size: 1.5rem;
+          animation: position-indicator-pulse 2s ease-out;
+        }
+        
+        @keyframes slide-up {
+          0% { transform: translateY(20px); opacity: 0.7; }
+          100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slide-down {
+          0% { transform: translateY(-20px); opacity: 0.7; }
+          100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes position-indicator-pulse {
+          0%, 100% { opacity: 0; }
+          20%, 80% { opacity: 1; }
+        }
+        
         .tablet-chart-team-name {
           font-size: 1.8rem;
           font-weight: bold;
@@ -4909,6 +4952,10 @@ toggleTeamBetting(teamId, betting) {
     const maxPoints = Math.max(...participatingTeams.map(t => t.points));
     const maxBarWidth = 100; // percentage
     
+    // Track position changes for animations
+    const currentOrder = participatingTeams.map(team => team.name);
+    const previousOrder = this._tabletPreviousTeamOrder || [];
+    
     return `
       <div class="tablet-bar-chart">
         <div class="tablet-chart-title">${this._t('ui.teams_overview')}</div>
@@ -4926,16 +4973,29 @@ toggleTeamBetting(teamId, betting) {
                              index === 1 ? 'rank-2' : 
                              index === 2 ? 'rank-3' : 'rank-other';
             
+            // Detect position change
+            const previousIndex = previousOrder.indexOf(team.name);
+            const currentIndex = index;
+            let positionChangeClass = '';
+            
+            if (previousIndex >= 0 && previousIndex !== currentIndex) {
+              if (currentIndex < previousIndex) {
+                positionChangeClass = 'position-up';
+              } else {
+                positionChangeClass = 'position-down';
+              }
+            }
+            
             return `
-              <div class="tablet-chart-row">
+              <div class="tablet-chart-row ${positionChangeClass}" data-team="${team.name}">
                 <div class="tablet-chart-team-name">${team.name}</div>
                 <div class="tablet-chart-bar-container">
                   <div class="tablet-chart-bar ${rankClass}" style="width: ${totalBarWidth}%">
                     ${previousPoints > 0 ? `
-                      <div class="tablet-chart-bar-previous" style="width: ${(previousBarWidth / totalBarWidth) * 100}%"></div>
+                      <div class="tablet-chart-bar-previous" style="width: ${previousBarWidth > 0 ? (previousBarWidth / totalBarWidth) * 100 : 0}%"></div>
                     ` : ''}
                     ${lastRoundPoints > 0 ? `
-                      <div class="tablet-chart-bar-new" style="width: ${(newPointsBarWidth / totalBarWidth) * 100}%"></div>
+                      <div class="tablet-chart-bar-new" style="left: ${previousBarWidth > 0 ? (previousBarWidth / totalBarWidth) * 100 : 0}%; width: ${newPointsBarWidth > 0 ? (newPointsBarWidth / totalBarWidth) * 100 : 0}%"></div>
                     ` : ''}
                     <div class="tablet-chart-bar-fill animate"></div>
                   </div>
@@ -4944,6 +5004,11 @@ toggleTeamBetting(teamId, betting) {
                     <div class="tablet-chart-last-round">+${lastRoundPoints}</div>
                   ` : ''}
                 </div>
+                ${positionChangeClass ? `
+                  <div class="position-indicator">
+                    <ha-icon icon="${positionChangeClass === 'position-up' ? 'mdi:arrow-up' : 'mdi:arrow-down'}"></ha-icon>
+                  </div>
+                ` : ''}
               </div>
             `;
           }).join('')}
@@ -6101,6 +6166,15 @@ toggleTeamBetting(teamId, betting) {
     // Update tablet rankings container if in tablet mode
     const tabletRankingsContainer = this.shadowRoot.querySelector('.tablet-rankings-container');
     if (tabletRankingsContainer && this.isTabletMode()) {
+      // Track team order for position change animations
+      const teams = this.getTeams();
+      const participatingTeams = Object.values(teams)
+        .filter(t => t.participating)
+        .sort((a, b) => b.points - a.points);
+      
+      // Update previous team order for next comparison
+      this._tabletPreviousTeamOrder = participatingTeams.map(team => team.name);
+      
       tabletRankingsContainer.innerHTML = this.renderTabletTeamsRanking();
     }
   }
