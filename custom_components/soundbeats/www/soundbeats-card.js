@@ -4992,10 +4992,10 @@ toggleTeamBetting(teamId, betting) {
                 <div class="tablet-chart-bar-container">
                   <div class="tablet-chart-bar ${rankClass}" style="width: ${totalBarWidth}%">
                     ${previousPoints > 0 ? `
-                      <div class="tablet-chart-bar-previous" style="width: ${previousBarWidth > 0 ? (previousBarWidth / totalBarWidth) * 100 : 0}%"></div>
+                      <div class="tablet-chart-bar-previous" style="width: ${totalBarWidth > 0 ? (previousBarWidth / totalBarWidth) * 100 : 0}%"></div>
                     ` : ''}
                     ${lastRoundPoints > 0 ? `
-                      <div class="tablet-chart-bar-new" style="left: ${previousBarWidth > 0 ? (previousBarWidth / totalBarWidth) * 100 : 0}%; width: ${newPointsBarWidth > 0 ? (newPointsBarWidth / totalBarWidth) * 100 : 0}%"></div>
+                      <div class="tablet-chart-bar-new" style="left: ${totalBarWidth > 0 ? (previousBarWidth / totalBarWidth) * 100 : 0}%; width: ${totalBarWidth > 0 ? (newPointsBarWidth / totalBarWidth) * 100 : 0}%"></div>
                     ` : ''}
                     <div class="tablet-chart-bar-fill animate"></div>
                   </div>
@@ -5065,7 +5065,7 @@ toggleTeamBetting(teamId, betting) {
         fill.offsetHeight;
         fill.classList.add('animate');
       });
-    }, 3000); // Restart animation every 3 seconds
+    }, 1500); // Restart animation every 1.5 seconds
   }
   
   stopTabletBarAnimation() {
