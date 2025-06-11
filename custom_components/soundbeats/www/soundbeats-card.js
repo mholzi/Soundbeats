@@ -445,7 +445,7 @@ class SoundbeatsCard extends HTMLElement {
               ${this._t('ui.teams_overview')}
             </h2>
             <div class="tablet-rankings-container">
-              ${this.renderOtherTeamsOverview()}
+              ${this.renderTabletTeamsRanking()}
             </div>
           </div>
         </div>
@@ -3645,21 +3645,218 @@ class SoundbeatsCard extends HTMLElement {
           animation: fade-in-out 3s ease forwards;
         }
         
-        /* Animation for points gained in the last round */
-        @keyframes fade-in-out {
-          0% { opacity: 0; transform: scale(0.5); }
-          25% { opacity: 1; transform: scale(1.1); }
-          80% { opacity: 1; transform: scale(1); }
-          100% { opacity: 0; }
+        /* Tablet Round Summary Styles */
+        .tablet-round-summary {
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+          width: 100%;
         }
         
-        .tablet-mode-container .version-footer {
-          position: fixed;
-          bottom: 1rem;
-          left: 1rem;
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 1rem;
-          z-index: 1000;
+        .tablet-song-reveal {
+          display: flex;
+          align-items: center;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          padding: 1.5rem;
+          gap: 2rem;
+        }
+        
+        .tablet-reveal-image {
+          width: 120px;
+          height: 120px;
+          border-radius: 15px;
+          object-fit: cover;
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tablet-reveal-info {
+          flex-grow: 1;
+        }
+        
+        .tablet-reveal-title {
+          font-size: 2.2rem;
+          font-weight: bold;
+          color: #FFD700;
+          margin-bottom: 0.5rem;
+        }
+        
+        .tablet-reveal-artist {
+          font-size: 1.8rem;
+          color: rgba(255, 255, 255, 0.9);
+          margin-bottom: 0.5rem;
+        }
+        
+        .tablet-reveal-year {
+          font-size: 1.6rem;
+          color: #4CAF50;
+          font-weight: bold;
+        }
+        
+        .tablet-team-results {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        
+        .tablet-result-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 15px;
+          padding: 1.2rem;
+          border-left: 4px solid transparent;
+        }
+        
+        .tablet-result-info {
+          flex-grow: 1;
+        }
+        
+        .tablet-result-team-name {
+          font-size: 1.8rem;
+          font-weight: bold;
+          margin-bottom: 0.5rem;
+        }
+        
+        .tablet-result-guess {
+          font-size: 1.4rem;
+          color: rgba(255, 255, 255, 0.8);
+          margin-bottom: 0.5rem;
+        }
+        
+        .tablet-bet-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.3rem 0.8rem;
+          border-radius: 12px;
+          font-size: 1.2rem;
+          font-weight: bold;
+        }
+        
+        .tablet-bet-badge.won {
+          background: rgba(76, 175, 80, 0.3);
+          color: #4CAF50;
+        }
+        
+        .tablet-bet-badge.lost {
+          background: rgba(244, 67, 54, 0.3);
+          color: #f44336;
+        }
+        
+        .tablet-result-points {
+          font-size: 2rem;
+          font-weight: bold;
+          min-width: 120px;
+          text-align: right;
+        }
+        
+        .tablet-result-points.points-win {
+          color: #4CAF50;
+        }
+        
+        .tablet-result-points.points-loss {
+          color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Tablet Bar Chart Styles */
+        .tablet-bar-chart {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+          width: 100%;
+        }
+        
+        .tablet-chart-title {
+          font-size: 2.2rem;
+          font-weight: bold;
+          color: #FFD700;
+          text-align: center;
+        }
+        
+        .tablet-chart-bars {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        
+        .tablet-chart-row {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+        
+        .tablet-chart-team-name {
+          font-size: 1.6rem;
+          font-weight: bold;
+          min-width: 120px;
+          text-align: right;
+        }
+        
+        .tablet-chart-bar-container {
+          flex-grow: 1;
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          position: relative;
+        }
+        
+        .tablet-chart-bar {
+          height: 40px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          position: relative;
+          overflow: hidden;
+          min-width: 60px;
+          transition: all 0.5s ease;
+        }
+        
+        .tablet-chart-bar-fill {
+          height: 100%;
+          width: 100%;
+          border-radius: 20px;
+          background: linear-gradient(45deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.4));
+          animation: chart-bar-grow 1s ease-out;
+        }
+        
+        .tablet-chart-bar.rank-1 .tablet-chart-bar-fill {
+          background: linear-gradient(45deg, #ffd700, #ffed4e);
+        }
+        
+        .tablet-chart-bar.rank-2 .tablet-chart-bar-fill {
+          background: linear-gradient(45deg, #c0c0c0, #e0e0e0);
+        }
+        
+        .tablet-chart-bar.rank-3 .tablet-chart-bar-fill {
+          background: linear-gradient(45deg, #cd7f32, #daa55a);
+        }
+        
+        .tablet-chart-points {
+          font-size: 1.6rem;
+          font-weight: bold;
+          min-width: 60px;
+          text-align: center;
+        }
+        
+        .tablet-chart-last-round {
+          font-size: 1.2rem;
+          color: #4CAF50;
+          font-weight: bold;
+          background: rgba(76, 175, 80, 0.2);
+          padding: 0.2rem 0.6rem;
+          border-radius: 10px;
+          animation: pulse-green 2s infinite;
+        }
+        
+        @keyframes chart-bar-grow {
+          from { width: 0; }
+          to { width: 100%; }
+        }
+        
+        @keyframes pulse-green {
+          0%, 100% { background: rgba(76, 175, 80, 0.2); }
+          50% { background: rgba(76, 175, 80, 0.4); }
         }
         
         /* Responsive adjustments for smaller tablets */
@@ -3678,6 +3875,38 @@ class SoundbeatsCard extends HTMLElement {
           
           .tablet-countdown-timer {
             font-size: 6rem;
+          }
+          
+          .tablet-song-image {
+            width: 200px;
+          }
+          
+          .tablet-reveal-image {
+            width: 80px;
+            height: 80px;
+          }
+          
+          .tablet-reveal-title {
+            font-size: 1.8rem;
+          }
+          
+          .tablet-reveal-artist {
+            font-size: 1.4rem;
+          }
+          
+          .tablet-chart-team-name {
+            font-size: 1.2rem;
+            min-width: 80px;
+          }
+        }
+        
+        .tablet-mode-container .version-footer {
+          position: fixed;
+          bottom: 1rem;
+          left: 1rem;
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 1rem;
+          z-index: 1000;
           }
           
           .tablet-song-image {
@@ -4553,6 +4782,139 @@ toggleTeamBetting(teamId, betting) {
     }
   }
 
+  renderTabletTeamsRanking() {
+    const displayMode = this.getTabletRankingDisplayMode();
+    
+    switch (displayMode) {
+      case 'summary':
+        return this.renderTabletRoundSummary();
+      case 'bar-chart':
+        return this.renderTabletBarChart();
+      default:
+        return this.renderOtherTeamsOverview();
+    }
+  }
+
+  renderTabletRoundSummary() {
+    // Render similar to the results modal but adapted for tablet display
+    const teams = this.getTeams();
+    const currentSong = this.getCurrentSong();
+    
+    if (!currentSong) {
+      return this.renderOtherTeamsOverview();
+    }
+    
+    const participatingTeams = Object.values(teams).filter(t => t.participating);
+    
+    if (participatingTeams.length === 0) {
+      return `<div class="overview-empty">${this._t('game.no_participating_teams')}</div>`;
+    }
+    
+    return `
+      <div class="tablet-round-summary">
+        <div class="tablet-song-reveal">
+          <img src="${currentSong.entity_picture}" alt="Song Cover" class="tablet-reveal-image" />
+          <div class="tablet-reveal-info">
+            <div class="tablet-reveal-title">${currentSong.song_name}</div>
+            <div class="tablet-reveal-artist">${currentSong.artist}</div>
+            <div class="tablet-reveal-year">${currentSong.year}</div>
+          </div>
+        </div>
+        <div class="tablet-team-results">
+          ${participatingTeams.map(team => {
+            const wasBetting = team.last_round_betting;
+            const points = team.last_round_points || 0;
+            const betWon = wasBetting && points > 0;
+            
+            return `
+              <div class="tablet-result-item">
+                <div class="tablet-result-info">
+                  <div class="tablet-result-team-name">${team.name}</div>
+                  <div class="tablet-result-guess">${this._ts('results.your_guess', { guess: team.year_guess })}</div>
+                  ${wasBetting ? `
+                    <div class="tablet-bet-badge ${betWon ? 'won' : 'lost'}">
+                      <ha-icon icon="mdi:poker-chip"></ha-icon>
+                      <span>${betWon ? this._t('results.bet_won') : this._t('results.bet_lost')}</span>
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="tablet-result-points ${points > 0 ? 'points-win' : 'points-loss'}">
+                  +${points} ${this._t('defaults.points_suffix')}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  renderTabletBarChart() {
+    const teams = this.getTeams();
+    const participatingTeams = Object.values(teams)
+      .filter(t => t.participating)
+      .sort((a, b) => b.points - a.points);
+    
+    if (participatingTeams.length === 0) {
+      return `<div class="overview-empty">${this._t('game.no_participating_teams')}</div>`;
+    }
+    
+    // Find the maximum points to scale the bars
+    const maxPoints = Math.max(...participatingTeams.map(t => t.points));
+    const maxBarWidth = 100; // percentage
+    
+    return `
+      <div class="tablet-bar-chart">
+        <div class="tablet-chart-title">${this._t('ui.teams_overview')}</div>
+        <div class="tablet-chart-bars">
+          ${participatingTeams.map((team, index) => {
+            const barWidth = maxPoints > 0 ? (team.points / maxPoints) * maxBarWidth : 0;
+            const lastRoundPoints = team.last_round_points || 0;
+            const rankClass = index === 0 ? 'rank-1' : 
+                             index === 1 ? 'rank-2' : 
+                             index === 2 ? 'rank-3' : 'rank-other';
+            
+            return `
+              <div class="tablet-chart-row">
+                <div class="tablet-chart-team-name">${team.name}</div>
+                <div class="tablet-chart-bar-container">
+                  <div class="tablet-chart-bar ${rankClass}" style="width: ${barWidth}%">
+                    <div class="tablet-chart-bar-fill"></div>
+                  </div>
+                  <div class="tablet-chart-points">${team.points}</div>
+                  ${lastRoundPoints > 0 ? `
+                    <div class="tablet-chart-last-round">+${lastRoundPoints}</div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  getTabletRankingDisplayMode() {
+    const isCountdownRunning = this.getCountdownCurrent() > 0;
+    const currentRound = this.getRoundCounter();
+    const teams = this.getTeams();
+    
+    // Show summary view when:
+    // 1. Countdown just finished (currentRound > 0 but no countdown running)
+    // 2. We have teams with last_round_points data
+    const hasRecentRoundData = Object.values(teams).some(team => 
+      team.participating && team.last_round_points !== undefined && team.last_round_points > 0
+    );
+    
+    if (!isCountdownRunning && currentRound > 0 && hasRecentRoundData) {
+      return 'summary'; // Show round summary initially
+    } else if (!isCountdownRunning && currentRound > 1) {
+      return 'bar-chart'; // Show growing bar chart once next round starts
+    } else {
+      return 'overview'; // Default overview
+    }
+  }
+
   renderOtherTeamsOverview() {
     const teams = this.getTeams();
     const rankings = this.getTeamRankings(); // CHANGE #1: Simplified call
@@ -5415,6 +5777,13 @@ toggleTeamBetting(teamId, betting) {
     
     // Update tablet mode countdown timer with urgency animations
     if (tabletCountdownTimer && tabletCountdownProgressBar) {
+      // Update tablet countdown timer text content
+      tabletCountdownTimer.textContent = `${currentCountdown}s`;
+      
+      // Update tablet progress bar
+      const progressPercent = this.getCountdownProgressPercent();
+      tabletCountdownProgressBar.style.width = `${progressPercent}%`;
+      
       if (currentCountdown <= 5 && currentCountdown > 0) {
         tabletCountdownTimer.classList.add('low-time');
         tabletCountdownProgressBar.classList.add('low-time');
@@ -5617,6 +5986,12 @@ toggleTeamBetting(teamId, betting) {
     // Always update teams overview content
     if (teamsOverviewContainer) {
       teamsOverviewContainer.innerHTML = this.renderOtherTeamsOverview();
+    }
+    
+    // Update tablet rankings container if in tablet mode
+    const tabletRankingsContainer = this.shadowRoot.querySelector('.tablet-rankings-container');
+    if (tabletRankingsContainer && this.isTabletMode()) {
+      tabletRankingsContainer.innerHTML = this.renderTabletTeamsRanking();
     }
   }
 
