@@ -6542,8 +6542,18 @@ toggleTeamBetting(teamId, betting) {
       const newRoundCounter = hass.states['sensor.soundbeats_round_counter']?.state || '0';
       
       if (parseInt(newRoundCounter) > parseInt(oldRoundCounter)) {
-        // Small delay to ensure all team data is updated
-        setTimeout(() => this.showResultsModal(), 500);
+        // In tablet mode, don't show the results modal - the tablet ranking will handle the display
+        if (!this.isTabletMode()) {
+          // Small delay to ensure all team data is updated
+          setTimeout(() => this.showResultsModal(), 500);
+        } else {
+          // In tablet mode, reset the ranking state to ensure proper display
+          this._tabletRankingShowBarChart = false;
+          if (this._tabletRankingTransitionTimer) {
+            clearTimeout(this._tabletRankingTransitionTimer);
+            this._tabletRankingTransitionTimer = null;
+          }
+        }
       }
     }
     
