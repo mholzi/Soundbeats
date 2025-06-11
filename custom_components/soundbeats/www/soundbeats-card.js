@@ -5775,6 +5775,14 @@ toggleTeamBetting(teamId, betting) {
     if (this._lastCountdownState !== isRunning) {
       this._lastCountdownState = isRunning;
       this.recreateTeamsSection();
+      
+      // Also update tablet rankings container immediately when countdown state changes
+      if (this.isTabletMode()) {
+        const tabletRankingsContainer = this.shadowRoot.querySelector('.tablet-rankings-container');
+        if (tabletRankingsContainer) {
+          tabletRankingsContainer.innerHTML = this.renderTabletTeamsRanking();
+        }
+      }
     }
     
     // Show/hide countdown section based on whether timer is running
@@ -6452,6 +6460,12 @@ toggleTeamBetting(teamId, betting) {
       const teamsOverviewContainer = this.shadowRoot.querySelector('.teams-overview-container');
       if (teamsOverviewContainer) {
         teamsOverviewContainer.innerHTML = this.renderOtherTeamsOverview();
+      }
+      
+      // Update tablet rankings container if in tablet mode
+      const tabletRankingsContainer = this.shadowRoot.querySelector('.tablet-rankings-container');
+      if (tabletRankingsContainer && this.isTabletMode()) {
+        tabletRankingsContainer.innerHTML = this.renderTabletTeamsRanking();
       }
       
       if (teamManagementContainer) {
