@@ -55,6 +55,10 @@ class SoundbeatsCard extends HTMLElement {
     // Results modal timer
     this._resultsModalTimer = null;
     
+    // Tablet ranking display state
+    this._tabletRankingTransitionTimer = null;
+    this._tabletRankingShowBarChart = false;
+    
     // Translation system
     this._currentLanguage = localStorage.getItem('soundbeats-language') || 'en';
     this._translations = null;
@@ -4897,22 +4901,40 @@ toggleTeamBetting(teamId, betting) {
   getTabletRankingDisplayMode() {
     const isCountdownRunning = this.getCountdownCurrent() > 0;
     const currentRound = this.getRoundCounter();
-    const teams = this.getTeams();
     
-    // Show summary view when:
-    // 1. Countdown just finished (currentRound > 0 but no countdown running)
-    // 2. We have teams with last_round_points data
-    const hasRecentRoundData = Object.values(teams).some(team => 
-      team.participating && team.last_round_points !== undefined && team.last_round_points > 0
-    );
-    
-    if (!isCountdownRunning && currentRound > 0 && hasRecentRoundData) {
-      return 'summary'; // Show round summary initially
-    } else if (!isCountdownRunning && currentRound > 1) {
-      return 'bar-chart'; // Show growing bar chart once next round starts
-    } else {
-      return 'overview'; // Default overview
+    // During countdown: show normal overview
+    if (isCountdownRunning) {
+      // Clear any transition timer when countdown starts
+      if (this._tabletRankingTransitionTimer) {
+        clearTimeout(this._tabletRankingTransitionTimer);
+        this._tabletRankingTransitionTimer = null;
+      }
+      this._tabletRankingShowBarChart = false;
+      return 'overview';
     }
+    
+    // After round completion: show summary first, then transition to bar chart
+    if (currentRound > 0) {
+      // If we haven't set up the transition timer yet, do it now
+      if (!this._tabletRankingTransitionTimer && !this._tabletRankingShowBarChart) {
+        this._tabletRankingTransitionTimer = setTimeout(() => {
+          this._tabletRankingShowBarChart = true;
+          // Trigger an update to show the bar chart
+          this.updateTeamsOverviewDisplay();
+          this._tabletRankingTransitionTimer = null;
+        }, 8000); // Show summary for 8 seconds, then switch to bar chart
+      }
+      
+      // Show bar chart for subsequent rounds or after transition
+      if (currentRound > 1 || this._tabletRankingShowBarChart) {
+        return 'bar-chart';
+      } else {
+        return 'summary';
+      }
+    }
+    
+    // Default: overview
+    return 'overview';
   }
 
   renderOtherTeamsOverview() {
