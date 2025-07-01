@@ -7,6 +7,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.components.http import StaticPathConfig
+from homeassistant.components import frontend
 
 from .const import DOMAIN
 from .services import SoundbeatsGameService, SoundbeatsTeamService, SoundbeatsConfigService
@@ -22,6 +23,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     # Register frontend resources (card JS)
     await _register_frontend_resources(hass)
+
+    # Register dashboard panel in sidebar
+    await _register_dashboard_panel(hass)
 
     # If user placed “soundbeats:” in configuration.yaml, import it into a config entry
     if DOMAIN in config:
@@ -51,6 +55,22 @@ async def _register_frontend_resources(hass: HomeAssistant) -> None:
     ])
     _LOGGER.info("Registered Soundbeats static path → %s", www_dir)
 
+async def _register_dashboard_panel(hass: HomeAssistant) -> None:
+    """Register the Soundbeats dashboard panel in the sidebar."""
+    try:
+        # Register the panel in Home Assistant's sidebar using the simpler registration method
+        hass.components.frontend.async_register_built_in_panel(
+            "iframe",
+            "Soundbeats",
+            "mdi:music-note",
+            frontend_url_path="soundbeats-dashboard",
+            config={"url": "/soundbeats_frontend_assets/soundbeats-dashboard.html"},
+            require_admin=False,
+        )
+        _LOGGER.info("Registered Soundbeats dashboard panel in sidebar")
+    except Exception as e:
+        _LOGGER.error("Failed to register Soundbeats dashboard panel: %s", e)
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Soundbeats from a config entry."""
     _LOGGER.info("Setting up Soundbeats config entry %s", entry.entry_id)
@@ -59,6 +79,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Register frontend resources (card JS)
     await _register_frontend_resources(hass)
+
+    # Register dashboard panel in sidebar
+    await _register_dashboard_panel(hass)
 
     # Forward to sensor platform (so sensor.py is loaded)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

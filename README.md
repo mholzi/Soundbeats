@@ -24,6 +24,7 @@ From installation to gameplay in under two minutes, Soundbeats is designed for i
 * **🎧 Works with ANY Player**: Fully compatible with any Home Assistant media player that supports Spotify playback (Sonos, Google Cast, VLC, etc.).
 * **🤖 No Spotify Integration Needed**: Soundbeats handles all audio playback internally. Your media player just needs to be ableto play Spotify URLs.
 * **🚀 Complete Lovelace Package**: Includes everything for the Lovelace UI with minimal setup - no manual resource registration or YAML editing required.
+* **📊 Automated Sidebar Dashboard**: Instantly accessible from Home Assistant's main navigation - no manual setup required!
 * **🔧 Powerful Admin Controls**: Admins can manage teams, adjust the countdown timer, and control music playback directly from the card.
 * **🌐 Multi-Language Support**: Fully translated in English and German.
 
@@ -55,7 +56,14 @@ Getting the party started is incredibly simple.
 3.  Search for **"Soundbeats"** and click it.
 4.  A success message will appear. The integration is now ready!
 
-### 3. Add the Card to Your Dashboard
+### 3. Access Your Dashboard (Choose One Method)
+
+#### Option A: Automated Sidebar Dashboard (Recommended) 🚀
+After installing the integration, **Soundbeats** will automatically appear in your Home Assistant sidebar! Just click the musical note icon (🎵) in the left navigation to access your dedicated game dashboard.
+
+> **✨ Zero Setup Required!** The dashboard loads automatically with no manual configuration needed.
+
+#### Option B: Manual Lovelace Card 
 1.  Open the dashboard you want to add the game to and click the 3-dots > **Edit Dashboard**.
 2.  Click **+ Add Card** and search for **"Custom: Soundbeats Card"**.
 3.  The interactive splash screen will appear. Configure your game settings (number of teams, audio player, user assignment) right from the UI.
