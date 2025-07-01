@@ -10,5 +10,6 @@
   "config_flow": true,
   "iot_class": "local_polling",
   "integration_type": "service",
-  "after_dependencies": ["frontend"]
+  "after_dependencies": ["frontend"],
+  "frontend_extra_module_url": "/soundbeats_frontend_assets/soundbeats-panel.js"
 }
