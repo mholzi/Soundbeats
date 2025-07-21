@@ -1,0 +1,13 @@
+{
+  "domain": "soundbeats",
+  "name": "Soundbeats",
+  "codeowners": ["@yourgithubusername"],
+  "config_flow": true,
+  "dependencies": ["frontend", "websocket_api"],
+  "documentation": "https://github.com/yourusername/soundbeats-integration",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/yourusername/soundbeats-integration/issues",
+  "requirements": [],
+  "version": "1.0.0",
+  "integration_type": "service"
+}
