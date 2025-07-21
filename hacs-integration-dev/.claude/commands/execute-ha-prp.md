@@ -45,34 +45,48 @@ Implement a feature using the PRP file with comprehensive testing and error reso
 
 5. **COMPREHENSIVE VALIDATION PIPELINE**
    
+   **⚠️ CRITICAL: Always perform ALL validation stages, especially:**
+   - **Stage 2: Home Assistant Restart and Log Analysis** - This catches most integration errors
+   - **Stage 3: Frontend Validation** - Ensures panel/UI actually works
+   - **Never skip these steps or mark tasks complete without running them!**
+   
    ### Stage 1: Static Analysis (Fast - ~30 seconds)
    - **Home Assistant Integration Structure Check**:
      ```bash
-     # Run the structure validation from PRP
-     python3 -c "
+     # Create and run structure validation script
+     cat > validate_structure.py << 'EOF'
 import json, os, sys
-errors = []
 
-# Check manifest.json
-try:
-    with open('custom_components/soundbeats/manifest.json') as f:
-        manifest = json.load(f)
-        if not manifest.get('domain') or not manifest.get('version'):
-            errors.append('Manifest incomplete')
-except Exception as e:
-    errors.append(f'Manifest error: {e}')
+def validate_structure():
+    errors = []
+    
+    # Check manifest.json
+    try:
+        with open('custom_components/soundbeats/manifest.json') as f:
+            manifest = json.load(f)
+            if manifest.get('domain') != 'soundbeats':
+                errors.append('Manifest domain mismatch')
+            if not manifest.get('version'):
+                errors.append('Manifest missing version')
+    except Exception as e:
+        errors.append(f'Manifest error: {e}')
+    
+    # Check required files
+    required_files = [
+        'custom_components/soundbeats/__init__.py',
+        'custom_components/soundbeats/const.py',
+        'hacs.json',
+        'info.md',
+        'README.md'
+    ]
+    
+    for file in required_files:
+        if not os.path.exists(file):
+            errors.append(f'Missing: {file}')
+    
+    return errors
 
-# Check required files
-required_files = [
-    'custom_components/soundbeats/__init__.py',
-    'custom_components/soundbeats/const.py',
-    'hacs.json', 'info.md', 'README.md'
-]
-
-for file in required_files:
-    if not os.path.exists(file):
-        errors.append(f'Missing: {file}')
-
+errors = validate_structure()
 if errors:
     print('❌ Validation failed:')
     for error in errors:
@@ -80,68 +94,141 @@ if errors:
     sys.exit(1)
 else:
     print('✅ Structure validation passed')
-"
+EOF
+
+python3 validate_structure.py
+rm validate_structure.py
      ```
    
    - **Python Syntax & Style Validation**:
      ```bash
      cd custom_components/soundbeats
      python3 -m py_compile *.py || echo "Syntax errors found"
-     # If available: ruff check . --fix
-     # If available: mypy . --strict
+     cd ../..
      ```
    
    - **Frontend Build Check** (if applicable):
-     - Check for frontend directory and validate JS files exist
-     - Run: `npm run build` if package.json exists
-     - Validate ES6 module structure
-   
-   ### Stage 2: Automated Integration Testing
-   - **Run the automated test script**:
      ```bash
-     # This script handles Docker deployment, HA restart, and validation
-     python3 test_integration_automated.py
+     # Check if frontend build system exists
+     if [ -f "custom_components/soundbeats/frontend/package.json" ]; then
+         cd custom_components/soundbeats/frontend
+         
+         # TypeScript compilation check
+         npx tsc --noEmit || echo "TypeScript errors found"
+         
+         # ESLint check (handle ES module config)
+         npm run lint || echo "ESLint warnings/errors found"
+         
+         # Build frontend
+         npm run build
+         
+         # Verify dist files exist
+         ls -la dist/
+         cd ../../..
+     fi
      ```
+   
+   ### Stage 2: Home Assistant Restart and Log Analysis
+   - **CRITICAL: Always restart HA and check logs**:
+     ```bash
+     # Check if using Docker
+     if [ -f "docker-compose.yml" ]; then
+         # Copy updated integration to container
+         docker cp custom_components/soundbeats/. ha-dev:/config/custom_components/soundbeats/
+         
+         # Restart Home Assistant
+         docker-compose restart homeassistant
+         
+         # Wait for HA to start (30-40 seconds)
+         echo "Waiting for Home Assistant to start..."
+         sleep 30
+         
+         # Check logs for soundbeats errors
+         echo "Checking logs for errors..."
+         docker logs ha-dev --tail 100 2>&1 | grep -E "soundbeats|error|ERROR" | tail -20
+         
+         # Check if integration loaded without errors
+         if docker logs ha-dev --tail 200 2>&1 | grep -i "error.*soundbeats"; then
+             echo "❌ Errors found in Home Assistant logs!"
+             docker logs ha-dev --tail 200 2>&1 | grep -A 10 -B 5 "soundbeats"
+         else
+             echo "✅ No errors found in logs"
+         fi
+     else
+         echo "⚠️  No Docker setup found - manual HA restart required"
+     fi
+     ```
+   
+   ### Stage 3: Frontend Validation
+   - **Verify static files are served correctly**:
+     ```bash
+     # Test if panel JavaScript is accessible
+     if curl -s http://localhost:8123/soundbeats_static/soundbeats-panel.js | head -1 > /dev/null; then
+         echo "✅ Panel JavaScript is served"
+         
+         # Check bundle size
+         size=$(curl -s http://localhost:8123/soundbeats_static/soundbeats-panel.js | wc -c)
+         echo "   Bundle size: $size bytes"
+         
+         # Verify component is in bundle
+         if curl -s http://localhost:8123/soundbeats_static/soundbeats-panel.js | grep -q "SoundbeatsPanel"; then
+             echo "✅ SoundbeatsPanel component found in bundle"
+         else
+             echo "❌ SoundbeatsPanel component not found!"
+         fi
+         
+         # Check if source map is served
+         if curl -s -I http://localhost:8123/soundbeats_static/soundbeats-panel.js.map | grep -q "200 OK"; then
+             echo "✅ Source map is accessible"
+         fi
+     else
+         echo "❌ Panel JavaScript not accessible!"
+     fi
+     ```
+   
+   - **Browser Console Check** (if Puppeteer MCP available):
+     ```bash
+     # Note: Use Puppeteer MCP if available to:
+     # 1. Navigate to http://localhost:8123
+     # 2. Open browser developer console
+     # 3. Check for JavaScript errors
+     # 4. Navigate to /soundbeats panel
+     # 5. Verify panel loads without console errors
+     echo "💡 Use Puppeteer MCP to check browser console for errors"
+     ```
+   
+   ### Stage 4: Integration-Specific Testing
+   - **Test WebSocket API** (if implemented):
+     ```bash
+     # Test basic WebSocket status command if available
+     curl -X GET http://localhost:8123/api/ 2>&1 | head -5
+     ```
+   
+   - **Panel Load Test**:
+     ```bash
+     echo "📋 MANUAL PANEL TESTING CHECKLIST"
+     echo "1. Open http://localhost:8123 in browser"
+     echo "2. Look for 'Soundbeats' in the sidebar"
+     echo "3. Click on Soundbeats panel"
+     echo "4. Verify panel loads without errors"
+     echo "5. Open browser console (F12) and check for errors"
+     echo "6. Test any new features for this phase"
+     ```
+   
+   ### Stage 5: Common Error Resolution
+   - **If errors found, check for these common issues**:
+     ```bash
+     # API Changes (like async_register_static_paths)
+     echo "Common fixes:"
+     echo "- async_register_static_paths needs StaticPathConfig"
+     echo "- Import: from homeassistant.components.http import StaticPathConfig"
+     echo "- Usage: await hass.http.async_register_static_paths([StaticPathConfig(...)])"
      
-   - **What the script does**:
-     - Checks if Docker/HA is running
-     - Deploys integration to config directory
-     - Restarts Home Assistant
-     - Waits for HA to be ready
-     - Checks logs for errors
-     - Validates integration loaded successfully
-   
-   ### Stage 3: Additional Validation (if errors found)
-   - **Log Analysis** (automated script already checked for errors):
-     ```bash
-     # Only run if Stage 2 found issues
-     docker-compose logs --tail=200 homeassistant | grep -i "soundbeats\|error\|warning"
+     # Frontend path issues
+     echo "- Static paths must point to actual directories"
+     echo "- Built files must be committed for HACS"
+     echo "- Check file permissions in Docker container"
      ```
-   
-   - **Common Error Patterns to Check**:
-     - Missing async decorators
-     - Import errors (missing dependencies)
-     - Entity registration failures
-     - WebSocket connection issues
-     - Frontend asset loading errors
-   
-   ### Stage 4: Manual Functional Testing
-   - **Generate test checklist**:
-     ```bash
-     echo "📋 MANUAL TESTING CHECKLIST"
-     echo "1. Access Home Assistant at http://localhost:8123"
-     echo "2. Check integration in Settings > Integrations"
-     echo "3. Verify panel in sidebar (if applicable)"
-     echo "4. Test all new features for this phase"
-     echo "5. Check browser console for errors"
-     echo "6. Test persistence after HA restart"
-     ```
-   
-   - **Phase-Specific Testing**:
-     - Follow success criteria from the PRP
-     - Test all deliverables mentioned in the phase
-     - Verify responsive design works
-     - Check WebSocket functionality (if applicable)
 
 6. **ERROR RESOLUTION STRATEGY**
    
