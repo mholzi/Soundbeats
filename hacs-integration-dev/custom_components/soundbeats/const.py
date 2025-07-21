@@ -9,3 +9,6 @@ CONF_API_KEY: Final = "api_key"
 # Defaults
 DEFAULT_NAME: Final = "Soundbeats"
 DEFAULT_SCAN_INTERVAL: Final = 300  # 5 minutes
+
+# Events
+EVENT_GAME_STATE_CHANGED: Final = "soundbeats_game_state_changed"

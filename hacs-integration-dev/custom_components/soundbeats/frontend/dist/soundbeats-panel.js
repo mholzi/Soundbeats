@@ -1,3 +1,22 @@
+var __defProp = Object.defineProperty;
+var __defProps = Object.defineProperties;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues = (a2, b2) => {
+  for (var prop in b2 || (b2 = {}))
+    if (__hasOwnProp.call(b2, prop))
+      __defNormalProp(a2, prop, b2[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b2)) {
+      if (__propIsEnum.call(b2, prop))
+        __defNormalProp(a2, prop, b2[prop]);
+    }
+  return a2;
+};
+var __spreadProps = (a2, b2) => __defProps(a2, __getOwnPropDescs(b2));
 var __async = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
     var fulfilled = (value) => {
@@ -43,7 +62,7 @@ let n$3 = class n {
     return this.cssText;
   }
 };
-const r$3 = (t2) => new n$3("string" == typeof t2 ? t2 : t2 + "", void 0, s$2), i$3 = (t2, ...e2) => {
+const r$4 = (t2) => new n$3("string" == typeof t2 ? t2 : t2 + "", void 0, s$2), i$3 = (t2, ...e2) => {
   const o2 = 1 === t2.length ? t2[0] : e2.reduce((e3, s2, o3) => e3 + ((t3) => {
     if (true === t3._$cssResult$) return t3.cssText;
     if ("number" == typeof t3) return t3;
@@ -59,14 +78,14 @@ const r$3 = (t2) => new n$3("string" == typeof t2 ? t2 : t2 + "", void 0, s$2), 
 }, c$2 = e$2 ? (t2) => t2 : (t2) => t2 instanceof CSSStyleSheet ? ((t3) => {
   let e2 = "";
   for (const s2 of t3.cssRules) e2 += s2.cssText;
-  return r$3(e2);
+  return r$4(e2);
 })(t2) : t2;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: i$2, defineProperty: e$1, getOwnPropertyDescriptor: h$1, getOwnPropertyNames: r$2, getOwnPropertySymbols: o$3, getPrototypeOf: n$2 } = Object, a$1 = globalThis, c$1 = a$1.trustedTypes, l$1 = c$1 ? c$1.emptyScript : "", p$1 = a$1.reactiveElementPolyfillSupport, d$1 = (t2, s2) => t2, u$1 = { toAttribute(t2, s2) {
+const { is: i$2, defineProperty: e$1, getOwnPropertyDescriptor: h$1, getOwnPropertyNames: r$3, getOwnPropertySymbols: o$3, getPrototypeOf: n$2 } = Object, a$1 = globalThis, c$1 = a$1.trustedTypes, l$1 = c$1 ? c$1.emptyScript : "", p$1 = a$1.reactiveElementPolyfillSupport, d$1 = (t2, s2) => t2, u$1 = { toAttribute(t2, s2) {
   switch (s2) {
     case Boolean:
       t2 = t2 ? l$1 : null;
@@ -134,7 +153,7 @@ let y$1 = class y extends HTMLElement {
   static finalize() {
     if (this.hasOwnProperty(d$1("finalized"))) return;
     if (this.finalized = true, this._$Ei(), this.hasOwnProperty(d$1("properties"))) {
-      const t3 = this.properties, s2 = [...r$2(t3), ...o$3(t3)];
+      const t3 = this.properties, s2 = [...r$3(t3), ...o$3(t3)];
       for (const i2 of s2) this.createProperty(i2, t3[i2]);
     }
     const t2 = this[Symbol.metadata];
@@ -312,8 +331,8 @@ y$1.elementStyles = [], y$1.shadowRootOptions = { mode: "open" }, y$1[d$1("eleme
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const t$1 = globalThis, i$1 = t$1.trustedTypes, s$1 = i$1 ? i$1.createPolicy("lit-html", { createHTML: (t2) => t2 }) : void 0, e = "$lit$", h = `lit$${Math.random().toFixed(9).slice(2)}$`, o$2 = "?" + h, n$1 = `<${o$2}>`, r$1 = document, l = () => r$1.createComment(""), c = (t2) => null === t2 || "object" != typeof t2 && "function" != typeof t2, a = Array.isArray, u = (t2) => a(t2) || "function" == typeof (t2 == null ? void 0 : t2[Symbol.iterator]), d = "[ 	\n\f\r]", f = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, v = /-->/g, _ = />/g, m = RegExp(`>|${d}(?:([^\\s"'>=/]+)(${d}*=${d}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), p = /'/g, g = /"/g, $ = /^(?:script|style|textarea|title)$/i, y2 = (t2) => (i2, ...s2) => ({ _$litType$: t2, strings: i2, values: s2 }), x = y2(1), T = Symbol.for("lit-noChange"), E = Symbol.for("lit-nothing"), A = /* @__PURE__ */ new WeakMap(), C = r$1.createTreeWalker(r$1, 129);
+const t$1 = globalThis, i$1 = t$1.trustedTypes, s$1 = i$1 ? i$1.createPolicy("lit-html", { createHTML: (t2) => t2 }) : void 0, e = "$lit$", h = `lit$${Math.random().toFixed(9).slice(2)}$`, o$2 = "?" + h, n$1 = `<${o$2}>`, r$2 = document, l = () => r$2.createComment(""), c = (t2) => null === t2 || "object" != typeof t2 && "function" != typeof t2, a = Array.isArray, u = (t2) => a(t2) || "function" == typeof (t2 == null ? void 0 : t2[Symbol.iterator]), d = "[ 	\n\f\r]", f = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, v = /-->/g, _ = />/g, m = RegExp(`>|${d}(?:([^\\s"'>=/]+)(${d}*=${d}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), p = /'/g, g = /"/g, $ = /^(?:script|style|textarea|title)$/i, y2 = (t2) => (i2, ...s2) => ({ _$litType$: t2, strings: i2, values: s2 }), x = y2(1), T = Symbol.for("lit-noChange"), E = Symbol.for("lit-nothing"), A = /* @__PURE__ */ new WeakMap(), C = r$2.createTreeWalker(r$2, 129);
 function P(t2, i2) {
   if (!a(t2) || !t2.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return void 0 !== s$1 ? s$1.createHTML(i2) : i2;
@@ -363,7 +382,7 @@ class N {
     }
   }
   static createElement(t2, i2) {
-    const s2 = r$1.createElement("template");
+    const s2 = r$2.createElement("template");
     return s2.innerHTML = t2, s2;
   }
 }
@@ -386,7 +405,7 @@ class M {
   }
   u(t2) {
     var _a2;
-    const { el: { content: i2 }, parts: s2 } = this._$AD, e2 = ((_a2 = t2 == null ? void 0 : t2.creationScope) != null ? _a2 : r$1).importNode(i2, true);
+    const { el: { content: i2 }, parts: s2 } = this._$AD, e2 = ((_a2 = t2 == null ? void 0 : t2.creationScope) != null ? _a2 : r$2).importNode(i2, true);
     C.currentNode = e2;
     let h2 = C.nextNode(), o2 = 0, n3 = 0, l2 = s2[0];
     for (; void 0 !== l2; ) {
@@ -396,7 +415,7 @@ class M {
       }
       o2 !== (l2 == null ? void 0 : l2.index) && (h2 = C.nextNode(), o2++);
     }
-    return C.currentNode = r$1, e2;
+    return C.currentNode = r$2, e2;
   }
   p(t2) {
     let i2 = 0;
@@ -433,7 +452,7 @@ class R {
     this._$AH !== t2 && (this._$AR(), this._$AH = this.O(t2));
   }
   _(t2) {
-    this._$AH !== E && c(this._$AH) ? this._$AA.nextSibling.data = t2 : this.T(r$1.createTextNode(t2)), this._$AH = t2;
+    this._$AH !== E && c(this._$AH) ? this._$AA.nextSibling.data = t2 : this.T(r$2.createTextNode(t2)), this._$AH = t2;
   }
   $(t2) {
     var _a2;
@@ -596,7 +615,7 @@ const t = (t2) => (e2, o2) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const o = { attribute: true, type: String, converter: u$1, reflect: false, hasChanged: f$1 }, r = (t2 = o, e2, r2) => {
+const o = { attribute: true, type: String, converter: u$1, reflect: false, hasChanged: f$1 }, r$1 = (t2 = o, e2, r2) => {
   const { kind: n3, metadata: i2 } = r2;
   let s2 = globalThis.litPropertyMetadata.get(i2);
   if (void 0 === s2 && globalThis.litPropertyMetadata.set(i2, s2 = /* @__PURE__ */ new Map()), "setter" === n3 && ((t2 = Object.create(t2)).wrapped = true), s2.set(r2.name, t2), "accessor" === n3) {
@@ -618,25 +637,346 @@ const o = { attribute: true, type: String, converter: u$1, reflect: false, hasCh
   throw Error("Unsupported decorator location: " + n3);
 };
 function n2(t2) {
-  return (e2, o2) => "object" == typeof o2 ? r(t2, e2, o2) : ((t3, e3, o3) => {
+  return (e2, o2) => "object" == typeof o2 ? r$1(t2, e2, o2) : ((t3, e3, o3) => {
     const r2 = e3.hasOwnProperty(o3);
     return e3.constructor.createProperty(o3, t3), r2 ? Object.getOwnPropertyDescriptor(e3, o3) : void 0;
   })(t2, e2, o2);
 }
-var __defProp = Object.defineProperty;
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+function r(r2) {
+  return n2(__spreadProps(__spreadValues({}, r2), { state: true, attribute: false }));
+}
+class WebSocketService {
+  constructor(hass, entryId) {
+    this.hass = hass;
+    this.entryId = entryId;
+  }
+  newGame(teamCount) {
+    return __async(this, null, function* () {
+      const response = yield this.hass.connection.sendMessagePromise({
+        type: "soundbeats/new_game",
+        entry_id: this.entryId,
+        team_count: teamCount
+      });
+      return response;
+    });
+  }
+  getGameState() {
+    return __async(this, null, function* () {
+      const response = yield this.hass.connection.sendMessagePromise({
+        type: "soundbeats/get_game_state",
+        entry_id: this.entryId
+      });
+      return response;
+    });
+  }
+  updateTeamName(teamId, name) {
+    return __async(this, null, function* () {
+      yield this.hass.connection.sendMessagePromise({
+        type: "soundbeats/update_team_name",
+        entry_id: this.entryId,
+        team_id: teamId,
+        name
+      });
+    });
+  }
+  addTeam() {
+    return __async(this, null, function* () {
+      const response = yield this.hass.connection.sendMessagePromise({
+        type: "soundbeats/add_team",
+        entry_id: this.entryId
+      });
+      return response.team;
+    });
+  }
+  removeTeam(teamId) {
+    return __async(this, null, function* () {
+      yield this.hass.connection.sendMessagePromise({
+        type: "soundbeats/remove_team",
+        entry_id: this.entryId,
+        team_id: teamId
+      });
+    });
+  }
+  subscribeToStateChanges(callback) {
+    const unsubscribe = this.hass.connection.subscribeMessage(
+      (msg) => callback(msg.state),
+      {
+        type: "soundbeats/subscribe_game_state",
+        entry_id: this.entryId
+      }
+    );
+    return unsubscribe;
+  }
+}
+var __defProp$1 = Object.defineProperty;
+var __getOwnPropDesc$1 = Object.getOwnPropertyDescriptor;
+var __decorateClass$1 = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc$1(target, key) : target;
+  for (var i2 = decorators.length - 1, decorator; i2 >= 0; i2--)
+    if (decorator = decorators[i2])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp$1(target, key, result);
+  return result;
+};
+let SoundbeatsGameSetup = class extends i {
+  constructor() {
+    super(...arguments);
+    this.loading = false;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.wsService = new WebSocketService(this.hass, this.entryId);
+    this.loadGameState();
+    this.unsubscribe = this.wsService.subscribeToStateChanges((state2) => {
+      this.gameState = state2;
+    });
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
+  }
+  loadGameState() {
+    return __async(this, null, function* () {
+      this.loading = true;
+      try {
+        const { state: state2 } = yield this.wsService.getGameState();
+        this.gameState = state2 || void 0;
+      } catch (err) {
+        console.error("Failed to load game state:", err);
+      } finally {
+        this.loading = false;
+      }
+    });
+  }
+  createNewGame() {
+    return __async(this, null, function* () {
+      var _a2;
+      this.loading = true;
+      try {
+        const teamCount = ((_a2 = this.gameState) == null ? void 0 : _a2.teams.length) || 2;
+        yield this.wsService.newGame(teamCount);
+      } catch (err) {
+        console.error("Failed to create game:", err);
+      } finally {
+        this.loading = false;
+      }
+    });
+  }
+  updateTeamName(team, event) {
+    return __async(this, null, function* () {
+      const input = event.target;
+      const newName = input.value.trim();
+      if (newName !== team.name) {
+        try {
+          yield this.wsService.updateTeamName(team.id, newName);
+        } catch (err) {
+          console.error("Failed to update team name:", err);
+          input.value = team.name;
+        }
+      }
+    });
+  }
+  addTeam() {
+    return __async(this, null, function* () {
+      if (this.gameState && this.gameState.teams.length < 5) {
+        try {
+          yield this.wsService.addTeam();
+        } catch (err) {
+          console.error("Failed to add team:", err);
+        }
+      }
+    });
+  }
+  removeTeam(teamId) {
+    return __async(this, null, function* () {
+      if (this.gameState && this.gameState.teams.length > 1) {
+        try {
+          yield this.wsService.removeTeam(teamId);
+        } catch (err) {
+          console.error("Failed to remove team:", err);
+        }
+      }
+    });
+  }
+  render() {
+    if (this.loading) {
+      return x`<ha-circular-progress active></ha-circular-progress>`;
+    }
+    if (!this.gameState) {
+      return x`
+        <ha-card>
+          <div class="card-content">
+            <h2>Welcome to Soundbeats!</h2>
+            <p>Create a new game to get started.</p>
+            <div class="controls">
+              <mwc-button raised @click=${this.createNewGame}>
+                Create New Game
+              </mwc-button>
+            </div>
+          </div>
+        </ha-card>
+      `;
+    }
+    return x`
+      <ha-card>
+        <div class="card-content">
+          <h2>Game Setup</h2>
+          
+          <div class="team-list">
+            ${this.gameState.teams.map((team) => x`
+              <div class="team-item">
+                <ha-icon class="team-icon" icon="mdi:account-group"></ha-icon>
+                <input
+                  class="team-name"
+                  type="text"
+                  .value=${team.name}
+                  @blur=${(e2) => this.updateTeamName(team, e2)}
+                  @keyup=${(e2) => {
+      if (e2.key === "Enter") {
+        e2.target.blur();
+      }
+    }}
+                />
+                ${this.gameState.teams.length > 1 ? x`
+                  <mwc-icon-button
+                    icon="mdi:delete"
+                    @click=${() => this.removeTeam(team.id)}
+                  ></mwc-icon-button>
+                ` : ""}
+              </div>
+            `)}
+          </div>
+          
+          <div class="controls">
+            ${this.gameState.teams.length < 5 ? x`
+              <mwc-button outlined @click=${this.addTeam}>
+                Add Team
+              </mwc-button>
+            ` : ""}
+            
+            <mwc-button raised>
+              Start Game
+            </mwc-button>
+          </div>
+        </div>
+      </ha-card>
+    `;
+  }
+};
+SoundbeatsGameSetup.styles = i$3`
+    :host {
+      display: block;
+      padding: 16px;
+    }
+    
+    .team-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 24px 0;
+    }
+    
+    .team-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      border: 1px solid var(--divider-color);
+      border-radius: 8px;
+      background: var(--card-background-color);
+    }
+    
+    .team-icon {
+      font-size: 24px;
+      color: var(--primary-text-color);
+    }
+    
+    .team-name {
+      flex: 1;
+      font-size: 18px;
+      border: none;
+      background: transparent;
+      color: var(--primary-text-color);
+      outline: none;
+      padding: 8px;
+    }
+    
+    .team-name:focus {
+      border-bottom: 2px solid var(--primary-color);
+    }
+    
+    .controls {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 32px;
+    }
+    
+    mwc-button {
+      --mdc-theme-primary: var(--primary-color);
+    }
+    
+    mwc-icon-button {
+      --mdc-icon-button-size: 40px;
+    }
+    
+    ha-circular-progress {
+      display: block;
+      margin: 0 auto;
+    }
+    
+    ha-card {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    @media (max-width: 600px) {
+      .controls {
+        flex-direction: column;
+      }
+    }
+  `;
+__decorateClass$1([
+  n2({ attribute: false })
+], SoundbeatsGameSetup.prototype, "hass", 2);
+__decorateClass$1([
+  n2()
+], SoundbeatsGameSetup.prototype, "entryId", 2);
+__decorateClass$1([
+  r()
+], SoundbeatsGameSetup.prototype, "gameState", 2);
+__decorateClass$1([
+  r()
+], SoundbeatsGameSetup.prototype, "loading", 2);
+SoundbeatsGameSetup = __decorateClass$1([
+  t("soundbeats-game-setup")
+], SoundbeatsGameSetup);
+var __defProp2 = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i2 = decorators.length - 1, decorator; i2 >= 0; i2--)
     if (decorator = decorators[i2])
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
+  if (kind && result) __defProp2(target, key, result);
   return result;
 };
 let SoundbeatsPanel = class extends i {
   constructor() {
     super(...arguments);
     this.narrow = false;
+  }
+  get entryId() {
+    var _a2, _b2, _c2;
+    const entries = Object.keys(((_b2 = (_a2 = this.hass) == null ? void 0 : _a2.config) == null ? void 0 : _b2.config_entries) || {}).map((id) => this.hass.config.config_entries[id]).filter((entry) => entry.domain === "soundbeats");
+    return ((_c2 = entries[0]) == null ? void 0 : _c2.entry_id) || "";
   }
   connectedCallback() {
     super.connectedCallback();
@@ -659,18 +999,28 @@ let SoundbeatsPanel = class extends i {
     });
   }
   render() {
+    if (!this.entryId) {
+      return x`
+        <div class="container">
+          <div class="header">
+            <div class="logo">🎵</div>
+            <h1>Soundbeats Game</h1>
+            <div class="status">Loading configuration...</div>
+          </div>
+        </div>
+      `;
+    }
     return x`
       <div class="container">
         <div class="header">
           <div class="logo">🎵</div>
           <h1>Soundbeats Game</h1>
-          <div class="status">Ready to play music trivia!</div>
         </div>
 
-        <div class="content">
-          <p>Welcome to Soundbeats - The ultimate music guessing game for Home Assistant!</p>
-          <p>Phase 2 implementation complete. Build system active!</p>
-        </div>
+        <soundbeats-game-setup
+          .hass=${this.hass}
+          .entryId=${this.entryId}
+        ></soundbeats-game-setup>
       </div>
     `;
   }

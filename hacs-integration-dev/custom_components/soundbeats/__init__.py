@@ -12,6 +12,8 @@ from homeassistant.components import websocket_api
 from homeassistant.components.http import StaticPathConfig
 
 from .const import DOMAIN
+from .game_manager import GameManager
+from .websocket_api import async_setup_websocket_api
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +23,16 @@ PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.MEDIA_PLAYER]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Soundbeats from a config entry."""
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = entry.data
+    hass.data[DOMAIN][entry.entry_id] = {
+        "config": entry.data,
+        "active_game": entry.data.get("active_game"),
+        "game_history": entry.data.get("game_history", [])
+    }
+    
+    # Initialize game manager
+    game_manager = GameManager(hass, entry.entry_id)
+    await game_manager.initialize()
+    hass.data[DOMAIN][entry.entry_id]["game_manager"] = game_manager
 
     # Register static path for frontend assets
     await hass.http.async_register_static_paths([
@@ -51,8 +62,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             require_admin=False,
         )
 
-    # Register WebSocket commands for future use
-    websocket_api.async_register_command(hass, websocket_get_status)
+    # Register WebSocket API
+    async_setup_websocket_api(hass)
 
     # Forward entry setup to platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -61,29 +72,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
+    # Clean up game manager
+    if "game_manager" in hass.data[DOMAIN][entry.entry_id]:
+        # Save final state before unloading
+        game_manager = hass.data[DOMAIN][entry.entry_id]["game_manager"]
+        state_data = {
+            "active_game": game_manager.get_state(),
+            "game_history": game_manager.get_history()
+        }
+        
+        # Update config entry for persistence
+        hass.config_entries.async_update_entry(
+            entry, data={**entry.data, **state_data}
+        )
+    
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
     return unload_ok
 
-
-# Basic WebSocket command for testing
-@websocket_api.websocket_command(
-    {
-        "type": "soundbeats/status",
-    }
-)
-@websocket_api.async_response
-async def websocket_get_status(
-    hass: HomeAssistant,
-    connection: websocket_api.ActiveConnection,
-    msg: dict[str, Any],
-) -> None:
-    """Handle get status command."""
-    connection.send_result(
-        msg["id"],
-        {
-            "status": "ready",
-            "version": "1.0.0",
-            "message": "Soundbeats integration is ready"
-        }
-    )
