@@ -193,3 +193,10 @@ custom_components/*/tests/
 
 # Keep only essential files for HACS component
 # (Everything else should be ignored)
+
+# Additional directories to ignore
+.claude/commands/
+.github/workflows/
+PRPs/templates/
+context-engineering-intro/
+examples/
