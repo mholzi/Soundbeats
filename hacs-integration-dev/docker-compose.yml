@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: ha-dev
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./config:/config
+      - ./custom_components:/config/custom_components
+    environment:
+      - TZ=UTC
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8123/api/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ha-network
+
+  puppeteer:
+    image: browserless/chrome:latest
+    container_name: puppeteer-dev
+    ports:
+      - "3001:3000"
+    environment:
+      - CONNECTION_TIMEOUT=60000
+      - MAX_CONCURRENT_SESSIONS=10
+      - ENABLE_DEBUGGER=true
+    mem_limit: 2g
+    networks:
+      - ha-network
+
+networks:
+  ha-network:
+    driver: bridge

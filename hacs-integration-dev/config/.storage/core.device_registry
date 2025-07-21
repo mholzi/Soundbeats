@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "minor_version": 10,
+  "key": "core.device_registry",
+  "data": {
+    "devices": [
+      {"area_id":null,"config_entries":["01K0PT69CJPSRYZ3MD1EXMT678"],"config_entries_subentries":{"01K0PT69CJPSRYZ3MD1EXMT678":[null]},"configuration_url":null,"connections":[],"created_at":"2025-07-21T15:38:43.478216+00:00","disabled_by":null,"entry_type":"service","hw_version":null,"id":"a57d13a3072e87c6252f0ddbf5b50f85","identifiers":[["sun","01K0PT69CJPSRYZ3MD1EXMT678"]],"labels":[],"manufacturer":null,"model":null,"model_id":null,"modified_at":"2025-07-21T15:38:43.478365+00:00","name_by_user":null,"name":"Sun","primary_config_entry":"01K0PT69CJPSRYZ3MD1EXMT678","serial_number":null,"sw_version":null,"via_device_id":null},
+      {"area_id":null,"config_entries":["01K0PT6A1RRG5RFA4C45MSXMCR"],"config_entries_subentries":{"01K0PT6A1RRG5RFA4C45MSXMCR":[null]},"configuration_url":"homeassistant://config/backup","connections":[],"created_at":"2025-07-21T15:38:44.188714+00:00","disabled_by":null,"entry_type":"service","hw_version":null,"id":"8f48c3dca1c5c00d628c129a4f2bcd34","identifiers":[["backup","backup_manager"]],"labels":[],"manufacturer":"Home Assistant","model":"Home Assistant Backup","model_id":null,"modified_at":"2025-07-21T15:38:44.188789+00:00","name_by_user":null,"name":"Backup","primary_config_entry":"01K0PT6A1RRG5RFA4C45MSXMCR","serial_number":null,"sw_version":"2025.7.2","via_device_id":null},
+      {"area_id":null,"config_entries":["01K0PTF5XXG3BT0BXP1G1HH4GD"],"config_entries_subentries":{"01K0PTF5XXG3BT0BXP1G1HH4GD":[null]},"configuration_url":"https://www.met.no/en","connections":[],"created_at":"2025-07-21T15:43:35.233543+00:00","disabled_by":null,"entry_type":"service","hw_version":null,"id":"c1c33aa149887c9e6a20121cac9b3d38","identifiers":[["met","01K0PTF5XXG3BT0BXP1G1HH4GD"]],"labels":[],"manufacturer":"Met.no","model":"Forecast","model_id":null,"modified_at":"2025-07-21T15:43:35.235778+00:00","name_by_user":null,"name":"Forecast","primary_config_entry":"01K0PTF5XXG3BT0BXP1G1HH4GD","serial_number":null,"sw_version":null,"via_device_id":null},
+      {"area_id":null,"config_entries":["01K0PTZ6NGHQ8KZHBS3Z20TRXD"],"config_entries_subentries":{"01K0PTZ6NGHQ8KZHBS3Z20TRXD":[null]},"configuration_url":"homeassistant://hacs","connections":[],"created_at":"2025-07-21T15:52:22.746001+00:00","disabled_by":null,"entry_type":"service","hw_version":null,"id":"884bb8431512300cfc5d4917512e80f4","identifiers":[["hacs","0717a0cd-745c-48fd-9b16-c8534c9704f9-bc944b0f-fd42-4a58-a072-ade38d1444cd"]],"labels":[],"manufacturer":"hacs.xyz","model":"","model_id":null,"modified_at":"2025-07-21T15:52:22.746289+00:00","name_by_user":null,"name":"HACS","primary_config_entry":"01K0PTZ6NGHQ8KZHBS3Z20TRXD","serial_number":null,"sw_version":"2.0.5","via_device_id":null}
+    ],
+    "deleted_devices": []
+  }
+}
