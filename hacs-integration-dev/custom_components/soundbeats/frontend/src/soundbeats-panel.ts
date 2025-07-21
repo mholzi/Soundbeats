@@ -1,5 +1,7 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
+import './components/game-setup'
+import { HomeAssistant } from './types'
 
 declare global {
   interface Window {
@@ -12,9 +14,18 @@ declare global {
 
 @customElement('soundbeats-panel')
 export class SoundbeatsPanel extends LitElement {
-  @property({ attribute: false }) public hass!: any
+  @property({ attribute: false }) public hass!: HomeAssistant
   @property({ type: Boolean }) narrow = false
   @property({ attribute: false }) panel: any
+  
+  private get entryId(): string {
+    // Get entry ID from first config entry for the soundbeats domain
+    const entries = Object.keys(this.hass?.config?.config_entries || {})
+      .map(id => this.hass.config.config_entries[id])
+      .filter(entry => entry.domain === 'soundbeats')
+    
+    return entries[0]?.entry_id || ''
+  }
 
   static styles = css`
     :host {
@@ -94,18 +105,29 @@ export class SoundbeatsPanel extends LitElement {
   }
 
   render() {
+    if (!this.entryId) {
+      return html`
+        <div class="container">
+          <div class="header">
+            <div class="logo">🎵</div>
+            <h1>Soundbeats Game</h1>
+            <div class="status">Loading configuration...</div>
+          </div>
+        </div>
+      `
+    }
+    
     return html`
       <div class="container">
         <div class="header">
           <div class="logo">🎵</div>
           <h1>Soundbeats Game</h1>
-          <div class="status">Ready to play music trivia!</div>
         </div>
 
-        <div class="content">
-          <p>Welcome to Soundbeats - The ultimate music guessing game for Home Assistant!</p>
-          <p>Phase 2 implementation complete. Build system active!</p>
-        </div>
+        <soundbeats-game-setup
+          .hass=${this.hass}
+          .entryId=${this.entryId}
+        ></soundbeats-game-setup>
       </div>
     `
   }
