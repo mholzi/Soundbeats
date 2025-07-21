@@ -9,6 +9,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.components.frontend import async_register_built_in_panel
 from homeassistant.components import websocket_api
+from homeassistant.components.http import StaticPathConfig
 
 from .const import DOMAIN
 
@@ -23,11 +24,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = entry.data
 
     # Register static path for frontend assets
-    await hass.http.async_register_static_paths(
-        "/soundbeats_static",
-        hass.config.path(f"custom_components/{DOMAIN}/frontend/dist"),
-        cache_headers=False,
-    )
+    await hass.http.async_register_static_paths([
+        StaticPathConfig(
+            "/soundbeats_static",
+            str(hass.config.path(f"custom_components/{DOMAIN}/frontend/dist")),
+            False
+        )
+    ])
 
     # Register panel in sidebar
     if DOMAIN not in hass.data.get("frontend_panels", {}):
