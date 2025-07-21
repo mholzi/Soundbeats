@@ -200,3 +200,8 @@ custom_components/*/tests/
 PRPs/templates/
 context-engineering-intro/
 examples/
+docker-compose.yml
+INITIAL.md
+PLANNING_SOUNDBEATS.md
+QUICK_START.md
+scripts/
