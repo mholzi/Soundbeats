@@ -1,4 +1,4 @@
-"""Config flow for Your Integration."""
+"""Config flow for Soundbeats."""
 from __future__ import annotations
 
 import logging
