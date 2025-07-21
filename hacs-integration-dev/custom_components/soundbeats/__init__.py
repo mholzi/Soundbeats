@@ -25,7 +25,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Register static path for frontend assets
     await hass.http.async_register_static_paths(
         "/soundbeats_static",
-        hass.config.path(f"custom_components/{DOMAIN}/frontend"),
+        hass.config.path(f"custom_components/{DOMAIN}/frontend/dist"),
         cache_headers=False,
     )
 

@@ -20,10 +20,12 @@ A HACS-compatible Home Assistant integration that transforms your smart home int
 6. Restart Home Assistant
 7. Look for "Soundbeats" in your sidebar
 
-## Current Status: Phase 1 Complete
+## Current Status: Phase 2 Complete
 - ✅ HACS integration structure
 - ✅ Sidebar panel registration  
 - ✅ Basic frontend framework
+- ✅ Vite build system with TypeScript
+- ✅ ESLint and Prettier configuration
 - 🚧 Game mechanics (coming in future phases)
 
 ## Features (Planned)
@@ -83,13 +85,49 @@ The integration currently displays a "Coming Soon" message with the foundational
 
 This integration follows Home Assistant development best practices and is structured for phased implementation of gaming features.
 
+### Frontend Development
+
+The frontend uses Vite with TypeScript for modern development experience.
+
+#### Prerequisites
+- Node.js 16+ installed
+- npm or yarn package manager
+
+#### Setup
+```bash
+cd custom_components/soundbeats/frontend
+npm install
+```
+
+#### Development
+```bash
+# Start development build with watch mode
+npm run dev
+
+# Build for production
+npm run build
+
+# Run ESLint
+npm run lint
+
+# Format code with Prettier
+npm run format
+```
+
+#### Build Notes
+- Built files are committed to the repository for HACS compatibility
+- Bundle size target: < 200KB (currently ~30KB)
+- Source maps included for debugging
+- TypeScript strict mode enabled
+
 ### Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Run tests and validation
-5. Submit a pull request
+4. Build frontend: `npm run build`
+5. Run tests and validation
+6. Submit a pull request
 
 ## License
 
